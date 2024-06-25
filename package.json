@@ -1,7 +1,7 @@
 {
   "name": "audienzzrn",
   "version": "0.1.0",
-  "description": "Audienzz SDK",
+  "description": "React Native implementation of the Audienzz SDK",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/src/index.d.ts",
@@ -41,14 +41,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://q.com.git"
+    "url": "https://github.com/audienzz/audienzz-rn-sdk"
   },
-  "author": "q <q@mail.com> (https://q.com)",
-  "license": "MIT",
+  "author": "Audienzz <tech@audienzz.ch> (https://audienzz.ch)",
+  "license": "Apache-2.0",
   "bugs": {
-    "url": "https://q.com/issues"
+    "url": "https://github.com/audienzz/audienzz-rn-sdk/issues"
   },
-  "homepage": "https://q.com#readme",
+  "homepage": "https://github.com/audienzz/audienzz-rn-sdk#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
