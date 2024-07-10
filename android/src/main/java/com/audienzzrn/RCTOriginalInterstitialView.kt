@@ -18,23 +18,21 @@ package com.audienzzrn
 */
 
 import android.content.Context
-import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.RCTEventEmitter
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.admanager.AdManagerInterstitialAd
-import com.google.android.gms.ads.admanager.AdManagerInterstitialAdLoadCallback
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import org.audienzz.mobile.AudienzzInterstitialAdUnit
 
 class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
-  companion object {
-    private var tagLogcat = "LOGCAT RCTInterstitialView"
-  }
-
   private var minSizesPercentage: List<Int> = listOf()
   private var auInterstitialView: AudienzzInterstitialAdUnit? = null
+  private var mInterstitialAd: InterstitialAd? = null
 
   fun handleAdLoaded() {
     (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
@@ -47,6 +45,21 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
     error.putString("message", loadError.message)
     (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
       .receiveEvent(id, "onAdFailedToLoad", error)
+  }
+
+  fun handleAdClicked() {
+    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdClicked", null)
+  }
+
+  fun handleAdOpened() {
+    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdOpened", null)
+  }
+
+  fun handleAdClosed() {
+    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdClosed", null)
   }
 
   override fun createAd() {
@@ -78,7 +91,7 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
     auInterstitialView?.setMinSizePercentage(minSizesPercentage[0], minSizesPercentage[1])
 
     auInterstitialView?.fetchDemand(request) {
-      AdManagerInterstitialAd.load(
+      InterstitialAd.load(
         context,
         adUnitID,
         request,
@@ -87,25 +100,42 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
     }
   }
 
-  private fun createListener(): AdManagerInterstitialAdLoadCallback {
-    return object : AdManagerInterstitialAdLoadCallback() {
+  private fun createListener(): InterstitialAdLoadCallback {
+    return object : InterstitialAdLoadCallback() {
 
-      override fun onAdLoaded(adManagerInterstitialAd: AdManagerInterstitialAd) {
-        super.onAdLoaded(adManagerInterstitialAd)
+      override fun onAdLoaded(interstitialAd: InterstitialAd) {
         val activity = (context as? ReactContext)?.currentActivity
+
+        mInterstitialAd = interstitialAd
+        mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+          override fun onAdClicked() {
+            handleAdClicked()
+          }
+
+          override fun onAdDismissedFullScreenContent() {
+            handleAdClosed()
+            mInterstitialAd = null
+          }
+
+          override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+            mInterstitialAd = null
+          }
+
+          override fun onAdImpression() {}
+
+          override fun onAdShowedFullScreenContent() {
+            handleAdOpened()
+          }
+        }
 
         handleAdLoaded()
 
         if (activity != null) {
-          adManagerInterstitialAd.show(activity)
-        } else {
-          Log.e(tagLogcat, "Context is not an Activity, cannot show ad")
+          interstitialAd.show(activity)
         }
       }
 
       override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-        super.onAdFailedToLoad(loadAdError)
-        Log.e(tagLogcat, "Ad failed to load: $loadAdError")
         handleAdFailedToLoad(loadAdError)
       }
     }

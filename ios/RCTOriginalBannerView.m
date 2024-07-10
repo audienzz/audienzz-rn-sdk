@@ -98,7 +98,6 @@
     _bannerView.delegate = self;
     _bannerView.adUnitID = self.adUnitID;
     
-//    [_auBannerView createAdWith:request gamBanner:_bannerView eventHandler:nil];
     AUBannerEventHandler *eventHandler = [[AUBannerEventHandler alloc] initWithAdUnitId:self.adUnitID gamView:_bannerView];
     [_auBannerView createAdWith:request gamBanner:_bannerView eventHandler:eventHandler];
     

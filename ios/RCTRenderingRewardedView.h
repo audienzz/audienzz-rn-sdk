@@ -23,7 +23,6 @@
 @property(nonatomic, strong) AUGAMRewardedAdEventHandler *eventHandler;
 @property(nonatomic, strong) AURewardedRenderingView *auRewardedView;
 @property(nonatomic, copy) NSArray<NSNumber *> *minSizesPercentage;
-@property(nonatomic, copy) RCTBubblingEventBlock onRewardEarned;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdLoaded;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdFailedToLoad;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdClicked;

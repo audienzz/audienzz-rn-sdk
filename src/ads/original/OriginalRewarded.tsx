@@ -36,7 +36,7 @@ export const OriginalRewarded = (props: IOriginalRewardedProps) => {
     videoProtocols = ['VAST_2_0'],
     videoBitrate = [300, 1500],
     videoDuration = [5, 30],
-    onRewardEarned,
+    onAdClosed,
     onAdFailedToLoad,
     ...restProps
   } = props;
@@ -45,13 +45,13 @@ export const OriginalRewarded = (props: IOriginalRewardedProps) => {
     throw new Error(LINKING_ERROR);
   }
 
-  const handleRewardEarned = (
+  const handleAdClosed = (
     event:
       | TRewardEarnedEvent
       | { nativeEvent: { type: string; amount: number } }
   ) => {
     const rewardEvent = 'nativeEvent' in event ? event.nativeEvent : event;
-    onRewardEarned?.(rewardEvent);
+    onAdClosed?.(rewardEvent);
   };
 
   const handleAdFailedToLoad = (
@@ -70,7 +70,7 @@ export const OriginalRewarded = (props: IOriginalRewardedProps) => {
       videoProtocols={videoProtocols}
       videoBitrate={videoBitrate}
       videoDuration={videoDuration}
-      onRewardEarned={handleRewardEarned}
+      onAdClosed={handleAdClosed}
       onAdFailedToLoad={handleAdFailedToLoad}
     />
   );

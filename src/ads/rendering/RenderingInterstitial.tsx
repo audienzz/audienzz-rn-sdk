@@ -29,7 +29,7 @@ export const RenderingInterstitial = (props: IRenderingInterstitialProps) => {
     isLazyLoad = true,
     onAdFailedToLoad,
     minSizesPercentage = [80, 60],
-    skipDelay = 15,
+    skipDelay = 13,
     ...restProps
   } = props;
 

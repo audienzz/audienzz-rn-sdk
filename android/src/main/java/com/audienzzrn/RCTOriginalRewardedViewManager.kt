@@ -57,7 +57,9 @@ class RCTOriginalRewardedViewManager : SimpleViewManager<RCTOriginalRewardedView
     return mapOf(
       "onAdLoaded" to eventMap("onAdLoaded"),
       "onAdFailedToLoad" to eventMap("onAdFailedToLoad"),
-      "onRewardEarned" to eventMap("onRewardEarned")
+      "onAdClicked" to eventMap("onAdClicked"),
+      "onAdOpened" to eventMap("onAdOpened"),
+      "onAdClosed" to eventMap("onAdClosed"),
     )
   }
 

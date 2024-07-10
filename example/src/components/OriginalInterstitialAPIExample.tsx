@@ -41,17 +41,22 @@ const OriginalInterstitialAPIExample = () => {
 
       {isInterstitialBanner && (
         <OriginalInterstitial
-          // adUnitID="/21808260008/prebid-demo-app-original-api-display-interstitial"
           adUnitID="ca-app-pub-3940256099942544/4411468910"
           auConfigID="prebid-demo-display-interstitial-320-480"
           adFormats={['banner']}
           isLazyLoad={false}
-          pbAdSlot="pupupipi"
-          gpID="kyky"
+          pbAdSlot="pbAdSlot"
+          gpID="gpID"
           keyword="mainKeyword"
           keywords={['clothing', 'sport']}
           appContent={APP_CONTENT_FOR_INTERSTITIAL}
           onAdLoaded={() => console.log('INTERSTITIAL success')}
+          onAdClicked={() => console.log('INTERSTITIAL clicked')}
+          onAdOpened={() => console.log('INTERSTITIAL ad opened')}
+          onAdClosed={() => {
+            console.log('INTERSTITIAL ad closed');
+            setIsInterstitialBanner(false);
+          }}
           onAdFailedToLoad={(error) => {
             console.log(
               `INTERSTITIAL ERROR -> ${JSON.stringify(error, null, 2)}`
@@ -66,6 +71,10 @@ const OriginalInterstitialAPIExample = () => {
           auConfigID="prebid-demo-video-interstitial-320-480-original-api"
           adFormats={['video']}
           isLazyLoad={false}
+          onAdClosed={() => {
+            console.log('INTERSTITIAL ad closed');
+            setIsInterstitialVideo(false);
+          }}
         />
       )}
       {isInterstitialMulti && (
@@ -73,6 +82,10 @@ const OriginalInterstitialAPIExample = () => {
           adUnitID="/21808260008/prebid-demo-intestitial-multiformat"
           auConfigID={interstitialMultiformatAuConfigID}
           isLazyLoad={false}
+          onAdClosed={() => {
+            console.log('INTERSTITIAL ad closed');
+            setIsInterstitialMulti(false);
+          }}
         />
       )}
     </>

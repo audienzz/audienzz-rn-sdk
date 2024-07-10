@@ -24,5 +24,8 @@
 @property(nonatomic, copy) NSArray<NSNumber *> *minSizesPercentage;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdLoaded;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdFailedToLoad;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdClicked;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdOpened;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdClosed;
 
 @end

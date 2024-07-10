@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { RenderingInterstitial } from 'audienzzrn';
 import ActionButton from './ActionButton';
+import { APP_CONTENT_FOR_INTERSTITIAL } from '../constants';
 
 const RenderingInterstitialAPIExample = () => {
   const [isInterstitialBanner, setIsInterstitialBanner] = React.useState(false);
@@ -43,6 +44,7 @@ const RenderingInterstitialAPIExample = () => {
             console.log('onAdClosed');
             setIsInterstitialBanner(false);
           }}
+          appContent={APP_CONTENT_FOR_INTERSTITIAL}
         />
       )}
       {isInterstitialVideo && (

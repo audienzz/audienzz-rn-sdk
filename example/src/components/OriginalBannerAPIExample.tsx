@@ -21,8 +21,8 @@ const OriginalBannerAPIExample = () => {
           adFormats={['banner']}
           isLazyLoad={false}
           autoRefreshPeriodMillis={30000}
-          pbAdSlot="pupupipi"
-          gpID="kyky"
+          pbAdSlot="pbAdSlot"
+          gpID="gpID"
           keywords={['clothing', 'sport']}
           appContent={APP_CONTENT_FOR_BANNER}
           onAdLoaded={() => console.log('success')}
@@ -57,7 +57,6 @@ const OriginalBannerAPIExample = () => {
       <Text style={styles.text}>Original Banner API Multiformat</Text>
       <OriginalBanner
         adUnitID="/21808260008/prebid-demo-original-banner-multiformat"
-        // adUnitID="ca-app-pub-3940256099942544/2934735716"
         auConfigID={bannerMultiformatAuConfigID}
         width={300}
         height={250}

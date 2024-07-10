@@ -76,7 +76,7 @@ class RCTRenderingInterstitialViewManager : SimpleViewManager<RCTRenderingInters
   }
 
   @ReactProp(name = "adFormat")
-  fun setAdFormats(view: RCTRenderingInterstitialView, value: String) {
+  fun setAdFormat(view: RCTRenderingInterstitialView, value: String) {
     view.updateAdFormat(value)
     view.updatePropsChanged(true)
   }
@@ -103,12 +103,6 @@ class RCTRenderingInterstitialViewManager : SimpleViewManager<RCTRenderingInters
   @ReactProp(name = "pbAdSlot")
   fun setPbAdSlot(view: RCTRenderingInterstitialView, value: String) {
     view.updatePbAdSlot(value)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "gpID")
-  fun setGpID(view: RCTRenderingInterstitialView, value: String) {
-    view.updateGpID(value)
     view.updatePropsChanged(true)
   }
 

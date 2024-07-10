@@ -21,8 +21,11 @@
 @interface RCTOriginalRewardedView : RCTOriginalView
 
 @property(nonatomic, strong) AURewardedView *auRewardedView;
-@property(nonatomic, copy) RCTBubblingEventBlock onRewardEarned;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdLoaded;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdFailedToLoad;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdClicked;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdOpened;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdClosed;
+@property(nonatomic, strong) GADAdReward *reward;
 
 @end

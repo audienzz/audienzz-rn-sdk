@@ -6,10 +6,6 @@ import {
   OriginalRewarded,
 } from 'audienzzrn';
 import ActionButton from './ActionButton';
-import {
-  APP_CONTENT_FOR_INTERSTITIAL,
-  APP_CONTENT_FOR_REWARDED,
-} from '../constants';
 
 const ErrorHandlingExample = () => {
   const [isInterstitialError, setIsInterstitialError] = React.useState(false);
@@ -67,11 +63,6 @@ const ErrorHandlingExample = () => {
           auConfigID="prebid-demo-display-interstitial-320-480"
           adFormats={['banner']}
           isLazyLoad={false}
-          pbAdSlot="pupupipi"
-          gpID="kyky"
-          keyword="mainKeyword"
-          keywords={['clothing', 'sport']}
-          appContent={APP_CONTENT_FOR_INTERSTITIAL}
           onAdLoaded={() => console.log('INTERSTITIAL success')}
           onAdFailedToLoad={(error) => {
             console.log(
@@ -89,18 +80,7 @@ const ErrorHandlingExample = () => {
         <OriginalRewarded
           adUnitID="ca-app-pub-3940256099942544/171248531"
           auConfigID="prebid-demo-video-rewarded-320-480-original-api"
-          onRewardEarned={(event) => {
-            console.log(
-              `The user received -> ${JSON.stringify(event, null, 2)}`
-            );
-            setIsRewardedError(false);
-          }}
           isLazyLoad={false}
-          pbAdSlot="pupupipi"
-          gpID="kyky"
-          keyword="mainKeyword"
-          keywords={['clothing', 'sport']}
-          appContent={APP_CONTENT_FOR_REWARDED}
           onAdLoaded={() => console.log('REWARDED success')}
           onAdFailedToLoad={(error) => {
             console.log(`REWARDED ERROR -> ${JSON.stringify(error, null, 2)}`);
