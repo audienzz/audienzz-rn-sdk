@@ -59,7 +59,6 @@ class RCTRenderingRewardedViewManager : SimpleViewManager<RCTRenderingRewardedVi
       "onAdOpened" to eventMap("onAdOpened"),
       "onAdClosed" to eventMap("onAdClosed"),
       "onAdClicked" to eventMap("onAdClicked"),
-      "onRewardEarned" to eventMap("onRewardEarned")
     )
   }
 
@@ -78,12 +77,6 @@ class RCTRenderingRewardedViewManager : SimpleViewManager<RCTRenderingRewardedVi
   @ReactProp(name = "pbAdSlot")
   fun setPbAdSlot(view: RCTRenderingRewardedView, value: String) {
     view.updatePbAdSlot(value)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "gpID")
-  fun setGpID(view: RCTRenderingRewardedView, value: String) {
-    view.updateGpID(value)
     view.updatePropsChanged(true)
   }
 

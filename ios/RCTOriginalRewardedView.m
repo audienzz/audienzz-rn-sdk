@@ -88,10 +88,7 @@
                 
                 [ad presentFromRootViewController:nil userDidEarnRewardHandler:^{
                     GADAdReward *reward = ad.adReward;
-                    
-                    if (weakSelf.onRewardEarned) {
-                        weakSelf.onRewardEarned(@{@"type": reward.type, @"amount": reward.amount});
-                    }
+                    self.reward = reward;
                 }];
             }
         }];
@@ -107,7 +104,25 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 }
 
 - (void)adWillPresentFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
-    NSLog(@"Ad will present full screen content.");
+    if (self.onAdOpened) {
+        self.onAdOpened(@{});
+    }
+}
+
+- (void)adDidRecordClick:(nonnull id<GADFullScreenPresentingAd>)ad {
+    if (self.onAdClicked) {
+        self.onAdClicked(@{});
+    }
+}
+
+- (void)adWillDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
+    [self.auRewardedView removeFromSuperview];
+    self.auRewardedView = nil;
+    
+    if (self.onAdClosed) {
+        NSDictionary *rewardDict = @{@"type": self.reward.type, @"amount": self.reward.amount};
+        self.onAdClosed(rewardDict);
+    }
 }
 
 - (void)adDidDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {

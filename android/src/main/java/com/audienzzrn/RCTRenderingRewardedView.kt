@@ -18,7 +18,6 @@ package com.audienzzrn
 */
 
 import android.content.Context
-import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
@@ -29,16 +28,7 @@ import org.audienzz.mobile.api.rendering.listeners.AudienzzRewardedAdUnitListene
 import org.audienzz.mobile.eventhandlers.AudienzzGamRewardedEventHandler
 
 class RCTRenderingRewardedView(context: Context) : RCTOriginalView(context) {
-  companion object {
-    private var tagLogcat = "LOGCAT RCTRenderingRewardedView"
-  }
-
   private var auRewardedView: AudienzzRewardedAdUnit? = null
-
-  private fun handleRewardEarned() {
-    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(id, "onRewardEarned", null)
-  }
 
   fun handleAdLoaded() {
     (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
@@ -79,45 +69,38 @@ class RCTRenderingRewardedView(context: Context) : RCTOriginalView(context) {
     if (pbAdSlot != null) {
       auRewardedView?.pbAdSlot = pbAdSlot
     }
-//    if (gpID != null) {
-//      auRewardedView?.gpid = gpID
-//    }
     if (keyword != null) {
       auRewardedView?.addExtKeyword(keyword!!)
     }
     if (keywords != null) {
       auRewardedView?.addExtKeywords(keywords!!)
     }
-//    if (appContent != null) {
-//      auRewardedView?.appContent = appContent
-//    }
+    if (appContent != null) {
+      auRewardedView?.appContent = appContent
+    }
 
     auRewardedView?.setRewardedAdUnitListener(object : AudienzzRewardedAdUnitListener {
       override fun onAdLoaded(rewardedAdUnit: AudienzzRewardedAdUnit?) {
         handleAdLoaded()
         rewardedAdUnit?.show()
-        Log.d(tagLogcat, "#>>>>>> onAdLoaded")
       }
 
       override fun onAdDisplayed(rewardedAdUnit: AudienzzRewardedAdUnit?) {
         handleAdOpened()
-        Log.d(tagLogcat, "#>>>>>> onAdDisplayed")
       }
+
       override fun onAdFailed(rewardedAdUnit: AudienzzRewardedAdUnit?, exception: AudienzzAdException?) {
-        Log.e(tagLogcat, "#>>>>>> onAdFailed $exception")
         handleAdFailedToLoad(exception)
       }
+
       override fun onAdClicked(rewardedAdUnit: AudienzzRewardedAdUnit?) {
-        Log.d(tagLogcat, "#>>>>>> onAdClicked")
         handleAdClicked()
       }
-      override fun onAdClosed(rewardedAdUnit: AudienzzRewardedAdUnit?) {
-        Log.d(tagLogcat, "#>>>>>> onAdClosed")
-        handleAdClosed()
-      }
+
+      override fun onAdClosed(rewardedAdUnit: AudienzzRewardedAdUnit?) {}
+
       override fun onUserEarnedReward(rewardedAdUnit: AudienzzRewardedAdUnit?) {
-        Log.d(tagLogcat, "#>>>>>> onUserEarnedReward ${rewardedAdUnit?.userReward}")
-        handleRewardEarned()
+        handleAdClosed()
       }
     })
 

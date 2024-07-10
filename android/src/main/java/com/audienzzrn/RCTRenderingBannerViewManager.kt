@@ -105,12 +105,6 @@ class RCTRenderingBannerViewManager : SimpleViewManager<RCTRenderingBannerView>(
     view.updatePropsChanged(true)
   }
 
-  @ReactProp(name = "gpID")
-  fun setGpID(view: RCTRenderingBannerView, value: String) {
-    view.updateGpID(value)
-    view.updatePropsChanged(true)
-  }
-
   @ReactProp(name = "keyword")
   fun setKeyword(view: RCTRenderingBannerView, value: String) {
     view.updateKeyword(value)

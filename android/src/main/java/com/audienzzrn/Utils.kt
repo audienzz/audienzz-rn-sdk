@@ -19,8 +19,8 @@ package com.audienzzrn
 
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
-import org.prebid.mobile.ContentObject
-import org.prebid.mobile.DataObject
+import org.audienzz.mobile.AudienzzContentObject
+import org.audienzz.mobile.AudienzzDataObject
 
 object Utils {
   fun readableArrayToSet(array: ReadableArray): Set<String> {
@@ -32,7 +32,7 @@ object Utils {
     return set
   }
 
-  fun createContentObject(currentContentObject: ReadableMap): ContentObject {
+  fun createContentObject(currentContentObject: ReadableMap): AudienzzContentObject {
     val categoriesArr = currentContentObject.getArray("categories")
     val adaptedCategories = if (categoriesArr != null) {
       val stringList = ArrayList<String>()
@@ -46,15 +46,15 @@ object Utils {
     }
 
     val dataObject = currentContentObject.getMap("dataObject")?.let {
-      DataObject().apply {
+      AudienzzDataObject().apply {
         id = it.getString("id")
         name = it.getString("name")
-        segments = it.getArray("segments")?.let { array ->
-          val segmentList = ArrayList<DataObject.SegmentObject>()
+        setSegments(it.getArray("segments")?.let { array ->
+          val segmentList = ArrayList<AudienzzDataObject.AudienzzSegmentObject>()
           for (i in 0 until array.size()) {
             val map = array.getMap(i)
             map.let { segmentMap ->
-              val segment = DataObject.SegmentObject().apply {
+              val segment = AudienzzDataObject.AudienzzSegmentObject().apply {
                 id = segmentMap.getString("id")
                 name = segmentMap.getString("name")
                 value = segmentMap.getString("value")
@@ -63,11 +63,11 @@ object Utils {
             }
           }
           segmentList
-        } ?: ArrayList()
+        } ?: ArrayList())
       }
     }
 
-    val producer = currentContentObject.getMap("producerObject")?.let {
+    val adaptedProducer = currentContentObject.getMap("producerObject")?.let {
       val categoryList = ArrayList<String>()
       it.getArray("categories")?.let { array ->
         for (i in 0 until array.size()) {
@@ -75,15 +75,15 @@ object Utils {
           categoryList.add(category)
         }
       }
-      ContentObject.ProducerObject().apply {
+      AudienzzContentObject.AudienzzProducerObject().apply {
         id = it.getString("id")
         name = it.getString("name")
         domain = it.getString("domain")
         setCategories(categoryList)
       }
-    } ?: ContentObject.ProducerObject()
+    } ?: AudienzzContentObject.AudienzzProducerObject()
 
-    return ContentObject().apply {
+    return AudienzzContentObject().apply {
       id = if (currentContentObject.hasKey("id")) currentContentObject.getString("id") else null
       episode = if (currentContentObject.hasKey("episode")) currentContentObject.getInt("episode") else null
       title = if (currentContentObject.hasKey("title")) currentContentObject.getString("title") else null
@@ -106,8 +106,8 @@ object Utils {
       length = if (currentContentObject.hasKey("length")) currentContentObject.getInt("length") else null
       language = if (currentContentObject.hasKey("language")) currentContentObject.getString("language") else null
       embeddable = if (currentContentObject.hasKey("embeddable")) currentContentObject.getInt("embeddable") else null
-      dataList = dataObject?.let { arrayListOf(it) } ?: arrayListOf()
-      setProducer(producer)
+      setDataList(dataObject?.let { arrayListOf(it) } ?: arrayListOf())
+      producer = adaptedProducer
     }
   }
 }

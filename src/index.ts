@@ -1,6 +1,5 @@
 import {
   OriginalBanner,
-  OriginalInStream,
   OriginalInterstitial,
   OriginalRewarded,
 } from './ads/original';
@@ -39,7 +38,6 @@ import type {
 export {
   OriginalBanner,
   OriginalInterstitial,
-  OriginalInStream,
   OriginalRewarded,
   RenderingBanner,
   RenderingInterstitial,

@@ -1,4 +1,4 @@
-import type { TAdError, TRewardEarnedEvent } from './Types';
+import type { TAdError } from './Types';
 
 export interface IAdEvents {
   onAdLoaded?(): void;
@@ -6,5 +6,4 @@ export interface IAdEvents {
   onAdClicked?(): void;
   onAdOpened?(): void;
   onAdClosed?(): void;
-  onRewardEarned(reward: TRewardEarnedEvent): void;
 }

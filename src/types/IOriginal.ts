@@ -1,12 +1,12 @@
 import type { IAdEvents } from './IAdEvents';
 import type { IBaseAdProps } from './IBaseAdProps';
 import type { IParamaters } from './IParameters';
-import type { TMinSizesPercentage } from './Types';
+import type { TMinSizesPercentage, TRewardEarnedEvent } from './Types';
 
 export interface IOriginalBannerProps
   extends IBaseAdProps,
     IParamaters,
-    Omit<IAdEvents, 'onRewardEarned'> {
+    IAdEvents {
   width: number;
   height: number;
   isReserved?: boolean;
@@ -16,7 +16,7 @@ export interface IOriginalBannerProps
 export interface IOriginalInterstitialProps
   extends IBaseAdProps,
     Omit<IParamaters, 'videoPlacement'>,
-    Omit<IAdEvents, 'onRewardEarned'> {
+    IAdEvents {
   minSizesPercentage?: TMinSizesPercentage;
 }
 
@@ -26,9 +26,6 @@ export interface IOriginalRewardedProps
       IParamaters,
       Exclude<keyof IParamaters, 'adFormats' | 'videoPlacement'>
     >,
-    IAdEvents {}
-
-export interface IOriginalInStreamProps extends IBaseAdProps, IParamaters {
-  videoUrl: string;
-  sizesForRequest?: '640x480' | '400x300';
+    Omit<IAdEvents, 'onAdClosed'> {
+  onAdClosed?(reward: TRewardEarnedEvent): void;
 }

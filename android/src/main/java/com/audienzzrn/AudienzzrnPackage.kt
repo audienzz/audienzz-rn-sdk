@@ -34,7 +34,7 @@ class AudienzzrnPackage : ReactPackage {
       RCTOriginalRewardedViewManager(),
       RCTRenderingBannerViewManager(),
       RCTRenderingInterstitialViewManager(),
-      RCTRenderingRewardedViewManager()
+      RCTRenderingRewardedViewManager(),
     )
   }
 }

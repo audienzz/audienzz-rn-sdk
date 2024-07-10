@@ -18,22 +18,22 @@ package com.audienzzrn
 */
 
 import android.content.Context
-import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.RCTEventEmitter
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.rewarded.RewardItem
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import org.audienzz.mobile.AudienzzRewardedVideoAdUnit
 
 class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
-  companion object {
-    private var tagLogcat = "LOGCAT RCTOriginalRewardedView"
-  }
-
   private var auRewardedView: AudienzzRewardedVideoAdUnit? = null
+  private var rewardedAd: RewardedAd? = null
+  private lateinit var reward: RewardItem
 
   fun handleAdLoaded() {
     (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
@@ -48,13 +48,23 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
       .receiveEvent(id, "onAdFailedToLoad", error)
   }
 
-  private fun handleRewardEarned(type: String, amount: Int) {
+  private fun handleAdClosed(type: String, amount: Int) {
     val event: WritableMap = Arguments.createMap()
     event.putString("type", type)
     event.putInt("amount", amount)
 
     (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(id, "onRewardEarned", event)
+      .receiveEvent(id, "onAdClosed", event)
+  }
+
+  fun handleAdClicked() {
+    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdClicked", null)
+  }
+
+  fun handleAdOpened() {
+    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdOpened", null)
   }
 
   override fun createAd() {
@@ -74,7 +84,7 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
     if (keywords != null) {
       auRewardedView?.addExtKeywords(keywords!!)
     }
-    if(appContent != null) {
+    if (appContent != null) {
       auRewardedView?.appContent = appContent
     }
 
@@ -92,26 +102,45 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
 
   private fun createListener(): RewardedAdLoadCallback {
     return object : RewardedAdLoadCallback() {
-      override fun onAdLoaded(rewardedAd: RewardedAd) {
-        super.onAdLoaded(rewardedAd)
+      override fun onAdLoaded(ad: RewardedAd) {
         val activity = (context as? ReactContext)?.currentActivity
+
+        rewardedAd = ad
+        rewardedAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+          override fun onAdClicked() {
+            handleAdClicked()
+          }
+
+          override fun onAdDismissedFullScreenContent() {
+            val rewardAmount = reward.amount
+            val rewardType = reward.type
+
+            handleAdClosed(rewardType, rewardAmount)
+
+            rewardedAd = null
+          }
+
+          override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+            rewardedAd = null
+          }
+
+          override fun onAdImpression() {}
+
+          override fun onAdShowedFullScreenContent() {
+            handleAdOpened()
+          }
+        }
 
         handleAdLoaded()
 
         if (activity != null) {
-          rewardedAd.show(activity) { rewardItem ->
-            val rewardAmount = rewardItem.amount
-            val rewardType = rewardItem.type
-
-            handleRewardEarned(rewardType, rewardAmount)
+          ad.show(activity) { rewardItem ->
+            reward = rewardItem
           }
-        } else {
-          Log.e(tagLogcat, "Context is not an Activity, cannot show ad")
         }
       }
 
       override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-        Log.e(tagLogcat, "Ad failed to load: $loadAdError")
         handleAdFailedToLoad(loadAdError)
       }
     }

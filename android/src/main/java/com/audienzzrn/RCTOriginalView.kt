@@ -21,9 +21,9 @@ import android.content.Context
 import android.widget.FrameLayout
 import com.google.android.gms.ads.admanager.AdManagerAdRequest
 import org.audienzz.mobile.AudienzzBannerParameters
+import org.audienzz.mobile.AudienzzContentObject
 import org.audienzz.mobile.AudienzzSignals
 import org.audienzz.mobile.AudienzzVideoParameters
-import org.prebid.mobile.ContentObject
 
 open class RCTOriginalView(context: Context) : FrameLayout(context) {
   var adFormats: List<String> = listOf()
@@ -35,7 +35,7 @@ open class RCTOriginalView(context: Context) : FrameLayout(context) {
   var gpID: String? = null
   var keyword: String? = null
   var keywords: Set<String>? = null
-  var appContent: ContentObject? = null
+  var appContent: AudienzzContentObject? = null
   var playbackMethods: List<String> = listOf()
   var apiParameters: List<String> = listOf()
   var videoProtocols: List<String> = listOf()
@@ -87,7 +87,7 @@ open class RCTOriginalView(context: Context) : FrameLayout(context) {
     }
   }
 
-  fun updateAppContent(value: ContentObject) {
+  fun updateAppContent(value: AudienzzContentObject) {
     appContent = value
   }
 

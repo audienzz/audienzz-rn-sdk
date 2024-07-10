@@ -30,13 +30,13 @@ import com.facebook.react.uimanager.annotations.ReactProp
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.admanager.AdManagerAdRequest
 import com.google.android.gms.ads.admanager.AdManagerAdView
 import org.audienzz.mobile.AudienzzBannerAdUnit
 import org.audienzz.mobile.AudienzzBannerParameters
+import org.audienzz.mobile.AudienzzContentObject
 import org.audienzz.mobile.AudienzzSignals
 import org.audienzz.mobile.AudienzzVideoParameters
-import org.prebid.mobile.ContentObject
+import org.audienzz.mobile.original.AudienzzAdViewHandler
 
 class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() {
   companion object {
@@ -138,27 +138,23 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
 
     val currentActivity = (reactViewGroup.context as ReactContext).currentActivity ?: return null
     val adView = AdManagerAdView(currentActivity)
+    reactViewGroup.addView(adView)
 
     adView.adListener =
       object : AdListener() {
         override fun onAdLoaded() {
-          super.onAdLoaded()
-          reactViewGroup.addView(adView)
           reactViewGroup.handleAdLoaded()
         }
 
         override fun onAdClicked() {
-          super.onAdClicked()
           reactViewGroup.handleAdClicked()
         }
 
         override fun onAdOpened() {
-          super.onAdOpened()
           reactViewGroup.handleAdOpened()
         }
 
         override fun onAdClosed() {
-          super.onAdClosed()
           reactViewGroup.handleAdClosed()
         }
 
@@ -189,8 +185,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     val gpID: String? = reactViewGroup.gpID
     val keywords: Set<String>? = reactViewGroup.keywords
     val keyword: String? = reactViewGroup.keyword
-    val appContent: ContentObject? = reactViewGroup.appContent
-    val request = AdManagerAdRequest.Builder().build()
+    val appContent: AudienzzContentObject? = reactViewGroup.appContent
     val auBannerView =
       AudienzzBannerAdUnit(
         auConfigID,
@@ -271,15 +266,11 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
       adView.adUnitId = adUnitID
       adView.setAdSize(AdSize(width, height))
 
-      auBannerView.fetchDemand(request) {
-        adView.loadAd(request)
-      }
-
-//      AudienzzAdViewHandler(
-//        adView = adView,
-//        adUnit = auBannerView,
-//      )
-//        .load(callback = { request, _ -> adView.loadAd(request) }, withLazyLoading = isLazyLoad)
+      AudienzzAdViewHandler(
+        adView = adView,
+        adUnit = auBannerView,
+      )
+        .load(callback = { request, _ -> adView.loadAd(request) }, withLazyLoading = isLazyLoad)
     }
   }
 

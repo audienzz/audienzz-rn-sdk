@@ -23,9 +23,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.WritableMap
-import org.audienzz.mobile.AudienzzHost
 import org.audienzz.mobile.AudienzzPrebidMobile
-import org.audienzz.mobile.AudienzzTargetingParams
 import org.audienzz.mobile.api.data.AudienzzInitializationStatus
 import org.audienzz.mobile.rendering.listeners.AudienzzSdkInitializationListener
 
@@ -34,19 +32,6 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
   companion object {
     private const val SERVICE = "RNAudienzzModule"
     private const val TAG = "AudienzzSDKInitializer"
-  }
-
-  private fun preInitSdk() {
-    AudienzzTargetingParams.isSubjectToGDPR = true
-
-    AudienzzPrebidMobile.apply {
-      prebidServerAccountId = "0689a263-318d-448b-a3d4-b02e8a709d9d"
-      prebidServerHost = AudienzzHost.createCustomHost(
-        "https://prebid-server-test-j.prebid.org/openrtb2/auction"
-      )
-      customStatusEndpoint = "https://prebid-server-test-j.prebid.org/status"
-      isShareGeoLocation = true
-    }
   }
 
   @ReactMethod
@@ -71,7 +56,5 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
           }
         }
       })
-
-    preInitSdk()
   }
 }

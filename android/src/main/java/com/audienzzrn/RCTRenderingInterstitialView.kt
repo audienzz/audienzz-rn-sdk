@@ -29,10 +29,6 @@ import org.audienzz.mobile.api.rendering.listeners.AudienzzInterstitialAdUnitLis
 import org.audienzz.mobile.eventhandlers.AudienzzGamInterstitialEventHandler
 
 class RCTRenderingInterstitialView(context: Context) : RCTOriginalView(context) {
-  companion object {
-    private var tagLogcat = "LOGCAT RCTRenderingInterstitialView"
-  }
-
   private var adFormat: String = ""
   private var skipDelay: Int = 0
   private var minSizesPercentage: List<Int> = listOf()
@@ -80,18 +76,15 @@ class RCTRenderingInterstitialView(context: Context) : RCTOriginalView(context) 
     if (pbAdSlot != null) {
       auInterstitialView?.pbAdSlot = pbAdSlot
     }
-//    if (gpID != null) {
-//      auInterstitialView?.gpid = gpID
-//    }
     if (keyword != null) {
       auInterstitialView?.addExtKeyword(keyword!!)
     }
     if (keywords != null) {
       auInterstitialView?.addExtKeywords(keywords!!)
     }
-//    if (appContent != null) {
-//      auInterstitialView?.appContent = appContent
-//    }
+    if (appContent != null) {
+      auInterstitialView?.appContent = appContent
+    }
 
     auInterstitialView?.setSkipDelay(skipDelay)
 

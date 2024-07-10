@@ -21,8 +21,8 @@ const RenderingBannerAPIExample = () => {
           height={50}
           adFormat="banner"
           isLazyLoad={false}
-          pbAdSlot="pupupipi"
-          gpID="kyky"
+          pbAdSlot="pbAdSlot"
+          gpID="gpID"
           keywords={['clothing', 'sport']}
           appContent={APP_CONTENT_FOR_BANNER}
           onAdLoaded={() => console.log('success')}

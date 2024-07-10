@@ -107,15 +107,24 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 }
 
 - (void)adWillPresentFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
-    NSLog(@"Ad will present full screen content: %@", ad);
+    if (self.onAdOpened) {
+        self.onAdOpened(@{});
+    }
 }
 
 - (void)adDidRecordClick:(nonnull id<GADFullScreenPresentingAd>)ad {
-    NSLog(@"adDidRecordClick: %@", ad);
+    if (self.onAdClicked) {
+        self.onAdClicked(@{});
+    }
 }
 
 - (void)adWillDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
-    NSLog(@"adClose: %@", ad);
+    [self.auInterstitialView removeFromSuperview];
+    self.auInterstitialView = nil;
+    
+    if (self.onAdClosed) {
+        self.onAdClosed(@{});
+    }
 }
 
 - (void)adDidDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {

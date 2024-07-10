@@ -18,21 +18,24 @@ const OriginalRewardedAPIExample = () => {
         <OriginalRewarded
           adUnitID="ca-app-pub-3940256099942544/1712485313"
           auConfigID="prebid-demo-video-rewarded-320-480-original-api"
-          onRewardEarned={(event) => {
-            console.log(
-              `The user received -> ${JSON.stringify(event, null, 2)}`
-            );
-            setIsRewarded(false);
-          }}
           isLazyLoad={false}
-          pbAdSlot="pupupipi"
-          gpID="kyky"
+          pbAdSlot="pbAdSlot"
+          gpID="gpID"
           keyword="mainKeyword"
           keywords={['clothing', 'sport']}
           appContent={APP_CONTENT_FOR_REWARDED}
           onAdLoaded={() => console.log('REWARDED success')}
           onAdFailedToLoad={(error) => {
             console.log(`REWARDED ERROR -> ${JSON.stringify(error, null, 2)}`);
+            setIsRewarded(false);
+          }}
+          onAdClicked={() => console.log('REWARDED clicked')}
+          onAdOpened={() => console.log('REWARDED ad opened')}
+          onAdClosed={(event) => {
+            console.log('REWARDED ad closed');
+            console.log(
+              `The user received -> ${JSON.stringify(event, null, 2)}`
+            );
             setIsRewarded(false);
           }}
         />

@@ -88,18 +88,15 @@ class RCTRenderingBannerView(context: Context) : RCTOriginalView(context) {
     if (pbAdSlot != null) {
       auBannerView?.pbAdSlot = pbAdSlot
     }
-//    if (gpID != null) {
-//      auBannerView?.gpid = gpID
-//    }
     if (keyword != null) {
       auBannerView?.addExtKeyword(keyword!!)
     }
     if (keywords != null) {
       auBannerView?.addExtKeywords(keywords!!)
     }
-//    if (appContent != null) {
-//      auBannerView?.setAppContent(appContent)
-//    }
+    if (appContent != null) {
+      auBannerView?.setAppContent(appContent!!)
+    }
 
     auBannerView?.videoPlacementType =  AudienzzConversionUtils.convertToAudienzzVideoPlacementType(videoPlacement)
 

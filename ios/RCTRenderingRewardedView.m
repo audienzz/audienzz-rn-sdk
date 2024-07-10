@@ -87,11 +87,12 @@
 }
 
 - (void)rewardedAdUserDidEarnReward:(NSObject * _Nullable)reward {
-    if (self.onRewardEarned) {
-        self.onRewardEarned(@{});
-    }
     [self.auRewardedView removeFromSuperview];
     self.auRewardedView = nil;
+    
+    if (self.onAdClosed) {
+        self.onAdClosed(@{});
+    }
 }
 
 - (void)rewardedAdDidFailToReceiveAdWithError:(NSError * _Nullable)error {
@@ -106,13 +107,6 @@
 - (void)rewardedAdWillPresentAd {
     if (self.onAdOpened) {
         self.onAdOpened(@{});
-    }
-}
-
-- (void)rewardedAdDidDismissAd {
-    NSLog(@"QWERTY rewardedAdDidDismissAd");
-    if (self.onAdClosed) {
-        self.onAdClosed(@{});
     }
 }
 

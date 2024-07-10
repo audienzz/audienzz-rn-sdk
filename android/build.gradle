@@ -93,15 +93,5 @@ dependencies {
   implementation "com.facebook.react:react-native:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation 'com.google.android.gms:play-services-ads:23.1.0'
-  implementation 'androidx.room:room-runtime:2.5.2'
-  implementation 'com.google.dagger:dagger:2.51.1'
-  implementation("org.prebid:prebid-mobile-sdk:2.2.0")
-  implementation("org.prebid:prebid-mobile-sdk-admob-adapters:2.2.0")
-  implementation("org.prebid:prebid-mobile-sdk-max-adapters:2.2.0")
-  implementation("org.prebid:prebid-mobile-sdk-gam-event-handlers:2.2.0")
-  implementation 'com.google.android.exoplayer:exoplayer:2.15.1'
-  implementation 'com.google.android.exoplayer:exoplayer-core:2.15.1'
-  implementation 'com.google.android.exoplayer:exoplayer-ui:2.15.1'
-  implementation 'com.google.android.exoplayer:extension-ima:2.15.1'
-  implementation 'audienzz-prebid-android:Audienzz:0.0.0.361546-SDKWP-159'
+  implementation 'audienzz-prebid-android:Audienzz:0.0.0.364080-SDKWP-179-prebid-wrappers'
 }

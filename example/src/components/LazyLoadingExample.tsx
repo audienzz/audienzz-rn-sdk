@@ -58,7 +58,6 @@ const LazyLoadingExample = () => {
           <View style={styles.height30} />
           <Text style={styles.text}>Rendering Banner API HTML 320x50</Text>
           <RenderingBanner
-            // adUnitID="/21808260008/prebid_demo_app_original_api_banner"
             adUnitID="/21808260008/prebid_oxb_320x50_banner"
             auConfigID="prebid-demo-banner-320-50"
             width={320}
@@ -72,9 +71,7 @@ const LazyLoadingExample = () => {
           <View style={styles.height30} />
           <Text style={styles.text}>Rendering Banner API Video</Text>
           <RenderingBanner
-            // adUnitID="/21808260008/prebid-demo-original-api-video-banner"
             adUnitID="/21808260008/prebid_oxb_300x250_banner"
-            // auConfigID="prebid-demo-video-outstream-original-api"
             auConfigID="prebid-demo-video-outstream"
             width={300}
             height={250}
@@ -82,46 +79,69 @@ const LazyLoadingExample = () => {
           />
 
           <View style={styles.height30} />
-          <View style={styles.height500} />
-          <Text style={styles.text}>Original Interstitial</Text>
+          <View style={styles.height300} />
+          <Text style={styles.text}>Original Interstitial HTML</Text>
+          <OriginalInterstitial
+            adUnitID="ca-app-pub-3940256099942544/4411468910"
+            auConfigID="prebid-demo-display-interstitial-320-480"
+            adFormats={['banner']}
+            style={styles.background}
+          />
+          <View style={styles.height30} />
+          <View style={styles.height300} />
+          <Text style={styles.text}>Original Interstitial Video</Text>
+          <OriginalInterstitial
+            adUnitID="/21808260008/prebid-demo-app-original-api-video-interstitial"
+            auConfigID="prebid-demo-video-interstitial-320-480-original-api"
+            adFormats={['video']}
+            style={styles.background}
+          />
+          <View style={styles.height30} />
+          <View style={styles.height300} />
+          <Text style={styles.text}>Original Interstitial Multiformat</Text>
           <OriginalInterstitial
             adUnitID="/21808260008/prebid-demo-intestitial-multiformat"
             auConfigID={interstitialMultiformatAuConfigID}
             style={styles.background}
           />
-
           <View style={styles.height30} />
-          <View style={styles.height500} />
+          <View style={styles.height300} />
           <Text style={styles.text}>Original Rewarded</Text>
           <OriginalRewarded
             adUnitID="ca-app-pub-3940256099942544/1712485313"
             auConfigID="prebid-demo-video-rewarded-320-480-original-api"
-            onRewardEarned={(event) => {
+            onAdClosed={(event) => {
               console.log(
                 `The user received -> ${JSON.stringify(event, null, 2)}`
               );
             }}
             style={styles.background}
           />
-
           <View style={styles.height30} />
-          <View style={styles.height500} />
-          <Text style={styles.text}>Rendering Interstitial</Text>
+          <View style={styles.height300} />
+          <Text style={styles.text}>Rendering Interstitial Banner</Text>
           <RenderingInterstitial
             adUnitID="/21808260008/prebid_oxb_html_interstitial"
             auConfigID="prebid-demo-display-interstitial-320-480"
             adFormat="banner"
             style={styles.background}
           />
-
           <View style={styles.height30} />
-          <View style={styles.height500} />
+          <View style={styles.height300} />
+          <Text style={styles.text}>Rendering Interstitial Video</Text>
+          <RenderingInterstitial
+            adUnitID="/21808260008/prebid_oxb_interstitial_video"
+            auConfigID="prebid-demo-video-interstitial-320-480"
+            adFormat="video"
+            style={styles.background}
+          />
+          <View style={styles.height30} />
+          <View style={styles.height300} />
           <Text style={styles.text}>Rendering Rewarded</Text>
           <RenderingRewarded
             adUnitID="/21808260008/prebid_oxb_rewarded_video_test"
-            // adUnitID="ca-app-pub-3940256099942544/5224354917"
             auConfigID="prebid-demo-video-rewarded-320-480"
-            onRewardEarned={() => {
+            onAdClosed={() => {
               console.log(
                 'The user can receive reward (own implementation) -> 💰'
               );
@@ -131,7 +151,7 @@ const LazyLoadingExample = () => {
         </>
       ) : (
         <>
-          <Text>LAZY LOADING not yet implemented</Text>
+          <Text>For android not implemented yet</Text>
         </>
       )}
     </>
@@ -149,9 +169,9 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: '600',
   },
-  height500: {
+  height300: {
     width: '100%',
-    height: 500,
+    height: 300,
     backgroundColor: 'blue',
   },
   background: {
