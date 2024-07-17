@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import {
   OriginalBanner,
@@ -19,7 +19,7 @@ const LazyLoadingExample = () => {
 
   return (
     <>
-      <Text style={styles.text}>Original Banner API HTML 300x250</Text>
+      {/* <Text style={styles.text}>Original Banner API HTML 300x250</Text>
       <OriginalBanner
         adUnitID="ca-app-pub-3940256099942544/2435281174"
         auConfigID="prebid-demo-banner-300-250"
@@ -53,10 +53,14 @@ const LazyLoadingExample = () => {
         height={250}
         adFormats={['video']}
       />
-      {/* <View style={styles.height30} />
+      <View style={styles.height30} />
       <Text style={styles.text}>Rendering Banner API HTML 320x50</Text>
       <RenderingBanner
-        adUnitID="/21808260008/prebid_oxb_320x50_banner"
+        adUnitID={
+          Platform.OS === 'android'
+            ? '/21808260008/prebid_demo_app_original_api_banner'
+            : '/21808260008/prebid_oxb_320x50_banner'
+        }
         auConfigID="prebid-demo-banner-320-50"
         width={320}
         height={50}
@@ -74,7 +78,7 @@ const LazyLoadingExample = () => {
         width={300}
         height={250}
         adFormat="video"
-      /> */}
+      />
 
       <View style={styles.height30} />
       <View style={styles.height300} />
@@ -112,9 +116,20 @@ const LazyLoadingExample = () => {
         onAdClosed={(event) => {
           console.log(`The user received -> ${JSON.stringify(event, null, 2)}`);
         }}
+      /> */}
+      <View style={styles.height30} />
+      <View style={styles.height300} />
+      <View style={styles.height30} />
+      <Text style={styles.text}>Rendering Rewarded</Text>
+      <RenderingRewarded
+        adUnitID="/21808260008/prebid_oxb_rewarded_video_test"
+        auConfigID="prebid-demo-video-rewarded-320-480"
+        onAdClosed={() => {
+          console.log('The user can receive reward (own implementation) -> 💰');
+        }}
       />
       <View style={styles.height30} />
-      {/* <View style={styles.height300} />
+      <View style={styles.height300} />
       <View style={styles.height30} />
       <Text style={styles.text}>Rendering Interstitial Banner</Text>
       <RenderingInterstitial
@@ -131,7 +146,7 @@ const LazyLoadingExample = () => {
         auConfigID="prebid-demo-video-interstitial-320-480"
         adFormat="video"
       />
-      <View style={styles.height30} />
+      {/* <View style={styles.height30} />
       <View style={styles.height300} />
       <View style={styles.height30} />
       <Text style={styles.text}>Rendering Rewarded</Text>

@@ -29,28 +29,28 @@ export default function App() {
         style={styles.flex}
         contentContainerStyle={styles.scrollviewcontentContainerStyle}
       >
-        <Text style={styles.bigText}>ORIGINAL</Text>
-        {/* <ErrorHandlingExample />
+        {/* <Text style={styles.bigText}>ORIGINAL</Text>
+        <ErrorHandlingExample />
         <View style={styles.height30} />
 
         <OriginalBannerAPIExample />
-        <View style={styles.height30} /> */}
+        <View style={styles.height30} />
 
         <OriginalInterstitialAPIExample />
         <View style={styles.height30} />
 
         <OriginalRewardedAPIExample />
         <View style={styles.height30} />
-        <View style={styles.height30} />
+        <View style={styles.height30} /> */}
 
-        {/* <Text style={styles.bigText}>RENDERING</Text>
-        <RenderingBannerAPIExample />
-        <View style={styles.height30} />
+        <Text style={styles.bigText}>RENDERING</Text>
+        {/* <RenderingBannerAPIExample />
+        <View style={styles.height30} /> */}
 
         <RenderingInterstitialAPIExample />
         <View style={styles.height30} />
 
-        <RenderingRewardedAPIExample /> */}
+        <RenderingRewardedAPIExample />
 
         <Text style={styles.lorem}>{LOREM}</Text>
 

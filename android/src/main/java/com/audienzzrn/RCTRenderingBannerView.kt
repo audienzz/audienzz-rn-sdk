@@ -121,7 +121,7 @@ class RCTRenderingBannerView(context: Context) : RCTOriginalView(context) {
       }
     })
 
-    auBannerView?.loadAd()
+    auBannerView?.loadAd(lazyLoad = isLazyLoad)
   }
 
   private fun updateAuBannerView(value: AudienzzBannerView) {

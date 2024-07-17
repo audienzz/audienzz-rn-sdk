@@ -18,6 +18,7 @@ package com.audienzzrn
 */
 
 import android.content.Context
+import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
@@ -26,6 +27,7 @@ import org.audienzz.mobile.api.exceptions.AudienzzAdException
 import org.audienzz.mobile.api.rendering.AudienzzRewardedAdUnit
 import org.audienzz.mobile.api.rendering.listeners.AudienzzRewardedAdUnitListener
 import org.audienzz.mobile.eventhandlers.AudienzzGamRewardedEventHandler
+import org.audienzz.mobile.util.addOnBecameVisibleOnScreenListener
 
 class RCTRenderingRewardedView(context: Context) : RCTOriginalView(context) {
   private var auRewardedView: AudienzzRewardedAdUnit? = null
@@ -104,6 +106,9 @@ class RCTRenderingRewardedView(context: Context) : RCTOriginalView(context) {
       }
     })
 
-    auRewardedView?.loadAd()
+    this.addOnBecameVisibleOnScreenListener {
+      Log.d("LUL", "CHECK CALLED auRewardedView?.loadAd()")
+      auRewardedView?.loadAd()
+    }
   }
 }
