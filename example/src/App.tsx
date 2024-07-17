@@ -30,11 +30,11 @@ export default function App() {
         contentContainerStyle={styles.scrollviewcontentContainerStyle}
       >
         <Text style={styles.bigText}>ORIGINAL</Text>
-        <ErrorHandlingExample />
+        {/* <ErrorHandlingExample />
         <View style={styles.height30} />
 
         <OriginalBannerAPIExample />
-        <View style={styles.height30} />
+        <View style={styles.height30} /> */}
 
         <OriginalInterstitialAPIExample />
         <View style={styles.height30} />
@@ -43,14 +43,14 @@ export default function App() {
         <View style={styles.height30} />
         <View style={styles.height30} />
 
-        <Text style={styles.bigText}>RENDERING</Text>
+        {/* <Text style={styles.bigText}>RENDERING</Text>
         <RenderingBannerAPIExample />
         <View style={styles.height30} />
 
         <RenderingInterstitialAPIExample />
         <View style={styles.height30} />
 
-        <RenderingRewardedAPIExample />
+        <RenderingRewardedAPIExample /> */}
 
         <Text style={styles.lorem}>{LOREM}</Text>
 

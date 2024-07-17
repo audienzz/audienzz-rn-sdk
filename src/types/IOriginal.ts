@@ -14,14 +14,14 @@ export interface IOriginalBannerProps
 }
 
 export interface IOriginalInterstitialProps
-  extends IBaseAdProps,
+  extends Omit<IBaseAdProps, 'style'>,
     Omit<IParamaters, 'videoPlacement'>,
     IAdEvents {
   minSizesPercentage?: TMinSizesPercentage;
 }
 
 export interface IOriginalRewardedProps
-  extends IBaseAdProps,
+  extends Omit<IBaseAdProps, 'style'>,
     Pick<
       IParamaters,
       Exclude<keyof IParamaters, 'adFormats' | 'videoPlacement'>

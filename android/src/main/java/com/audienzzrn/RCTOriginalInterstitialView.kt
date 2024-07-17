@@ -25,9 +25,12 @@ import com.facebook.react.uimanager.events.RCTEventEmitter
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.admanager.AdManagerInterstitialAd
+import com.google.android.gms.ads.admanager.AdManagerInterstitialAdLoadCallback
 import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import org.audienzz.mobile.AudienzzInterstitialAdUnit
+import org.audienzz.mobile.original.AudienzzInterstitialAdHandler
+import org.audienzz.mobile.util.lazyLoadAd
 
 class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
   private var minSizesPercentage: List<Int> = listOf()
@@ -69,6 +72,11 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
       auConfigID,
       AudienzzConversionUtils.convertToAudienzzAdFormats(adFormats)
     )
+    val handler = AudienzzInterstitialAdHandler(
+      auInterstitialView!!,
+      adUnitID,
+    )
+    var interstitial: AdManagerInterstitialAd? = null
 
     if (pbAdSlot != null) {
       auInterstitialView?.pbAdSlot = pbAdSlot
@@ -90,55 +98,48 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
     auInterstitialView?.videoParameters = videoParameters
     auInterstitialView?.setMinSizePercentage(minSizesPercentage[0], minSizesPercentage[1])
 
-    auInterstitialView?.fetchDemand(request) {
-      InterstitialAd.load(
-        context,
-        adUnitID,
-        request,
-        createListener()
-      )
-    }
-  }
+    this.lazyLoadAd(
+      adHandler = handler,
+      listener = object : AdManagerInterstitialAdLoadCallback() {
+        override fun onAdLoaded(interstitialAd: AdManagerInterstitialAd) {
+          val activity = (context as? ReactContext)?.currentActivity
 
-  private fun createListener(): InterstitialAdLoadCallback {
-    return object : InterstitialAdLoadCallback() {
+          interstitial = interstitialAd
+          mInterstitialAd = interstitialAd
+          mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdClicked() {
+              handleAdClicked()
+            }
 
-      override fun onAdLoaded(interstitialAd: InterstitialAd) {
-        val activity = (context as? ReactContext)?.currentActivity
+            override fun onAdDismissedFullScreenContent() {
+              handleAdClosed()
+              mInterstitialAd = null
+            }
 
-        mInterstitialAd = interstitialAd
-        mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-          override fun onAdClicked() {
-            handleAdClicked()
+            override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+              mInterstitialAd = null
+            }
+
+            override fun onAdImpression() {}
+
+            override fun onAdShowedFullScreenContent() {
+              handleAdOpened()
+            }
           }
 
-          override fun onAdDismissedFullScreenContent() {
-            handleAdClosed()
-            mInterstitialAd = null
-          }
+          handleAdLoaded()
 
-          override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-            mInterstitialAd = null
-          }
-
-          override fun onAdImpression() {}
-
-          override fun onAdShowedFullScreenContent() {
-            handleAdOpened()
+          if (activity != null) {
+            interstitial!!.show(activity)
           }
         }
 
-        handleAdLoaded()
-
-        if (activity != null) {
-          interstitialAd.show(activity)
+        override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+          handleAdFailedToLoad(loadAdError)
         }
-      }
-
-      override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-        handleAdFailedToLoad(loadAdError)
-      }
-    }
+      },
+      resultCallback = {}
+    )
   }
 
   fun updateMinSizesPercentage(value: List<Int>) {

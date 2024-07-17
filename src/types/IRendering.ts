@@ -13,12 +13,16 @@ export interface IRenderingBannerProps
   isReserved?: boolean;
 }
 
-export interface IRenderingInterstitialProps extends IBaseAdProps, IAdEvents {
+export interface IRenderingInterstitialProps
+  extends Omit<IBaseAdProps, 'style'>,
+    IAdEvents {
   adFormat: TAdFormat;
   minSizesPercentage?: TMinSizesPercentage;
   skipDelay?: number;
 }
 
-export interface IRenderingRewardedProps extends IBaseAdProps, IAdEvents {
+export interface IRenderingRewardedProps
+  extends Omit<IBaseAdProps, 'style'>,
+    IAdEvents {
   minSizesPercentage?: TMinSizesPercentage;
 }

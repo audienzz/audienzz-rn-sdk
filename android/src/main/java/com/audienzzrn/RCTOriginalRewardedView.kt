@@ -29,6 +29,8 @@ import com.google.android.gms.ads.rewarded.RewardItem
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import org.audienzz.mobile.AudienzzRewardedVideoAdUnit
+import org.audienzz.mobile.original.AudienzzRewardedVideoAdHandler
+import org.audienzz.mobile.util.lazyLoadAd
 
 class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
   private var auRewardedView: AudienzzRewardedVideoAdUnit? = null
@@ -71,6 +73,10 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
     super.createAd()
 
     auRewardedView = AudienzzRewardedVideoAdUnit(auConfigID)
+    val handler = AudienzzRewardedVideoAdHandler(
+      auRewardedView!!,
+      adUnitID,
+    )
 
     if (pbAdSlot != null) {
       auRewardedView?.pbAdSlot = pbAdSlot
@@ -90,59 +96,52 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
 
     auRewardedView?.videoParameters = videoParameters
 
-    auRewardedView?.fetchDemand(request) {
-      RewardedAd.load(
-        context,
-        adUnitID,
-        request,
-        createListener()
-      )
-    }
-  }
+    this.lazyLoadAd(
+      adHandler = handler,
+      listener = object : RewardedAdLoadCallback() {
+        override fun onAdLoaded(ad: RewardedAd) {
+          val activity = (context as? ReactContext)?.currentActivity
 
-  private fun createListener(): RewardedAdLoadCallback {
-    return object : RewardedAdLoadCallback() {
-      override fun onAdLoaded(ad: RewardedAd) {
-        val activity = (context as? ReactContext)?.currentActivity
+          rewardedAd = ad
+          rewardedAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdClicked() {
+              handleAdClicked()
+            }
 
-        rewardedAd = ad
-        rewardedAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-          override fun onAdClicked() {
-            handleAdClicked()
+            override fun onAdDismissedFullScreenContent() {
+              val rewardAmount = reward.amount
+              val rewardType = reward.type
+
+              handleAdClosed(rewardType, rewardAmount)
+
+              rewardedAd = null
+            }
+
+            override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+              rewardedAd = null
+            }
+
+            override fun onAdImpression() {}
+
+            override fun onAdShowedFullScreenContent() {
+              handleAdOpened()
+            }
           }
 
-          override fun onAdDismissedFullScreenContent() {
-            val rewardAmount = reward.amount
-            val rewardType = reward.type
+          handleAdLoaded()
 
-            handleAdClosed(rewardType, rewardAmount)
-
-            rewardedAd = null
-          }
-
-          override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-            rewardedAd = null
-          }
-
-          override fun onAdImpression() {}
-
-          override fun onAdShowedFullScreenContent() {
-            handleAdOpened()
-          }
-        }
-
-        handleAdLoaded()
-
-        if (activity != null) {
-          ad.show(activity) { rewardItem ->
-            reward = rewardItem
+          if (activity != null) {
+            rewardedAd!!.show(activity) { rewardItem ->
+              reward = rewardItem
+            }
           }
         }
-      }
 
-      override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-        handleAdFailedToLoad(loadAdError)
-      }
-    }
+        override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+          handleAdFailedToLoad(loadAdError)
+        }
+      },
+      resultCallback = {}
+    )
   }
 }
