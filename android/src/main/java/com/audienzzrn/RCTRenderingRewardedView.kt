@@ -18,7 +18,6 @@ package com.audienzzrn
 */
 
 import android.content.Context
-import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
@@ -107,7 +106,6 @@ class RCTRenderingRewardedView(context: Context) : RCTOriginalView(context) {
     })
 
     this.addOnBecameVisibleOnScreenListener {
-      Log.d("LUL", "CHECK CALLED auRewardedView?.loadAd()")
       auRewardedView?.loadAd()
     }
   }

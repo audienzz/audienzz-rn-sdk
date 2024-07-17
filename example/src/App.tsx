@@ -29,7 +29,7 @@ export default function App() {
         style={styles.flex}
         contentContainerStyle={styles.scrollviewcontentContainerStyle}
       >
-        {/* <Text style={styles.bigText}>ORIGINAL</Text>
+        <Text style={styles.bigText}>ORIGINAL</Text>
         <ErrorHandlingExample />
         <View style={styles.height30} />
 
@@ -41,11 +41,11 @@ export default function App() {
 
         <OriginalRewardedAPIExample />
         <View style={styles.height30} />
-        <View style={styles.height30} /> */}
+        <View style={styles.height30} />
 
         <Text style={styles.bigText}>RENDERING</Text>
-        {/* <RenderingBannerAPIExample />
-        <View style={styles.height30} /> */}
+        <RenderingBannerAPIExample />
+        <View style={styles.height30} />
 
         <RenderingInterstitialAPIExample />
         <View style={styles.height30} />
