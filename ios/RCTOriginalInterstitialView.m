@@ -65,7 +65,8 @@
     
     
     [self addSubview:_auInterstitialView];
-    [_auInterstitialView createAdWith:request];
+//    [_auInterstitialView createAdWith:request];
+    [_auInterstitialView createAdWith:request adUnitID:self.adUnitID];
     
     __weak typeof(self) weakSelf = self;
     _auInterstitialView.onLoadRequest = ^(id _Nonnull request) {

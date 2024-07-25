@@ -134,14 +134,12 @@
     if (self.onAdOpened) {
         self.onAdOpened(@{});
     }
-    NSLog(@"onAdOpened");
 }
 
 - (void)bannerViewDidDismissScreen:(GADBannerView *)bannerView {
     if (self.onAdClosed) {
         self.onAdClosed(@{});
     }
-    NSLog(@"onAdClosed");
 }
 
 - (void)bannerView:(GADBannerView *)bannerView didFailToReceiveAdWithError:(NSError *)error {

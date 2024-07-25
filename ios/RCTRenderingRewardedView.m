@@ -42,7 +42,7 @@
     NSValue *minSizePerc = [NSValue valueWithCGSize:size];
     
     _eventHandler = [[AUGAMRewardedAdEventHandler alloc] initWithAdUnitID:self.adUnitID];
-    _auRewardedView = [[AURewardedRenderingView alloc] initWithConfigId:self.auConfigID isLazyLoad:self.isLazyLoad minSizePerc:minSizePerc eventHandler:_eventHandler];
+    _auRewardedView = [[AURewardedRenderingView alloc] initWithConfigId:self.auConfigID isLazyLoad:self.isLazyLoad minSizePercentage:minSizePerc eventHandler:_eventHandler];
     
     if(self.keyword != nil) {
         [_auRewardedView.adUnitConfiguration addExtKeyword:self.keyword];

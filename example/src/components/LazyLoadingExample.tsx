@@ -21,7 +21,7 @@ const LazyLoadingExample = () => {
     <>
       <Text style={styles.text}>Original Banner API HTML 300x250</Text>
       <OriginalBanner
-        adUnitID="ca-app-pub-3940256099942544/2435281174"
+        adUnitID="ca-app-pub-3940256099942544/6300978111"
         auConfigID="prebid-demo-banner-300-250"
         width={300}
         height={250}
@@ -30,7 +30,7 @@ const LazyLoadingExample = () => {
       <View style={styles.height30} />
       <Text style={styles.text}>Original Banner API HTML 320x50</Text>
       <OriginalBanner
-        adUnitID="ca-app-pub-3940256099942544/2435281174"
+        adUnitID="ca-app-pub-3940256099942544/2934735716"
         auConfigID="prebid-demo-banner-320-50"
         width={320}
         height={50}
@@ -94,7 +94,7 @@ const LazyLoadingExample = () => {
       <View style={styles.height30} />
       <Text style={styles.text}>Original Interstitial Video</Text>
       <OriginalInterstitial
-        adUnitID="/21808260008/prebid-demo-app-original-api-video-interstitial"
+        adUnitID="ca-app-pub-3940256099942544/5135589807"
         auConfigID="prebid-demo-video-interstitial-320-480-original-api"
         adFormats={['video']}
       />

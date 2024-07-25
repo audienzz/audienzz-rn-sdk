@@ -52,7 +52,7 @@
     NSValue *minSizePerc = [NSValue valueWithCGSize:size];
     
     _eventHandler = [[AUGAMInterstitialEventHandler alloc] initWithAdUnitID:self.adUnitID];
-    _auInterstitialView = [[AUInterstitialRenderingView alloc] initWithConfigId:self.auConfigID isLazyLoad:self.isLazyLoad adFormat:[AUConverter adFormatFromString:_adFormat] minSizePerc:minSizePerc eventHandler:_eventHandler];
+    _auInterstitialView = [[AUInterstitialRenderingView alloc] initWithConfigId:self.auConfigID isLazyLoad:self.isLazyLoad adFormat:[AUConverter adFormatFromString:_adFormat] minSizePercentage:minSizePerc eventHandler:_eventHandler];
     
     if(self.keyword != nil) {
         [_auInterstitialView.adUnitConfiguration addExtKeyword:self.keyword];
