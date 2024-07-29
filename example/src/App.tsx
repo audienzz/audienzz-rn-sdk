@@ -19,7 +19,7 @@ import RenderingRewardedAPIExample from './components/RenderingRewardedAPIExampl
 import RenderingBannerAPIExample from './components/RenderingBannerAPIExample';
 
 RNAudienzz()
-  .initialize()
+  .initialize('Company ID provided for the app by Audienzz')
   .then((value) => console.log(JSON.stringify(value, null, 2)));
 
 export default function App() {
