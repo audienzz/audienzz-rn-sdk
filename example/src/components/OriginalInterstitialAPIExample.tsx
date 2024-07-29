@@ -67,7 +67,7 @@ const OriginalInterstitialAPIExample = () => {
       )}
       {isInterstitialVideo && (
         <OriginalInterstitial
-          adUnitID="/21808260008/prebid-demo-app-original-api-video-interstitial"
+          adUnitID="ca-app-pub-3940256099942544/5135589807"
           auConfigID="prebid-demo-video-interstitial-320-480-original-api"
           adFormats={['video']}
           isLazyLoad={false}

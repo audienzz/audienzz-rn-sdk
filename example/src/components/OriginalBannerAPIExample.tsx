@@ -3,9 +3,24 @@ import { Text, View, StyleSheet } from 'react-native';
 import { OriginalBanner } from 'audienzzrn';
 import { APP_CONTENT_FOR_BANNER } from '../constants';
 import { getRandomConfigIdBanner } from '../utils';
+import ActionButton from './ActionButton';
 
 const OriginalBannerAPIExample = () => {
   const bannerMultiformatAuConfigID = getRandomConfigIdBanner();
+
+  const bannerRef = React.createRef<OriginalBanner>();
+
+  const handleStopAutoRefresh = () => {
+    if (bannerRef.current) {
+      bannerRef.current.stopAutoRefresh();
+    }
+  };
+
+  const handleResumeAutoRefresh = () => {
+    if (bannerRef.current) {
+      bannerRef.current.resumeAutoRefresh();
+    }
+  };
 
   return (
     <>
@@ -14,7 +29,8 @@ const OriginalBannerAPIExample = () => {
           Original Banner API HTML 300x250 is a reserved
         </Text>
         <OriginalBanner
-          adUnitID="ca-app-pub-3940256099942544/2435281174"
+          ref={bannerRef}
+          adUnitID="ca-app-pub-3940256099942544/6300978111"
           auConfigID="prebid-demo-banner-300-250"
           width={300}
           height={250}
@@ -23,6 +39,7 @@ const OriginalBannerAPIExample = () => {
           autoRefreshPeriodMillis={30000}
           pbAdSlot="pbAdSlot"
           gpID="gpID"
+          keyword="clothing"
           keywords={['clothing', 'sport']}
           appContent={APP_CONTENT_FOR_BANNER}
           onAdLoaded={() => console.log('success')}
@@ -34,6 +51,19 @@ const OriginalBannerAPIExample = () => {
           }
           isReserved
         />
+
+        <View style={styles.height10} />
+        <ActionButton
+          labelButton="Stop"
+          onPress={handleStopAutoRefresh}
+          buttonStyle={styles.buttonStyle}
+        />
+        <View style={styles.height10} />
+        <ActionButton
+          labelButton="Resume"
+          onPress={handleResumeAutoRefresh}
+          buttonStyle={styles.buttonStyle}
+        />
       </View>
       <View style={styles.height30} />
       <View style={styles.border}>
@@ -41,7 +71,7 @@ const OriginalBannerAPIExample = () => {
           Original Banner API HTML 320x50 is not reserved
         </Text>
         <OriginalBanner
-          adUnitID="/21808260008/prebid_demo_app_original_api_banner"
+          adUnitID="ca-app-pub-3940256099942544/2934735716"
           auConfigID="prebid-demo-banner-320-50"
           width={320}
           height={50}
@@ -103,6 +133,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'red',
   },
+  buttonStyle: { width: '40%' },
 });
 
 export default OriginalBannerAPIExample;

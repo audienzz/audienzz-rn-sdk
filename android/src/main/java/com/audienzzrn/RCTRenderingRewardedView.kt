@@ -26,6 +26,7 @@ import org.audienzz.mobile.api.exceptions.AudienzzAdException
 import org.audienzz.mobile.api.rendering.AudienzzRewardedAdUnit
 import org.audienzz.mobile.api.rendering.listeners.AudienzzRewardedAdUnitListener
 import org.audienzz.mobile.eventhandlers.AudienzzGamRewardedEventHandler
+import org.audienzz.mobile.util.addOnBecameVisibleOnScreenListener
 
 class RCTRenderingRewardedView(context: Context) : RCTOriginalView(context) {
   private var auRewardedView: AudienzzRewardedAdUnit? = null
@@ -104,6 +105,8 @@ class RCTRenderingRewardedView(context: Context) : RCTOriginalView(context) {
       }
     })
 
-    auRewardedView?.loadAd()
+    this.addOnBecameVisibleOnScreenListener {
+      auRewardedView?.loadAd()
+    }
   }
 }

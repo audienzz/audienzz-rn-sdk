@@ -58,7 +58,8 @@
     _auRewardedView.frame = CGRectMake(0, 0, 10, 10);
     
     [self addSubview:_auRewardedView];
-    [_auRewardedView createAdWith:request];
+//    [_auRewardedView createAdWith:request];
+    [_auRewardedView createAdWith:request adUnitID:self.adUnitID];
     
     __weak typeof(self) weakSelf = self;
     _auRewardedView.onLoadRequest = ^(id _Nonnull request) {

@@ -1,0 +1,94 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.10 (swiftlang-5.10.0.13 clang-1500.3.9.4)
+// swift-module-flags: -target x86_64-apple-ios11.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -Onone -enable-bare-slash-regex -module-name PrebidMobileGAMEventHandlers
+import Foundation
+import GoogleMobileAds
+import PrebidMobile
+@_exported import PrebidMobileGAMEventHandlers
+import Swift
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+@objc @objcMembers public class GAMBannerEventHandler : ObjectiveC.NSObject, PrebidMobile.BannerEventHandler, GoogleMobileAds.GADBannerViewDelegate, GoogleMobileAds.GADAppEventDelegate, GoogleMobileAds.GADAdSizeDelegate {
+  @objc public init(adUnitID: Swift.String, validGADAdSizes: [Foundation.NSValue])
+  @objc weak public var loadingDelegate: (any PrebidMobile.BannerEventLoadingDelegate)?
+  @objc weak public var interactionDelegate: (any PrebidMobile.BannerEventInteractionDelegate)?
+  @objc public var adSizes: [CoreFoundation.CGSize]
+  @objc public func trackImpression()
+  @objc public func requestAd(with bidResponse: PrebidMobile.BidResponse?)
+  @objc public func bannerViewDidReceiveAd(_ bannerView: GoogleMobileAds.GADBannerView)
+  @objc public func bannerView(_ bannerView: GoogleMobileAds.GADBannerView, didFailToReceiveAdWithError error: any Swift.Error)
+  @objc public func bannerViewDidRecordImpression(_ bannerView: GoogleMobileAds.GADBannerView)
+  @objc public func bannerViewWillPresentScreen(_ bannerView: GoogleMobileAds.GADBannerView)
+  @objc public func bannerViewWillDismissScreen(_ bannerView: GoogleMobileAds.GADBannerView)
+  @objc public func bannerViewDidDismissScreen(_ bannerView: GoogleMobileAds.GADBannerView)
+  @objc public func adView(_ banner: GoogleMobileAds.GADBannerView, didReceiveAppEvent name: Swift.String, withInfo info: Swift.String?)
+  @objc public func interstitialAd(_ interstitialAd: GoogleMobileAds.GADInterstitialAd, didReceiveAppEvent name: Swift.String, withInfo info: Swift.String?)
+  @objc public func adView(_ bannerView: GoogleMobileAds.GADBannerView, willChangeAdSizeTo size: GoogleMobileAds.GADAdSize)
+  @objc deinit
+}
+@objc @objcMembers public class GAMRewardedAdEventHandler : ObjectiveC.NSObject, PrebidMobile.RewardedEventHandlerProtocol, GoogleMobileAds.GADFullScreenContentDelegate, GoogleMobileAds.GADAdMetadataDelegate {
+  @objc final public let adUnitID: Swift.String
+  @objc public init(adUnitID: Swift.String)
+  @objc public func adMetadataDidChange(_ ad: any GoogleMobileAds.GADAdMetadataProvider)
+  @objc weak public var loadingDelegate: (any PrebidMobile.RewardedEventLoadingDelegate)?
+  @objc weak public var interactionDelegate: (any PrebidMobile.RewardedEventInteractionDelegate)?
+  @objc public var isReady: Swift.Bool {
+    @objc get
+  }
+  @objc public func show(from controller: UIKit.UIViewController?)
+  @objc public func requestAd(with bidResponse: PrebidMobile.BidResponse?)
+  @objc deinit
+}
+@objc @objcMembers public class GAMInterstitialEventHandler : ObjectiveC.NSObject, PrebidMobile.InterstitialEventHandlerProtocol, GoogleMobileAds.GADFullScreenContentDelegate, GoogleMobileAds.GADAppEventDelegate {
+  @objc final public let adUnitID: Swift.String
+  @objc public init(adUnitID: Swift.String)
+  @objc weak public var loadingDelegate: (any PrebidMobile.InterstitialEventLoadingDelegate)?
+  @objc weak public var interactionDelegate: (any PrebidMobile.InterstitialEventInteractionDelegate)?
+  @objc public var isReady: Swift.Bool {
+    @objc get
+  }
+  @objc public func show(from controller: UIKit.UIViewController?)
+  @objc public func requestAd(with bidResponse: PrebidMobile.BidResponse?)
+  @objc public func interstitialAd(_ interstitialAd: GoogleMobileAds.GADInterstitialAd, didReceiveAppEvent name: Swift.String, withInfo info: Swift.String?)
+  @objc deinit
+}
+@objc @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objcMembers public class GAMUtils : ObjectiveC.NSObject {
+  @objc public static let shared: PrebidMobileGAMEventHandlers.GAMUtils
+  @objc public static var errorDomain: Swift.String {
+    @objc get
+  }
+  @objc public func initializeGAM()
+  @objc public func prepareRequest(_ request: GoogleMobileAds.GAMRequest, bidTargeting: [Swift.String : Swift.String])
+  @objc deinit
+}
+extension PrebidMobileGAMEventHandlers.GAMUtils {
+  public func findNativeAd(for nativeAd: GoogleMobileAds.GADNativeAd) -> Swift.Result<PrebidMobile.NativeAd, PrebidMobileGAMEventHandlers.GAMEventHandlerError>
+  @objc dynamic public func findNativeAdObjc(for nativeAd: GoogleMobileAds.GADNativeAd, completion: @escaping (PrebidMobile.NativeAd?, Foundation.NSError?) -> Swift.Void)
+  public func findCustomNativeAd(for nativeAd: GoogleMobileAds.GADCustomNativeAd) -> Swift.Result<PrebidMobile.NativeAd, PrebidMobileGAMEventHandlers.GAMEventHandlerError>
+  @objc dynamic public func findCustomNativeAdObjc(for nativeAd: GoogleMobileAds.GADCustomNativeAd, completion: @escaping (PrebidMobile.NativeAd?, Foundation.NSError?) -> Swift.Void)
+}
+@objc public enum GAMEventHandlerError : Swift.Int, Swift.Error {
+  case gamClassesNotFound = 0
+  case noLocalCacheID
+  case invalidLocalCacheID
+  case invalidNativeAd
+  case nonPrebidAd
+  case noAd
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public static var _nsErrorDomain: Swift.String {
+    get
+  }
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+extension PrebidMobileGAMEventHandlers.GAMEventHandlerError : Foundation.LocalizedError {
+  public var errorDescription: Swift.String? {
+    get
+  }
+}
+extension PrebidMobileGAMEventHandlers.GAMEventHandlerError : Swift.Equatable {}
+extension PrebidMobileGAMEventHandlers.GAMEventHandlerError : Swift.Hashable {}
+extension PrebidMobileGAMEventHandlers.GAMEventHandlerError : Swift.RawRepresentable {}

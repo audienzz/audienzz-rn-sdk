@@ -47,8 +47,9 @@ In a real app, replace the sample app ID with your **_*actual AdMob app ID*_**. 
 
 ### iOS Setup
 
-Update your app's `Info.plist` file to add two keys:
+Update your app's `Info.plist` file to add three keys:
 
+- To display the [App Tracking Transparency](https://developers.google.com/admob/ios/privacy/strategies#request) authorization request for accessing the IDFA, add the NSUserTrackingUsageDescription key with a custom message describing your usage.
 - A GADApplicationIdentifier key with a string value of your AdMob app ID [found in the AdMob UI](https://support.google.com/admob/answer/7356431).
 - A SKAdNetworkItems key with SKAdNetworkIdentifier values for Google (cstr6suwn9.skadnetwork) and [select third-party buyers](https://developers.google.com/admob/ios/3p-skadnetworks) who have provided these values to Google.
 
@@ -56,6 +57,8 @@ Update your app's `Info.plist` file to add two keys:
   <summary>Complete snippet</summary>
 
 ```js
+<key>NSUserTrackingUsageDescription</key>
+<string>This identifier will be used to deliver personalized ads to you.</string>
 <key>GADApplicationIdentifier</key>
 <string>ca-app-pub-3940256099942544~1458002511</string>
 <key>SKAdNetworkItems</key>
@@ -336,7 +339,7 @@ import {
 
     <OriginalInterstitial
       adUnitID="adUnitID"
-      auConfigID="adUnitID"
+      auConfigID="auConfigID"
       adFormats={['video']}
       isLazyLoad={false}
       keyword="mainKeyword"
@@ -350,7 +353,7 @@ import {
 
     <OriginalRewarded
       adUnitID="adUnitID"
-      auConfigID="adUnitID"
+      auConfigID="auConfigID"
       onAdLoaded={() => console.log('REWARDED success')}
       onAdClosed={(event) => {
         console.log('REWARDED ad closed');
@@ -430,7 +433,7 @@ import {
 
     <RenderingInterstitial
       adUnitID="adUnitID"
-      auConfigID="adUnitID"
+      auConfigID="auConfigID"
       adFormat="video"
       keyword="mainKeyword"
       keywords={['clothing', 'sport']}
@@ -443,7 +446,7 @@ import {
 
     <RenderingRewarded
       adUnitID="adUnitID"
-      auConfigID="adUnitID"
+      auConfigID="auConfigID"
       onAdLoaded={() => console.log('REWARDED success')}
       onAdClosed={() => {
         console.log('REWARDED ad closed');

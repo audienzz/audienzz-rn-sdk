@@ -13,7 +13,7 @@ const RenderingBannerAPIExample = () => {
         <RenderingBanner
           adUnitID={
             Platform.OS === 'android'
-              ? '/21808260008/prebid_demo_app_original_api_banner'
+              ? 'ca-app-pub-3940256099942544/2934735716'
               : '/21808260008/prebid_oxb_320x50_banner'
           }
           auConfigID="prebid-demo-banner-320-50"

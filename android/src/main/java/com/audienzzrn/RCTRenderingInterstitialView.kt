@@ -27,6 +27,7 @@ import org.audienzz.mobile.api.exceptions.AudienzzAdException
 import org.audienzz.mobile.api.rendering.AudienzzInterstitialAdUnit
 import org.audienzz.mobile.api.rendering.listeners.AudienzzInterstitialAdUnitListener
 import org.audienzz.mobile.eventhandlers.AudienzzGamInterstitialEventHandler
+import org.audienzz.mobile.util.addOnBecameVisibleOnScreenListener
 
 class RCTRenderingInterstitialView(context: Context) : RCTOriginalView(context) {
   private var adFormat: String = ""
@@ -122,7 +123,9 @@ class RCTRenderingInterstitialView(context: Context) : RCTOriginalView(context) 
       }
     })
 
-    auInterstitialView?.loadAd()
+   this.addOnBecameVisibleOnScreenListener {
+     auInterstitialView?.loadAd()
+   }
   }
 
   fun updateAdFormat(value: String) {
@@ -137,4 +140,3 @@ class RCTRenderingInterstitialView(context: Context) : RCTOriginalView(context) 
     minSizesPercentage = value;
   }
 }
-
