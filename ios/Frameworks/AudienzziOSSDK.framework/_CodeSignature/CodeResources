@@ -6,7 +6,7 @@
 	<dict>
 		<key>Headers/AudienzziOSSDK-Swift.h</key>
 		<data>
-		lBVAmtVfhKAW7+sGYqKe98iVq0Y=
+		BAdCxZycr01Cjmb/KxbrCEJ0jD0=
 		</data>
 		<key>Headers/AudienzziOSSDK.h</key>
 		<data>
@@ -18,11 +18,11 @@
 		</data>
 		<key>Modules/AudienzziOSSDK.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo</key>
 		<data>
-		N7pajS96CwvQd66b4LtNj5APidY=
+		8ZXoqQBajl7wf+5imMRJw9cy3xs=
 		</data>
 		<key>Modules/AudienzziOSSDK.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo</key>
 		<data>
-		ASkdbeAfknTD1i3+65jdG3bAjME=
+		QJGJhPot2/AGzOP3j1/PsygJ5p4=
 		</data>
 		<key>Modules/AudienzziOSSDK.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
 		<data>
@@ -30,11 +30,11 @@
 		</data>
 		<key>Modules/AudienzziOSSDK.swiftmodule/arm64-apple-ios-simulator.swiftdoc</key>
 		<data>
-		DJl39aBaQvcSSV5K5NkWCmnMOMQ=
+		sVGFGAnX3qDSeuP1FhESgPC+2Gg=
 		</data>
 		<key>Modules/AudienzziOSSDK.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		ooYkHi5Zf6yhwEvBUf6JfAYs6LE=
+		xIlKRPcKeqUdIbzEFDhA6B2UV6A=
 		</data>
 		<key>Modules/AudienzziOSSDK.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
 		<data>
@@ -42,11 +42,11 @@
 		</data>
 		<key>Modules/AudienzziOSSDK.swiftmodule/x86_64-apple-ios-simulator.swiftdoc</key>
 		<data>
-		RFlDXiyDn+Pvv1OvwDqnzZPnlEo=
+		Pk1B7qT3UE9Ba59+0QDWd9C9OCk=
 		</data>
 		<key>Modules/AudienzziOSSDK.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<data>
-		76k1Gl+LAj/O+gxbtbKZkxkF27I=
+		h+aE9ab9QHjjW0z7/ybvyzz85lg=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -59,7 +59,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			/w0ldXnnG0W4s7jdUL2Dj9Fmdk/13XJJK15vdTHNw88=
+			ZrusRlIH2WQ/AKqWHf6Jcp5HdG+rJmCoHUdSyw6GK6c=
 			</data>
 		</dict>
 		<key>Headers/AudienzziOSSDK.h</key>
@@ -73,14 +73,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			3KiJO7bIaj4Vc8/SfPpJs8gEBOw0pKbqRCdyQt43ayo=
+			g/XfQqJhbMj0nqwd/OpsKB4rhXZnKiMBeeEz0Ohc9Vs=
 			</data>
 		</dict>
 		<key>Modules/AudienzziOSSDK.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			P/HUjM4V2VNiOODCesFVvMj1c+JyYbXRZXfLJM/iFDg=
+			j0AVr804t6bgZMR83g8mvjkv83io2MfQ7/lcjctFvdI=
 			</data>
 		</dict>
 		<key>Modules/AudienzziOSSDK.swiftmodule/arm64-apple-ios-simulator.abi.json</key>
@@ -94,14 +94,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			ngm0Yl81fP+Wtphy9tws4cpWDgj+ZN3qhfcgUVBu9GM=
+			5VPk7Gt8eUEz/uCRjJhS85LhEU5WXm12zqBGFgEIRKg=
 			</data>
 		</dict>
 		<key>Modules/AudienzziOSSDK.swiftmodule/arm64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			s21MbGmCV/Sta8YMx7REUCk4m1W4d6UiKEoJfDeTfRc=
+			uTA/JeS9NJBS8XsqbP0qPJYo5bdp6TZpW7jhkLRysKo=
 			</data>
 		</dict>
 		<key>Modules/AudienzziOSSDK.swiftmodule/x86_64-apple-ios-simulator.abi.json</key>
@@ -115,14 +115,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			NdsUaWStnBPXKs+akPQ1XKHbUUWRp6oYqfiyxBarDmY=
+			CQ30E0IlN4JpVoXptOr7yRHujlNAubrl02ZAyEeYU5E=
 			</data>
 		</dict>
 		<key>Modules/AudienzziOSSDK.swiftmodule/x86_64-apple-ios-simulator.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			j4rf6n0MwXvGXHnsoSDiZXExNedZ2OWQGVyXfkJvxBs=
+			kzBxsPJdxCPQU4n0HJeOFBHnjk8RcE06iCX6sGlW2tc=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
