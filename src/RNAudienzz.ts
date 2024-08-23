@@ -2,8 +2,8 @@ import RNAudienzzModule from './NativeRNAudienzzModule';
 import type { IRNAudienzzModule } from './types';
 
 class RNAudienzzClass implements IRNAudienzzModule {
-  initialize() {
-    return RNAudienzzModule.initialize();
+  initialize(companyID: string) {
+    return RNAudienzzModule.initialize(companyID);
   }
 }
 

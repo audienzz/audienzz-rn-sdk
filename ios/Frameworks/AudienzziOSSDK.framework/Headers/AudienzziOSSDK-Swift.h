@@ -616,7 +616,6 @@ SWIFT_CLASS("_TtC14AudienzziOSSDK21AUBannerRenderingView")
 @property (nonatomic, copy) NSArray<NSValue *> * _Nullable additionalSizes;
 @property (nonatomic, strong) AUAdFormat * _Nonnull adFormat;
 @property (nonatomic) enum AUAdPosition adPosition;
-@property (nonatomic, copy) NSString * _Nullable ortbConfig;
 - (void)setVideoParameters:(AUVideoParameters * _Nonnull)videoParameters;
 /// Initialize banner rendering view.
 /// Lazy load is true by default. Format is HTML-banner as default
@@ -1575,12 +1574,12 @@ SWIFT_CLASS("_TtC14AudienzziOSSDK8Audienzz")
 @property (nonatomic, copy) NSDictionary<NSString *, NSString *> * _Nonnull storedBidResponses;
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) Audienzz * _Nonnull shared;)
 + (Audienzz * _Nonnull)shared SWIFT_WARN_UNUSED_RESULT;
-- (void)configureSDK;
-- (void)configureSDKWithGadMobileAdsVersion:(NSString * _Nullable)gadMobileAdsVersion;
+- (void)configureSDKWithAudienzzKey:(NSString * _Nonnull)audienzzKey;
+- (void)configureSDKWithAudienzzKey:(NSString * _Nonnull)audienzzKey gadMobileAdsVersion:(NSString * _Nullable)gadMobileAdsVersion;
 /// Use this function only to make RN bridging initialize
-- (void)configureSDK_RN:(void (^ _Nullable)(void))completion;
+- (void)configureSDK_RNWithAudienzzKey:(NSString * _Nonnull)audienzzKey :(void (^ _Nullable)(void))completion;
 /// Use this function only to make RN bridging initialize
-- (void)configureSDK_RNWithGadMobileAdsVersion:(NSString * _Nullable)gadMobileAdsVersion :(void (^ _Nullable)(void))completion;
+- (void)configureSDK_RNWithAudienzzKey:(NSString * _Nonnull)audienzzKey gadMobileAdsVersion:(NSString * _Nullable)gadMobileAdsVersion :(void (^ _Nullable)(void))completion;
 @property (nonatomic) NSInteger timeoutMillis;
 @property (nonatomic, strong) NSNumber * _Nullable timeoutMillisDynamic;
 @property (nonatomic, copy) NSString * _Nullable storedAuctionResponse;
@@ -2249,7 +2248,6 @@ SWIFT_CLASS("_TtC14AudienzziOSSDK21AUBannerRenderingView")
 @property (nonatomic, copy) NSArray<NSValue *> * _Nullable additionalSizes;
 @property (nonatomic, strong) AUAdFormat * _Nonnull adFormat;
 @property (nonatomic) enum AUAdPosition adPosition;
-@property (nonatomic, copy) NSString * _Nullable ortbConfig;
 - (void)setVideoParameters:(AUVideoParameters * _Nonnull)videoParameters;
 /// Initialize banner rendering view.
 /// Lazy load is true by default. Format is HTML-banner as default
@@ -3208,12 +3206,12 @@ SWIFT_CLASS("_TtC14AudienzziOSSDK8Audienzz")
 @property (nonatomic, copy) NSDictionary<NSString *, NSString *> * _Nonnull storedBidResponses;
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) Audienzz * _Nonnull shared;)
 + (Audienzz * _Nonnull)shared SWIFT_WARN_UNUSED_RESULT;
-- (void)configureSDK;
-- (void)configureSDKWithGadMobileAdsVersion:(NSString * _Nullable)gadMobileAdsVersion;
+- (void)configureSDKWithAudienzzKey:(NSString * _Nonnull)audienzzKey;
+- (void)configureSDKWithAudienzzKey:(NSString * _Nonnull)audienzzKey gadMobileAdsVersion:(NSString * _Nullable)gadMobileAdsVersion;
 /// Use this function only to make RN bridging initialize
-- (void)configureSDK_RN:(void (^ _Nullable)(void))completion;
+- (void)configureSDK_RNWithAudienzzKey:(NSString * _Nonnull)audienzzKey :(void (^ _Nullable)(void))completion;
 /// Use this function only to make RN bridging initialize
-- (void)configureSDK_RNWithGadMobileAdsVersion:(NSString * _Nullable)gadMobileAdsVersion :(void (^ _Nullable)(void))completion;
+- (void)configureSDK_RNWithAudienzzKey:(NSString * _Nonnull)audienzzKey gadMobileAdsVersion:(NSString * _Nullable)gadMobileAdsVersion :(void (^ _Nullable)(void))completion;
 @property (nonatomic) NSInteger timeoutMillis;
 @property (nonatomic, strong) NSNumber * _Nullable timeoutMillisDynamic;
 @property (nonatomic, copy) NSString * _Nullable storedAuctionResponse;

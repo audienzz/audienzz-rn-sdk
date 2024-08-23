@@ -280,7 +280,7 @@ Before loading and displaying ads, initialize the Audienzz React Native SDK. Thi
 import RNAudienzz from 'audienzzrn';
 
 RNAudienzz()
-  .initialize()
+  .initialize('Company ID provided for the app by Audienzz') // Open-Ended Question
   .then((value) => console.log(JSON.stringify(value, null, 2)));
 ```
 

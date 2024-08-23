@@ -25,7 +25,6 @@ import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.WritableMap
 import org.audienzz.mobile.AudienzzPrebidMobile
 import org.audienzz.mobile.api.data.AudienzzInitializationStatus
-import org.audienzz.mobile.rendering.listeners.AudienzzSdkInitializationListener
 
 class RNAudienzzModule(reactContext: ReactApplicationContext) :
   ReactNativeModule(reactContext, SERVICE) {
@@ -35,26 +34,23 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
-  fun initialize(promise: Promise) {
-    AudienzzPrebidMobile.initializeSdk(
-      applicationContext,
-      object : AudienzzSdkInitializationListener {
-        override fun onInitializationComplete(status: AudienzzInitializationStatus) {
-          when (status) {
-            AudienzzInitializationStatus.SUCCEEDED -> {
-              val result: WritableMap = Arguments.createMap().apply {
-                putString("status", "SUCCEEDED")
-                putString("description", "SDK initialized successfully!")
-              }
-
-              promise.resolve(result)
+  fun initialize(companyID: String, promise: Promise) {
+    AudienzzPrebidMobile.initializeSdk(applicationContext, companyID) { status ->
+      when (status) {
+        AudienzzInitializationStatus.SUCCEEDED -> {
+          val result: WritableMap =
+            Arguments.createMap().apply {
+              putString("status", "SUCCEEDED")
+              putString("description", "SDK initialized successfully!")
             }
 
-            else -> {
-              Log.e(TAG, "SDK initialization error: $status\n${status.description}")
-            }
-          }
+          promise.resolve(result)
         }
-      })
+
+        else -> {
+          Log.e(TAG, "SDK initialization error: $status\n${status.description}")
+        }
+      }
+    }
   }
 }

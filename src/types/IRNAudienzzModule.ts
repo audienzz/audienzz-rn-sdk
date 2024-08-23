@@ -4,5 +4,5 @@ export type TAudienzzInitStatus = {
 };
 
 export interface IRNAudienzzModule {
-  initialize(): Promise<TAudienzzInitStatus>;
+  initialize(companyID: string): Promise<TAudienzzInitStatus>;
 }
