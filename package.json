@@ -1,5 +1,5 @@
 {
-  "name": "audienzzrn",
+  "name": "audienzz",
   "version": "0.1.0",
   "description": "React Native implementation of the Audienzz SDK",
   "main": "lib/commonjs/index",
@@ -26,7 +26,7 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace audienzzrn-example",
+    "example": "yarn workspace audienzz-example",
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",

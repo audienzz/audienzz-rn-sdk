@@ -1,4 +1,4 @@
-package com.audienzzrn
+package com.audienzz
 
 /*
     Copyright 2024 Audienzz AG
@@ -22,7 +22,7 @@ import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 
-class AudienzzrnPackage : ReactPackage {
+class AudienzzPackage : ReactPackage {
   override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
     return listOf(RNAudienzzModule(reactContext))
   }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { RenderingInterstitial } from 'audienzzrn';
+import { RenderingInterstitial } from 'audienzz';
 import ActionButton from './ActionButton';
 import { APP_CONTENT_FOR_INTERSTITIAL } from '../constants';
 

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {} from 'react-native';
-import { RenderingRewarded } from 'audienzzrn';
+import { RenderingRewarded } from 'audienzz';
 import ActionButton from './ActionButton';
 import { APP_CONTENT_FOR_REWARDED } from '../constants';
 

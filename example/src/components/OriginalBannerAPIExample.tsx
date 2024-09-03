@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, View, StyleSheet } from 'react-native';
-import { OriginalBanner } from 'audienzzrn';
+import { OriginalBanner } from 'audienzz';
 import { APP_CONTENT_FOR_BANNER } from '../constants';
 import { getRandomConfigIdBanner } from '../utils';
 import ActionButton from './ActionButton';

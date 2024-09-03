@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, View, StyleSheet, Platform } from 'react-native';
-import { RenderingBanner } from 'audienzzrn';
+import { RenderingBanner } from 'audienzz';
 import { APP_CONTENT_FOR_BANNER } from '../constants';
 
 const RenderingBannerAPIExample = () => {

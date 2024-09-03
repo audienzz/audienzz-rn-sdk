@@ -7,7 +7,7 @@ import {
   RenderingBanner,
   RenderingInterstitial,
   RenderingRewarded,
-} from 'audienzzrn';
+} from 'audienzz';
 import {
   getRandomConfigIdBanner,
   getRandomConfigIdInterstitial,

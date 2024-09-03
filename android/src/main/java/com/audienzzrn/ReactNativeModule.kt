@@ -1,4 +1,4 @@
-package com.audienzzrn
+package com.audienzz
 
 /*
     Copyright 2024 Audienzz AG

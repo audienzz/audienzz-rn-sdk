@@ -4,7 +4,7 @@ import {
   OriginalBanner,
   OriginalInterstitial,
   OriginalRewarded,
-} from 'audienzzrn';
+} from 'audienzz';
 import ActionButton from './ActionButton';
 
 const ErrorHandlingExample = () => {

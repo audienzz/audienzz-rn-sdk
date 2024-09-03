@@ -7,7 +7,7 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
-import RNAudienzz from 'audienzzrn';
+import RNAudienzz from 'audienzz';
 import { LOREM } from './constants';
 import ErrorHandlingExample from './components/ErrorHandlingExample';
 import OriginalBannerAPIExample from './components/OriginalBannerAPIExample';

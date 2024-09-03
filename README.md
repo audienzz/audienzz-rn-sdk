@@ -9,11 +9,11 @@
 The easiest way to install is use your package manager:
 
 ```sh
-npm install audienzzrn
+npm install audienzz
 
 or
 
-yarn add audienzzrn
+yarn add audienzz
 ```
 
 ### IOS Platform
@@ -277,7 +277,7 @@ In a real app, replace the sample app ID with your **_actual AdMob app ID_**. Yo
 Before loading and displaying ads, initialize the Audienzz React Native SDK. This needs to be done only once, ideally at app launch.
 
 ```js
-import RNAudienzz from 'audienzzrn';
+import RNAudienzz from 'audienzz';
 
 RNAudienzz()
   .initialize('Company ID provided for the app by Audienzz') // Open-Ended Question
@@ -299,7 +299,7 @@ import {
   OriginalBanner,
   OriginalInterstitial,
   OriginalRewarded,
-} from 'audienzzrn';
+} from 'audienzz';
 
     const bannerRef = React.createRef<OriginalBanner>();
 
@@ -410,7 +410,7 @@ import {
   RenderingBanner,
   RenderingInterstitial,
   RenderingRewarded,
-} from 'audienzzrn';
+} from 'audienzz';
 
     <RenderingBanner
       adUnitID="adUnitID"

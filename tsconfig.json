@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "audienzzrn": ["./src/index"]
+      "audienzz": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

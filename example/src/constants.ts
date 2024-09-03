@@ -1,4 +1,4 @@
-import { type IAppContent } from 'audienzzrn';
+import { type IAppContent } from 'audienzz';
 
 export const LOREM = `Lorem ipsum dolor, sit amet consectetur adipisicing elit. Dolore ea aut soluta inventore, voluptas deserunt corrupti quos adipisci, velit hic sunt reprehenderit, totam commodi doloribus eveniet.
  Rerum dolor accusantium architecto.  Lorem ipsum dolor, sit amet consectetur adipisicing elit. Dolore ea aut soluta inventore, voluptas deserunt corrupti quos adipisci, velit hic sunt reprehenderit, totam commodi doloribus eveniet.
