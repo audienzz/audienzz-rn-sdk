@@ -79,9 +79,6 @@ android {
 repositories {
   google()
   mavenCentral()
-  maven {
-    url("$rootDir/../node_modules/jsc-android/dist")
-  }
 }
 
 def kotlin_version = getExtOrDefault("kotlinVersion")
@@ -92,6 +89,6 @@ dependencies {
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-native:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation 'com.google.android.gms:play-services-ads:23.1.0'
-  implementation "com.audienzz:sdk:0.0.1"
+  implementation "com.google.android.gms:play-services-ads:23.2.0"
+  implementation "com.audienzz:sdk:0.0.2"
 }

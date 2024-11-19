@@ -30,8 +30,8 @@ const OriginalBannerAPIExample = () => {
         </Text>
         <OriginalBanner
           ref={bannerRef}
-          adUnitID="ca-app-pub-3940256099942544/6300978111"
-          auConfigID="prebid-demo-banner-300-250"
+          adUnitID="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
+          auConfigID="33994718"
           width={300}
           height={250}
           adFormats={['banner']}

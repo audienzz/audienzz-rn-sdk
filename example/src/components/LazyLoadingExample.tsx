@@ -21,8 +21,8 @@ const LazyLoadingExample = () => {
     <>
       <Text style={styles.text}>Original Banner API HTML 300x250</Text>
       <OriginalBanner
-        adUnitID="ca-app-pub-3940256099942544/6300978111"
-        auConfigID="prebid-demo-banner-300-250"
+        adUnitID="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
+        auConfigID="33994718"
         width={300}
         height={250}
         adFormats={['banner']}

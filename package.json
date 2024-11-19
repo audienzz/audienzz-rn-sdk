@@ -1,6 +1,6 @@
 {
   "name": "audienzz",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "React Native implementation of the Audienzz SDK",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -39,7 +39,9 @@
     "ios",
     "android"
   ],
+  "author": "Audienzz <tech@audienzz.ch> (https://audienzz.ch)",
   "license": "Apache-2.0",
+  "homepage": "https://github.com/audienzz/audienzz-rn-sdk#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },

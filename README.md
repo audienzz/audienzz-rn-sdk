@@ -18,10 +18,35 @@ yarn add audienzz
 
 ### IOS Platform
 
-An additional step to install native modules for an IOS project:
+An additional steps to install native modules for an IOS project:
+
+Audienzz SDK works with the minimum version of iOS16. Add this `min_ios_version_supported = '16.0'` to the `ios/Podfile`.
+
+```sh
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+min_ios_version_supported = '16.0' // <<-- add this
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+use_frameworks!
+
+target 'TestAudienzz' do
+ ...
+end
+
+```
+
+after
 
 ```sh
 cd ios && pod install && cd ..
+
 ```
 
 ## Setup
