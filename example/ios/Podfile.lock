@@ -1,10 +1,10 @@
 PODS:
-  - audienzz (0.1.4):
-    - AudienzziOSSDK (= 0.0.13)
+  - audienzz (0.1.6):
+    - AudienzziOSSDK (= 0.0.16)
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - AudienzziOSSDK (0.0.13):
+  - AudienzziOSSDK (0.0.16):
     - Google-Mobile-Ads-SDK (= 11.10.0)
     - GoogleAds-IMA-iOS-SDK (= 3.23.0)
     - PrebidMobile (= 2.3.0)
@@ -1249,8 +1249,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  audienzz: 5cd33e53ce04097301d5da46af8ca2ba01bfd7c8
-  AudienzziOSSDK: d7efbd56003e2c16575485643f231a343cf76ffc
+  audienzz: 8742e298a53e74dd7e0c140610920d13a72bc654
+  AudienzziOSSDK: 5a53222b4a095bf645969b435f77cfc2e2761455
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
   FBLazyVector: f64d1e2ea739b4d8f7e4740cde18089cd97fe864
@@ -1311,4 +1311,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: c0e71fe91b874d9740e0d59dc55c7db2d8abc6bd
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

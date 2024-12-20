@@ -53,7 +53,7 @@
         appContent.url = dictionary[@"url"];
     }
     if (![dictionary[@"categories"] isKindOfClass:[NSArray class]]) {
-        appContent.cat = @[];
+        appContent.cat = nil;
     } else {
         appContent.cat = dictionary[@"categories"];
     }
@@ -90,15 +90,15 @@
     if ([dictionary[@"embeddable"] isKindOfClass:[NSNumber class]]) {
         appContent.embeddable = dictionary[@"embeddable"];
     }
-    if (!dictionary[@"dataObject"] && [dictionary[@"dataObject"] isKindOfClass:[NSDictionary class]]) {
-        appContent.data = @[];
+    if (!dictionary[@"dataObject"] && ![dictionary[@"dataObject"] isKindOfClass:[NSDictionary class]]) {
+        appContent.data = nil;
     } else {
         appContent.data = [self parseContentData:dictionary[@"dataObject"]];
     }
     if (dictionary[@"producerObject"] && [dictionary[@"producerObject"] isKindOfClass:[NSDictionary class]]) {
         appContent.producer = [self parseProducer:dictionary[@"producerObject"]];
     } else {
-        appContent.producer = [[AUMORTBContentProducer alloc] init];
+        appContent.producer = nil;
     }
     
     return appContent;
@@ -115,7 +115,7 @@
         contentData.name = dataObject[@"name"];
     }
     if (![dataObject[@"segments"] isKindOfClass:[NSArray class]]) {
-        contentData.segment = @[];
+        contentData.segment = nil;
     } else {
         contentData.segment = [self parseSegments:dataObject[@"segments"]];
     }

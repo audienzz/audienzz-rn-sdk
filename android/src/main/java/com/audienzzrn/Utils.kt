@@ -81,7 +81,7 @@ object Utils {
         domain = it.getString("domain")
         setCategories(categoryList)
       }
-    } ?: AudienzzContentObject.AudienzzProducerObject()
+    }
 
     return AudienzzContentObject().apply {
       id = if (currentContentObject.hasKey("id")) currentContentObject.getString("id") else null
