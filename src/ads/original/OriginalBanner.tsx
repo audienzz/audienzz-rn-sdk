@@ -76,6 +76,7 @@ export class OriginalBanner extends Component<
     const {
       playbackMethod = ['AutoPlaySoundOn'],
       isLazyLoad = true,
+      isAdaptive = false,
       adFormats = ['banner', 'video'],
       apiParameters = ['MRAID_2'],
       videoProtocols = ['VAST_2_0'],
@@ -114,6 +115,7 @@ export class OriginalBanner extends Component<
           ref={this.nativeComponentRef}
           playbackMethod={playbackMethod}
           isLazyLoad={isLazyLoad}
+          isAdaptive={isAdaptive}
           adFormats={adFormats}
           apiParameters={apiParameters}
           videoProtocols={videoProtocols}

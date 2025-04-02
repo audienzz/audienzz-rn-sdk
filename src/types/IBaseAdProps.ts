@@ -5,6 +5,7 @@ export interface IBaseAdProps {
   adUnitID: string;
   auConfigID: string;
   isLazyLoad?: boolean;
+  isAdaptive?: boolean;
   pbAdSlot?: string;
   gpID?: string;
   keyword?: string;

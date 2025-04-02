@@ -21,6 +21,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.doOnNextLayout
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
@@ -169,6 +170,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
   private fun requestAd(reactViewGroup: RCTOriginalBannerView) {
     val adView = initAdView(reactViewGroup)
     val isLazyLoad = reactViewGroup.isLazyLoad
+    val isAdaptive = reactViewGroup.isAdaptive
     val adUnitID: String = reactViewGroup.adUnitID
     val auConfigID: String = reactViewGroup.auConfigID
     val width: Int = reactViewGroup.getWIDTH()
@@ -263,8 +265,16 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     auBannerView.videoParameters = videoParameters
 
     if (adView != null) {
+      if (isAdaptive) {
+        adView.doOnNextLayout {
+          adView.setAdSizes(
+            AdSize.getInlineAdaptiveBannerAdSize(width, height)
+          )
+        }
+      } else {
+        adView.setAdSize(AdSize(width, height))
+      }
       adView.adUnitId = adUnitID
-      adView.setAdSize(AdSize(width, height))
 
       AudienzzAdViewHandler(
         adView = adView,
@@ -290,6 +300,12 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
   @ReactProp(name = "isLazyLoad")
   fun setIsLazyLoad(view: RCTOriginalBannerView, value: Boolean) {
     view.updateIsLazyLoad(value)
+    view.updatePropsChanged(true)
+  }
+
+  @ReactProp(name = "isAdaptive")
+  fun setIsAdaptive(view: RCTOriginalBannerView, value: Boolean) {
+    view.updateIsAdaptive(value)
     view.updatePropsChanged(true)
   }
 

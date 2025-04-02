@@ -42,7 +42,7 @@ const OriginalInterstitialAPIExample = () => {
       {isInterstitialBanner && (
         <OriginalInterstitial
           adUnitID="ca-app-pub-3940256099942544/4411468910"
-          auConfigID="prebid-demo-display-interstitial-320-480"
+          auConfigID="34400101"
           adFormats={['banner']}
           isLazyLoad={false}
           pbAdSlot="pbAdSlot"
@@ -79,7 +79,7 @@ const OriginalInterstitialAPIExample = () => {
       )}
       {isInterstitialMulti && (
         <OriginalInterstitial
-          adUnitID="/21808260008/prebid-demo-intestitial-multiformat"
+          adUnitID="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
           auConfigID={interstitialMultiformatAuConfigID}
           isLazyLoad={false}
           onAdClosed={() => {

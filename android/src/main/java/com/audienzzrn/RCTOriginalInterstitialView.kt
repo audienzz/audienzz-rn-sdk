@@ -28,8 +28,10 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.admanager.AdManagerInterstitialAd
 import com.google.android.gms.ads.admanager.AdManagerInterstitialAdLoadCallback
 import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.rewarded.RewardedAd
 import org.audienzz.mobile.AudienzzInterstitialAdUnit
 import org.audienzz.mobile.original.AudienzzInterstitialAdHandler
+import org.audienzz.mobile.util.AudienzzFullScreenContentCallback
 import org.audienzz.mobile.util.lazyLoadAd
 
 class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
@@ -98,11 +100,12 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
     auInterstitialView?.videoParameters = videoParameters
     auInterstitialView?.setMinSizePercentage(minSizesPercentage[0], minSizesPercentage[1])
 
+    val activity = (context as? ReactContext)?.currentActivity
+
     this.lazyLoadAd(
       adHandler = handler,
       listener = object : AdManagerInterstitialAdLoadCallback() {
         override fun onAdLoaded(interstitialAd: AdManagerInterstitialAd) {
-          val activity = (context as? ReactContext)?.currentActivity
 
           interstitial = interstitialAd
           mInterstitialAd = interstitialAd
@@ -138,7 +141,18 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
           handleAdFailedToLoad(loadAdError)
         }
       },
-      resultCallback = {}
+      resultCallback = {},
+      manager = AudienzzFullScreenContentCallback(
+
+      ),
+      onLoadRequest = { request, listener ->
+        AdManagerInterstitialAd.load(
+          activity!!,
+          adUnitID,
+          request,
+          listener,
+        )
+      }
     )
   }
 

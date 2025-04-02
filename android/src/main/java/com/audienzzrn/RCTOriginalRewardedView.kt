@@ -31,6 +31,7 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import org.audienzz.mobile.AudienzzRewardedVideoAdUnit
 import org.audienzz.mobile.original.AudienzzRewardedVideoAdHandler
 import org.audienzz.mobile.util.lazyLoadAd
+import org.audienzz.mobile.util.AudienzzFullScreenContentCallback
 
 class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
   private var auRewardedView: AudienzzRewardedVideoAdUnit? = null
@@ -96,12 +97,12 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
 
     auRewardedView?.videoParameters = videoParameters
 
+    val activity = (context as? ReactContext)?.currentActivity
+
     this.lazyLoadAd(
       adHandler = handler,
       listener = object : RewardedAdLoadCallback() {
         override fun onAdLoaded(ad: RewardedAd) {
-          val activity = (context as? ReactContext)?.currentActivity
-
           rewardedAd = ad
           rewardedAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdClicked() {
@@ -141,7 +142,16 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
           handleAdFailedToLoad(loadAdError)
         }
       },
-      resultCallback = {}
+      resultCallback = {},
+      manager = AudienzzFullScreenContentCallback(),
+      requestCallback = { request, listener ->
+        RewardedAd.load(
+          activity!!,
+          adUnitID,
+          request,
+          listener,
+        )
+      },
     )
   }
 }

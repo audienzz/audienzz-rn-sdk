@@ -38,24 +38,27 @@ const LazyLoadingExample = () => {
       />
       <View style={styles.height30} />
       <Text style={styles.text}>Original Banner API Multiformat</Text>
-      <OriginalBanner
+      <Text style={styles.text}>Will be implemented in next version</Text>
+      {/* <OriginalBanner
         adUnitID="/21808260008/prebid-demo-original-banner-multiformat"
         auConfigID={bannerMultiformatAuConfigID}
         width={300}
         height={250}
-      />
+      /> */}
       <View style={styles.height30} />
       <Text style={styles.text}>Original Banner API Video</Text>
-      <OriginalBanner
+      <Text style={styles.text}>Will be implemented in next version</Text>
+      {/* <OriginalBanner
         adUnitID="/21808260008/prebid-demo-original-api-video-banner"
         auConfigID="prebid-demo-video-outstream-original-api"
         width={300}
         height={250}
         adFormats={['video']}
-      />
+      /> */}
       <View style={styles.height30} />
       <Text style={styles.text}>Rendering Banner API HTML 320x50</Text>
-      <RenderingBanner
+      <Text style={styles.text}>Will be implemented in next version</Text>
+      {/* <RenderingBanner
         adUnitID={
           Platform.OS === 'android'
             ? 'ca-app-pub-3940256099942544/2934735716'
@@ -69,16 +72,17 @@ const LazyLoadingExample = () => {
           console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)
         }
         isReserved
-      />
+      /> */}
       <View style={styles.height30} />
       <Text style={styles.text}>Rendering Banner API Video</Text>
-      <RenderingBanner
+      <Text style={styles.text}>Will be implemented in next version</Text>
+      {/* <RenderingBanner
         adUnitID="/21808260008/prebid_oxb_300x250_banner"
         auConfigID="prebid-demo-video-outstream"
         width={300}
         height={250}
         adFormat="video"
-      />
+      /> */}
 
       <View style={styles.height30} />
       <View style={styles.height300} />
@@ -103,7 +107,7 @@ const LazyLoadingExample = () => {
       <View style={styles.height30} />
       <Text style={styles.text}>Original Interstitial Multiformat</Text>
       <OriginalInterstitial
-        adUnitID="/21808260008/prebid-demo-intestitial-multiformat"
+        adUnitID="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
         auConfigID={interstitialMultiformatAuConfigID}
       />
       <View style={styles.height30} />
@@ -121,31 +125,34 @@ const LazyLoadingExample = () => {
       <View style={styles.height300} />
       <View style={styles.height30} />
       <Text style={styles.text}>Rendering Interstitial Banner</Text>
-      <RenderingInterstitial
+      <Text style={styles.text}>Will be implemented in next version</Text>
+      {/* <RenderingInterstitial
         adUnitID="/21808260008/prebid_oxb_html_interstitial"
         auConfigID="prebid-demo-display-interstitial-320-480"
         adFormat="banner"
-      />
+      /> */}
       <View style={styles.height30} />
       <View style={styles.height300} />
       <View style={styles.height30} />
       <Text style={styles.text}>Rendering Interstitial Video</Text>
-      <RenderingInterstitial
+      <Text style={styles.text}>Will be implemented in next version</Text>
+      {/* <RenderingInterstitial
         adUnitID="/21808260008/prebid_oxb_interstitial_video"
         auConfigID="prebid-demo-video-interstitial-320-480"
         adFormat="video"
-      />
+      /> */}
       <View style={styles.height30} />
       <View style={styles.height300} />
       <View style={styles.height30} />
       <Text style={styles.text}>Rendering Rewarded</Text>
-      <RenderingRewarded
+      <Text style={styles.text}>Will be implemented in next version</Text>
+      {/* <RenderingRewarded
         adUnitID="/21808260008/prebid-demo-app-original-api-video-interstitial"
         auConfigID="prebid-demo-video-rewarded-320-480"
         onAdClosed={() => {
           console.log('The user can receive reward (own implementation) -> 💰');
         }}
-      />
+      /> */}
     </>
   );
 };

@@ -28,6 +28,7 @@
 @property(nonatomic, strong) AUBannerParameters *bannerParameters;
 @property(nonatomic, strong) AUVideoParameters *videoParameters;
 @property(nonatomic, assign) BOOL isLazyLoad;
+@property(nonatomic, assign) BOOL isAdaptive;
 @property(nonatomic, copy) NSArray<NSString *> *adFormats;
 @property(nonatomic, copy) NSArray<NSString *> *playbackMethod;
 @property(nonatomic, copy) NSArray<NSString *> *apiParameters;

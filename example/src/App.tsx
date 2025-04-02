@@ -44,13 +44,14 @@ export default function App() {
         <View style={styles.height30} />
 
         <Text style={styles.bigText}>RENDERING</Text>
-        <RenderingBannerAPIExample />
+        <Text style={styles.bigText}>Will be implemented in next version</Text>
+        {/* <RenderingBannerAPIExample />
         <View style={styles.height30} />
 
         <RenderingInterstitialAPIExample />
         <View style={styles.height30} />
 
-        <RenderingRewardedAPIExample />
+        <RenderingRewardedAPIExample /> */}
 
         <Text style={styles.lorem}>{LOREM}</Text>
 

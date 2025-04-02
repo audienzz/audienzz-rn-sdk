@@ -4,6 +4,8 @@ import { OriginalBanner } from 'audienzz';
 import { APP_CONTENT_FOR_BANNER } from '../constants';
 import { getRandomConfigIdBanner } from '../utils';
 import ActionButton from './ActionButton';
+import { Dimensions } from 'react-native';
+import { Platform } from 'react-native';
 
 const OriginalBannerAPIExample = () => {
   const bannerMultiformatAuConfigID = getRandomConfigIdBanner();
@@ -109,6 +111,21 @@ const OriginalBannerAPIExample = () => {
         }
         isReserved
       />
+      <View style={styles.height30} />
+      <Text style={styles.text}>Original Banner API Multisize</Text>
+      <OriginalBanner
+        adUnitID="ca-app-pub-3940256099942544/2435281174"
+        auConfigID="prebid-demo-banner-320-50"
+        width={Dimensions.get('window').width}
+        height={250}        
+        adFormats={['banner']}
+        isLazyLoad={false}
+        onAdFailedToLoad={(error) =>
+          console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)
+        }
+        isAdaptive={true}
+      />
+      <View style={styles.height350} />
     </>
   );
 };
@@ -119,6 +136,9 @@ const styles = StyleSheet.create({
   },
   height30: {
     height: 30,
+  },
+  height350: {
+    height: 350,
   },
   text: {
     marginBottom: 3,

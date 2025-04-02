@@ -40,6 +40,7 @@ open class RCTOriginalView(context: Context) : FrameLayout(context) {
   var apiParameters: List<String> = listOf()
   var videoProtocols: List<String> = listOf()
   var isLazyLoad: Boolean = true
+  var isAdaptive: Boolean = false
   private var propsChanged: Boolean = false
 
   var bannerParameters = AudienzzBannerParameters()
@@ -141,6 +142,10 @@ open class RCTOriginalView(context: Context) : FrameLayout(context) {
 
   fun updateIsLazyLoad(value: Boolean) {
     isLazyLoad = value
+  }
+
+  fun updateIsAdaptive(value: Boolean) {
+    isAdaptive = value
   }
 
   fun updatePropsChanged(value: Boolean) {

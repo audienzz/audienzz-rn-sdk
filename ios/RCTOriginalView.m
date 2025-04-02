@@ -50,6 +50,11 @@
     _propsChanged = YES;
 }
 
+- (void)setIsAdaptive:(NSNumber *)value {
+    _isAdaptive = [value boolValue];
+    _propsChanged = YES;
+}
+
 - (void)setAdFormats:(NSArray<NSString *> *)value {
     _adFormats = value;
     _propsChanged = YES;

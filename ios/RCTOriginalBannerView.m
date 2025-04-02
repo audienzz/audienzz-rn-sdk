@@ -62,11 +62,16 @@
 
 - (void)internalCreateAd {
     [super internalCreateAd];
+    BOOL isAdaptive = self.isAdaptive;
+    CGSize adSize = CGSizeMake(_width, _height);
+    GADAdSize gadAdSize = GADAdSizeFromCGSize(adSize);
+    
+    if (isAdaptive) {
+      gadAdSize = GADInlineAdaptiveBannerAdSizeWithWidthAndMaxHeight(_width, _height);
+    }
     
     GAMRequest *request = [GAMRequest request];
-    CGSize adSize = CGSizeMake(_width, _height);
-    
-    _bannerView = [[GAMBannerView alloc] initWithAdSize:GADAdSizeFromCGSize(adSize)];
+    _bannerView = [[GAMBannerView alloc] initWithAdSize:gadAdSize];
     _auBannerView = [[AUBannerView alloc] initWithConfigId:self.auConfigID adSize:adSize adFormats:[AUConverter convertToAUAdFormats:self.adFormats] isLazyLoad:self.isLazyLoad];
     
     [self.videoParameters setPlacement:[AUConverter convertToAUPlacement:_videoPlacement]];

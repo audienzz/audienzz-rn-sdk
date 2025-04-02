@@ -51,6 +51,7 @@ RCT_EXPORT_VIEW_PROPERTY(onAdClicked, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdOpened, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdClosed, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdFailedToLoad, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(isAdaptive, NSNumber)
 
 RCT_EXPORT_METHOD(stopAutoRefresh:(nonnull NSNumber *)reactTag) {
     dispatch_async(dispatch_get_main_queue(), ^{
