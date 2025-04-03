@@ -5,7 +5,6 @@ import { APP_CONTENT_FOR_BANNER } from '../constants';
 import { getRandomConfigIdBanner } from '../utils';
 import ActionButton from './ActionButton';
 import { Dimensions } from 'react-native';
-import { Platform } from 'react-native';
 
 const OriginalBannerAPIExample = () => {
   const bannerMultiformatAuConfigID = getRandomConfigIdBanner();
