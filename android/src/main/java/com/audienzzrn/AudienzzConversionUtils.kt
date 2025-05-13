@@ -88,7 +88,7 @@ object AudienzzConversionUtils {
     }
   }
 
-  fun convertToAudienzzVideoPlacement(placementString: String): AudienzzSignals.Placement? {
+  fun convertToAudienzzVideoPlacement(placementString: String): AudienzzSignals.Placement {
     return when (placementString) {
       "inArticle" -> AudienzzSignals.Placement.InArticle
       "inFeed" -> AudienzzSignals.Placement.InFeed
@@ -97,7 +97,7 @@ object AudienzzConversionUtils {
     }
   }
 
-  fun convertToAudienzzVideoPlacementType(placementString: String): AudienzzVideoPlacementType? {
+  fun convertToAudienzzVideoPlacementType(placementString: String): AudienzzVideoPlacementType {
     return when (placementString) {
       "inArticle" -> AudienzzVideoPlacementType.IN_ARTICLE
       "inFeed" -> AudienzzVideoPlacementType.IN_FEED

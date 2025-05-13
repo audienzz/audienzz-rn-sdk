@@ -27,7 +27,9 @@ object Utils {
     val set = HashSet<String>()
     for (i in 0 until array.size()) {
       val keyword = array.getString(i)
-      set.add(keyword)
+      if (keyword != null) {
+        set.add(keyword)
+      }
     }
     return set
   }
@@ -38,7 +40,9 @@ object Utils {
       val stringList = ArrayList<String>()
       for (i in 0 until categoriesArr.size()) {
         val item = categoriesArr.getString(i)
-        stringList.add(item)
+        if (item != null) {
+          stringList.add(item)
+        }
       }
       stringList
     } else {
@@ -55,9 +59,9 @@ object Utils {
             val map = array.getMap(i)
             map.let { segmentMap ->
               val segment = AudienzzDataObject.AudienzzSegmentObject().apply {
-                id = segmentMap.getString("id")
-                name = segmentMap.getString("name")
-                value = segmentMap.getString("value")
+                id = segmentMap?.getString("id")
+                name = segmentMap?.getString("name")
+                value = segmentMap?.getString("value")
               }
               segmentList.add(segment)
             }
@@ -72,7 +76,9 @@ object Utils {
       it.getArray("categories")?.let { array ->
         for (i in 0 until array.size()) {
           val category = array.getString(i)
-          categoryList.add(category)
+          if (category != null) {
+            categoryList.add(category)
+          }
         }
       }
       AudienzzContentObject.AudienzzProducerObject().apply {

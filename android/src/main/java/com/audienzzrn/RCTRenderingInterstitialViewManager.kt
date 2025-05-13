@@ -26,9 +26,6 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 
 class RCTRenderingInterstitialViewManager : SimpleViewManager<RCTRenderingInterstitialView>() {
-  companion object {
-    const val REACT_CLASS = "RCTRenderingInterstitialView"
-  }
 
   override fun getName(): String {
     return REACT_CLASS
@@ -124,6 +121,10 @@ class RCTRenderingInterstitialViewManager : SimpleViewManager<RCTRenderingInters
     val appContent = Utils.createContentObject(value)
     view.updateAppContent(appContent)
     view.updatePropsChanged(true)
+  }
+
+  companion object {
+    const val REACT_CLASS = "RCTRenderingInterstitialView"
   }
 }
 

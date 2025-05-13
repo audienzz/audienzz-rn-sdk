@@ -116,7 +116,7 @@ const OriginalBannerAPIExample = () => {
         adUnitID="ca-app-pub-3940256099942544/2435281174"
         auConfigID="prebid-demo-banner-320-50"
         width={Dimensions.get('window').width}
-        height={250}        
+        height={250}
         adFormats={['banner']}
         isLazyLoad={false}
         onAdFailedToLoad={(error) =>
