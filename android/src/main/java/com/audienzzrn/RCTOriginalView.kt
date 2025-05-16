@@ -45,7 +45,6 @@ open class RCTOriginalView(context: Context) : FrameLayout(context) {
 
   var bannerParameters = AudienzzBannerParameters()
   var videoParameters = AudienzzVideoParameters(listOf("video/x-flv", "video/mp4"))
-  var request = AdManagerAdRequest.Builder().build()
 
   open fun createAd() {
     val allowedApis = mutableListOf<AudienzzSignals.Api>()

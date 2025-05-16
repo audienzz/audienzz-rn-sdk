@@ -78,7 +78,7 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
       auInterstitialView!!,
       adUnitID,
     )
-    var interstitial: AdManagerInterstitialAd? = null
+    var interstitial: AdManagerInterstitialAd?
 
     if (pbAdSlot != null) {
       auInterstitialView?.pbAdSlot = pbAdSlot

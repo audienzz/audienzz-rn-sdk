@@ -26,10 +26,6 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 
 class RCTOriginalRewardedViewManager : SimpleViewManager<RCTOriginalRewardedView>() {
-  companion object {
-    const val REACT_CLASS = "RCTOriginalRewardedView"
-  }
-
   override fun getName(): String {
     return REACT_CLASS
   }
@@ -69,7 +65,9 @@ class RCTOriginalRewardedViewManager : SimpleViewManager<RCTOriginalRewardedView
 
     for (i in 0 until value.size()) {
       val playbackMethodString = value.getString(i)
-      playbackMethodStrings.add(playbackMethodString)
+      if (playbackMethodString != null) {
+        playbackMethodStrings.add(playbackMethodString)
+      }
     }
 
     view.updatePlaybackMethod(playbackMethodStrings)
@@ -94,7 +92,9 @@ class RCTOriginalRewardedViewManager : SimpleViewManager<RCTOriginalRewardedView
 
     for (i in 0 until value.size()) {
       val apiString = value.getString(i)
-      apiStrings.add(apiString)
+      if (apiString != null) {
+        apiStrings.add(apiString)
+      }
     }
 
     view.updateApiParameters(apiStrings)
@@ -107,7 +107,9 @@ class RCTOriginalRewardedViewManager : SimpleViewManager<RCTOriginalRewardedView
 
     for (i in 0 until value.size()) {
       val protocolString = value.getString(i)
-      videoProtocolsStrings.add(protocolString)
+      if (protocolString != null) {
+        videoProtocolsStrings.add(protocolString)
+      }
     }
 
     view.updateVideoProtocols(videoProtocolsStrings)
@@ -170,5 +172,9 @@ class RCTOriginalRewardedViewManager : SimpleViewManager<RCTOriginalRewardedView
     val appContent = Utils.createContentObject(value)
     view.updateAppContent(appContent)
     view.updatePropsChanged(true)
+  }
+
+  companion object {
+    const val REACT_CLASS = "RCTOriginalRewardedView"
   }
 }

@@ -40,13 +40,6 @@ import org.audienzz.mobile.AudienzzVideoParameters
 import org.audienzz.mobile.original.AudienzzAdViewHandler
 
 class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() {
-  companion object {
-    private val emptyAdListener = object : AdListener() {}
-    const val REACT_CLASS = "RCTOriginalBannerView"
-    const val STOP_AUTO_REFRESH = "stopAutoRefresh"
-    const val RESUME_AUTO_REFRESH = "resumeAutoRefresh"
-  }
-
   override fun getName(): String {
     return REACT_CLASS
   }
@@ -71,7 +64,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     val adView = getAdView(reactViewGroup)
 
     if (adView != null) {
-      adView.adListener = emptyAdListener
+      adView.adListener = EMPTY_AD_LISTENER
     }
     if (adView is AdManagerAdView) {
       adView.appEventListener = null
@@ -127,7 +120,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     val oldAdView = getAdView(reactViewGroup)
 
     if (oldAdView != null) {
-      oldAdView.adListener = emptyAdListener
+      oldAdView.adListener = EMPTY_AD_LISTENER
     }
 
     if (oldAdView is AdManagerAdView) {
@@ -265,16 +258,18 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     auBannerView.videoParameters = videoParameters
 
     if (adView != null) {
+      adView.apply {
+        setAdSize(AdSize(width, height))
+        adUnitId = adUnitID
+      }
+
       if (isAdaptive) {
         adView.doOnNextLayout {
           adView.setAdSizes(
             AdSize.getInlineAdaptiveBannerAdSize(width, height)
           )
         }
-      } else {
-        adView.setAdSize(AdSize(width, height))
       }
-      adView.adUnitId = adUnitID
 
       AudienzzAdViewHandler(
         adView = adView,
@@ -290,7 +285,9 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
 
     for (i in 0 until value.size()) {
       val playbackMethodString = value.getString(i)
-      playbackMethodStrings.add(playbackMethodString)
+      if (playbackMethodString != null) {
+        playbackMethodStrings.add(playbackMethodString)
+      }
     }
 
     view.updatePlaybackMethod(playbackMethodStrings)
@@ -315,7 +312,9 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
 
     for (i in 0 until value.size()) {
       val apiString = value.getString(i)
-      adFormatStrings.add(apiString)
+      if (apiString != null) {
+        adFormatStrings.add(apiString)
+      }
     }
 
     view.updateAdFormats(adFormatStrings)
@@ -327,7 +326,9 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
 
     for (i in 0 until value.size()) {
       val apiString = value.getString(i)
-      apiStrings.add(apiString)
+      if (apiString != null) {
+        apiStrings.add(apiString)
+      }
     }
 
     view.updateApiParameters(apiStrings)
@@ -339,7 +340,9 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
 
     for (i in 0 until value.size()) {
       val protocolString = value.getString(i)
-      videoProtocolsStrings.add(protocolString)
+      if (protocolString != null) {
+        videoProtocolsStrings.add(protocolString)
+      }
     }
 
     view.updateVideoProtocols(videoProtocolsStrings)
@@ -438,5 +441,12 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     val appContent = Utils.createContentObject(value)
     view.updateAppContent(appContent)
     view.updatePropsChanged(true)
+  }
+
+  companion object {
+    private val EMPTY_AD_LISTENER = object : AdListener() {}
+    const val REACT_CLASS = "RCTOriginalBannerView"
+    const val STOP_AUTO_REFRESH = "stopAutoRefresh"
+    const val RESUME_AUTO_REFRESH = "resumeAutoRefresh"
   }
 }

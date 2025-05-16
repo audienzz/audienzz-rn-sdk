@@ -26,10 +26,6 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 
 class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalInterstitialView>() {
-  companion object {
-    const val REACT_CLASS = "RCTOriginalInterstitialView"
-  }
-
   override fun getName(): String {
     return REACT_CLASS
   }
@@ -69,7 +65,9 @@ class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalIntersti
 
     for (i in 0 until value.size()) {
       val playbackMethodString = value.getString(i)
-      playbackMethodStrings.add(playbackMethodString)
+      if (playbackMethodString != null) {
+        playbackMethodStrings.add(playbackMethodString)
+      }
     }
 
     view.updatePlaybackMethod(playbackMethodStrings)
@@ -94,7 +92,9 @@ class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalIntersti
 
     for (i in 0 until value.size()) {
       val apiString = value.getString(i)
-      adFormatStrings.add(apiString)
+      if (apiString != null) {
+        adFormatStrings.add(apiString)
+      }
     }
 
     view.updateAdFormats(adFormatStrings)
@@ -107,7 +107,9 @@ class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalIntersti
 
     for (i in 0 until value.size()) {
       val apiString = value.getString(i)
-      apiStrings.add(apiString)
+      if (apiString != null) {
+        apiStrings.add(apiString)
+      }
     }
 
     view.updateApiParameters(apiStrings)
@@ -120,7 +122,9 @@ class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalIntersti
 
     for (i in 0 until value.size()) {
       val protocolString = value.getString(i)
-      videoProtocolsStrings.add(protocolString)
+      if (protocolString != null) {
+        videoProtocolsStrings.add(protocolString)
+      }
     }
 
     view.updateVideoProtocols(videoProtocolsStrings)
@@ -196,5 +200,9 @@ class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalIntersti
     val appContent = Utils.createContentObject(value)
     view.updateAppContent(appContent)
     view.updatePropsChanged(true)
+  }
+
+  companion object {
+    const val REACT_CLASS = "RCTOriginalInterstitialView"
   }
 }

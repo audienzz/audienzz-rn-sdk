@@ -26,10 +26,6 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 
 class RCTRenderingBannerViewManager : SimpleViewManager<RCTRenderingBannerView>() {
-  companion object {
-    const val REACT_CLASS = "RCTRenderingBannerView"
-  }
-
   override fun getName(): String {
     return REACT_CLASS
   }
@@ -123,5 +119,9 @@ class RCTRenderingBannerViewManager : SimpleViewManager<RCTRenderingBannerView>(
     val appContent = Utils.createContentObject(value)
     view.updateAppContent(appContent)
     view.updatePropsChanged(true)
+  }
+
+  companion object {
+    const val REACT_CLASS = "RCTRenderingBannerView"
   }
 }
