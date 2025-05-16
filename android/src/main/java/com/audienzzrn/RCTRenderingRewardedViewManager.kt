@@ -26,9 +26,6 @@ import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 
 class RCTRenderingRewardedViewManager : SimpleViewManager<RCTRenderingRewardedView>() {
-  companion object {
-    const val REACT_CLASS = "RCTRenderingRewardedView"
-  }
 
   override fun getName(): String {
     return REACT_CLASS
@@ -98,5 +95,9 @@ class RCTRenderingRewardedViewManager : SimpleViewManager<RCTRenderingRewardedVi
     val appContent = Utils.createContentObject(value)
     view.updateAppContent(appContent)
     view.updatePropsChanged(true)
+  }
+
+  companion object {
+    const val REACT_CLASS = "RCTRenderingRewardedView"
   }
 }

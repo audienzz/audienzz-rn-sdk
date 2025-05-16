@@ -15,8 +15,6 @@ import OriginalInterstitialAPIExample from './components/OriginalInterstitialAPI
 import OriginalRewardedAPIExample from './components/OriginalRewardedAPIExample';
 import LazyLoadingExample from './components/LazyLoadingExample';
 import RenderingInterstitialAPIExample from './components/RenderingInterstitialAPIExample';
-import RenderingRewardedAPIExample from './components/RenderingRewardedAPIExample';
-import RenderingBannerAPIExample from './components/RenderingBannerAPIExample';
 
 RNAudienzz()
   .initialize('Company ID provided for the app by Audienzz')
@@ -24,38 +22,29 @@ RNAudienzz()
 
 export default function App() {
   return (
-    <SafeAreaView style={styles.flex}>
+    <SafeAreaView style={styles.mainContainer}>
       <ScrollView
-        style={styles.flex}
+        style={styles.mainContainer}
         contentContainerStyle={styles.scrollviewcontentContainerStyle}
       >
         <Text style={styles.bigText}>ORIGINAL</Text>
-        <ErrorHandlingExample />
+         <ErrorHandlingExample /> 
         <View style={styles.height30} />
-
         <OriginalBannerAPIExample />
         <View style={styles.height30} />
-
         <OriginalInterstitialAPIExample />
         <View style={styles.height30} />
-
         <OriginalRewardedAPIExample />
         <View style={styles.height30} />
         <View style={styles.height30} />
-
         <Text style={styles.bigText}>RENDERING</Text>
-        <Text style={styles.bigText}>Will be implemented in next version</Text>
-        {/* <RenderingBannerAPIExample />
+        {/* <RenderingBannerAPIExample /> */}
         <View style={styles.height30} />
-
         <RenderingInterstitialAPIExample />
         <View style={styles.height30} />
-
-        <RenderingRewardedAPIExample /> */}
-
+        {/* <RenderingRewardedAPIExample /> */}
         <Text style={styles.lorem}>{LOREM}</Text>
-
-        <Text style={styles.bigText}>LAZY LOADING PART</Text>
+        <Text style={styles.bigText}>LAZY LOADING</Text>
         <LazyLoadingExample />
       </ScrollView>
     </SafeAreaView>
@@ -63,7 +52,7 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  flex: {
+  mainContainer: {
     flex: 1,
   },
   scrollviewcontentContainerStyle: {

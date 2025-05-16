@@ -28,11 +28,6 @@ import org.audienzz.mobile.api.data.AudienzzInitializationStatus
 
 class RNAudienzzModule(reactContext: ReactApplicationContext) :
   ReactNativeModule(reactContext, SERVICE) {
-  companion object {
-    private const val SERVICE = "RNAudienzzModule"
-    private const val TAG = "AudienzzSDKInitializer"
-  }
-
   @ReactMethod
   fun initialize(companyID: String, promise: Promise) {
     AudienzzPrebidMobile.initializeSdk(applicationContext, companyID) { status ->
@@ -52,5 +47,10 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
         }
       }
     }
+  }
+
+  companion object {
+    private const val SERVICE = "RNAudienzzModule"
+    private const val TAG = "AudienzzSDKInitializer"
   }
 }

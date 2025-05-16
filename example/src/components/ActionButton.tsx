@@ -14,7 +14,7 @@ const ActionButton = (props: IActionButtonProps) => {
       onPress={props.onPress}
       style={[styles.button, props.buttonStyle]}
     >
-      <Text style={[styles.label]}>{props.labelButton}</Text>
+      <Text style={styles.label}>{props.labelButton}</Text>
     </TouchableOpacity>
   );
 };
