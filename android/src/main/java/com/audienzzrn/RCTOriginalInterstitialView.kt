@@ -1,7 +1,7 @@
 package com.audienzz
 
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -28,11 +28,9 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.admanager.AdManagerInterstitialAd
 import com.google.android.gms.ads.admanager.AdManagerInterstitialAdLoadCallback
 import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.rewarded.RewardedAd
 import org.audienzz.mobile.AudienzzInterstitialAdUnit
 import org.audienzz.mobile.original.AudienzzInterstitialAdHandler
-import org.audienzz.mobile.util.AudienzzFullScreenContentCallback
-import org.audienzz.mobile.util.lazyLoadAd
+import org.audienzz.mobile.util.lazyAdLoader
 
 class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
   private var minSizesPercentage: List<Int> = listOf()
@@ -86,15 +84,6 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
     if (gpID != null) {
       auInterstitialView?.gpid = gpID
     }
-    if (keyword != null) {
-      auInterstitialView?.addExtKeyword(keyword!!)
-    }
-    if (keywords != null) {
-      auInterstitialView?.addExtKeywords(keywords!!)
-    }
-    if (appContent != null) {
-      auInterstitialView?.appContent = appContent
-    }
 
     auInterstitialView?.bannerParameters = bannerParameters
     auInterstitialView?.videoParameters = videoParameters
@@ -102,9 +91,9 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
 
     val activity = (context as? ReactContext)?.currentActivity
 
-    this.lazyLoadAd(
+    this.lazyAdLoader(
       adHandler = handler,
-      listener = object : AdManagerInterstitialAdLoadCallback() {
+      adLoadCallback = object : AdManagerInterstitialAdLoadCallback() {
         override fun onAdLoaded(interstitialAd: AdManagerInterstitialAd) {
 
           interstitial = interstitialAd
@@ -133,7 +122,7 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
           handleAdLoaded()
 
           if (activity != null) {
-            interstitial!!.show(activity)
+            interstitial.show(activity)
           }
         }
 
@@ -141,11 +130,7 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
           handleAdFailedToLoad(loadAdError)
         }
       },
-      resultCallback = {},
-      manager = AudienzzFullScreenContentCallback(
-
-      ),
-      onLoadRequest = { request, listener ->
+      resultCallback = { resultCode, request, listener ->
         AdManagerInterstitialAd.load(
           activity!!,
           adUnitID,
@@ -157,6 +142,6 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
   }
 
   fun updateMinSizesPercentage(value: List<Int>) {
-    minSizesPercentage = value;
+    minSizesPercentage = value
   }
 }

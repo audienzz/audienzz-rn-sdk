@@ -1,20 +1,15 @@
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import {
   OriginalBanner,
   OriginalInterstitial,
   OriginalRewarded,
-  RenderingBanner,
-  RenderingInterstitial,
-  RenderingRewarded,
 } from 'audienzz';
 import {
-  getRandomConfigIdBanner,
   getRandomConfigIdInterstitial,
 } from '../utils';
 
 const LazyLoadingExample = () => {
-  const bannerMultiformatAuConfigID = getRandomConfigIdBanner();
   const interstitialMultiformatAuConfigID = getRandomConfigIdInterstitial();
 
   return (

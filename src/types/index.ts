@@ -1,5 +1,4 @@
 import type { IAdEvents } from './IAdEvents';
-import type { IAppContent } from './IAppContent';
 import type { IBaseAdProps } from './IBaseAdProps';
 import type {
   IOriginalBannerProps,
@@ -32,7 +31,6 @@ import type {
 
 export type {
   IAdEvents,
-  IAppContent,
   IBaseAdProps,
   IOriginalBannerProps,
   IOriginalInterstitialProps,

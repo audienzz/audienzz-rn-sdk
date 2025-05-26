@@ -1,5 +1,5 @@
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -35,9 +35,6 @@
 @property(nonatomic, copy) NSArray<NSString *> *videoProtocols;
 @property(nonatomic, copy) NSArray<NSNumber *> *videoBitrate;
 @property(nonatomic, copy) NSArray<NSNumber *> *videoDuration;
-@property(nonatomic, copy) NSString *keyword;
-@property(nonatomic, copy) NSArray<NSString *> *keywords;
-@property(nonatomic, copy) AUMORTBAppContent *appContent;
 @property(nonatomic, copy) NSString *pbAdSlot;
 @property(nonatomic, copy) NSString *gpID;
 @property(nonatomic, copy) NSString *adUnitID;

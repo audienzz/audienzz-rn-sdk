@@ -1,7 +1,7 @@
 package com.audienzz
 
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -87,15 +87,6 @@ class RCTRenderingBannerView(context: Context) : RCTOriginalView(context) {
 
     if (pbAdSlot != null) {
       auBannerView?.pbAdSlot = pbAdSlot
-    }
-    if (keyword != null) {
-      auBannerView?.addExtKeyword(keyword!!)
-    }
-    if (keywords != null) {
-      auBannerView?.addExtKeywords(keywords!!)
-    }
-    if (appContent != null) {
-      auBannerView?.setAppContent(appContent!!)
     }
 
     auBannerView?.videoPlacementType =  AudienzzConversionUtils.convertToAudienzzVideoPlacementType(videoPlacement)

@@ -1,7 +1,7 @@
 package com.audienzz
 
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -178,9 +178,6 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     val autoRefreshPeriodMillis: Int? = reactViewGroup.getAutoRefreshPeriodMillis()?.div(1000)
     val pbAdSlot: String? = reactViewGroup.pbAdSlot
     val gpID: String? = reactViewGroup.gpID
-    val keywords: Set<String>? = reactViewGroup.keywords
-    val keyword: String? = reactViewGroup.keyword
-    val appContent: AudienzzContentObject? = reactViewGroup.appContent
     val auBannerView =
       AudienzzBannerAdUnit(
         auConfigID,
@@ -243,15 +240,6 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     }
     if (gpID != null) {
       auBannerView.gpid = gpID
-    }
-    if (keyword != null) {
-      auBannerView.addExtKeyword(keyword)
-    }
-    if (keywords != null) {
-      auBannerView.addExtKeywords(keywords)
-    }
-    if (appContent != null) {
-      auBannerView.appContent = appContent
     }
 
     auBannerView.bannerParameters = bannerParameters
@@ -420,26 +408,6 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
   @ReactProp(name = "gpID")
   fun setGpID(view: RCTOriginalBannerView, value: String) {
     view.updateGpID(value)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "keyword")
-  fun setKeyword(view: RCTOriginalBannerView, value: String) {
-    view.updateKeyword(value)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "keywords")
-  fun setKeywords(view: RCTOriginalBannerView, value: ReadableArray) {
-    val keywordsSet = Utils.readableArrayToSet(value)
-    view.updateKeywords(keywordsSet)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "appContent")
-  fun setAppContent(view: RCTOriginalBannerView, value: ReadableMap) {
-    val appContent = Utils.createContentObject(value)
-    view.updateAppContent(appContent)
     view.updatePropsChanged(true)
   }
 

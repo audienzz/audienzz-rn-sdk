@@ -1,7 +1,6 @@
 import React from 'react';
 import { Text, View, StyleSheet, Platform } from 'react-native';
 import { RenderingBanner } from 'audienzz';
-import { APP_CONTENT_FOR_BANNER } from '../constants';
 
 const RenderingBannerAPIExample = () => {
   return (
@@ -23,8 +22,6 @@ const RenderingBannerAPIExample = () => {
           isLazyLoad={false}
           pbAdSlot="pbAdSlot"
           gpID="gpID"
-          keywords={['clothing', 'sport']}
-          appContent={APP_CONTENT_FOR_BANNER}
           onAdLoaded={() => console.log('success')}
           onAdClicked={() => console.log('clicked')}
           onAdOpened={() => console.log('ad opened')}

@@ -1,5 +1,5 @@
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -42,21 +42,11 @@
     
     _auInterstitialView = [[AUInterstitialView alloc] initWithConfigId:self.auConfigID adFormats:[AUConverter convertToAUAdFormats:self.adFormats] isLazyLoad:self.isLazyLoad minWidthPerc:[_minSizesPercentage[0] integerValue] minHeightPerc:[_minSizesPercentage[1] integerValue]];
     
-    if(self.keyword != nil) {
-        [_auInterstitialView.adUnitConfiguration addExtKeyword:self.keyword];
-    }
-    if(self.keywords != nil) {
-        NSSet<NSString *> *keywordsSet = [NSSet setWithArray:self.keywords];
-        [_auInterstitialView.adUnitConfiguration addExtKeywords:keywordsSet];
-    }
     if(self.pbAdSlot != nil) {
         [_auInterstitialView.adUnitConfiguration setAdSlot:self.pbAdSlot];
     }
     if(self.gpID != nil) {
         [_auInterstitialView.adUnitConfiguration setGPID:self.gpID];
-    }
-    if(self.appContent != nil) {
-        [_auInterstitialView.adUnitConfiguration setAppContent:self.appContent];
     }
     
     _auInterstitialView.parameters = self.videoParameters;

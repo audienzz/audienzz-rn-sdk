@@ -1,5 +1,5 @@
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -79,21 +79,11 @@
     if (_autoRefreshPeriodMillis > 0) {
         [_auBannerView.adUnitConfiguration setAutoRefreshMillisWithTime:_autoRefreshPeriodMillis];
     }
-    if(self.keyword != nil) {
-        [_auBannerView.adUnitConfiguration addExtKeyword:self.keyword];
-    }
-    if(self.keywords != nil) {
-        NSSet<NSString *> *keywordsSet = [NSSet setWithArray:self.keywords];
-        [_auBannerView.adUnitConfiguration addExtKeywords:keywordsSet];
-    }
     if(self.pbAdSlot != nil) {
         [_auBannerView.adUnitConfiguration setAdSlot:self.pbAdSlot];
     }
     if(self.gpID != nil) {
         [_auBannerView.adUnitConfiguration setGPID:self.gpID];
-    }
-    if(self.appContent != nil) {
-        [_auBannerView.adUnitConfiguration setAppContent:self.appContent];
     }
     
     _auBannerView.bannerParameters = self.bannerParameters;

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { OriginalBanner } from 'audienzz';
-import { APP_CONTENT_FOR_BANNER } from '../constants';
 import { getRandomConfigIdBanner } from '../utils';
 import ActionButton from './ActionButton';
 import { Dimensions } from 'react-native';
@@ -40,9 +39,6 @@ const OriginalBannerAPIExample = () => {
           autoRefreshPeriodMillis={30000}
           pbAdSlot="pbAdSlot"
           gpID="gpID"
-          keyword="clothing"
-          keywords={['clothing', 'sport']}
-          appContent={APP_CONTENT_FOR_BANNER}
           onAdLoaded={() => console.log('success')}
           onAdClicked={() => console.log('clicked')}
           onAdOpened={() => console.log('ad opened')}

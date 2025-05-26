@@ -1,5 +1,4 @@
 import type { ViewStyle } from 'react-native';
-import type { IAppContent } from './IAppContent';
 
 export interface IBaseAdProps {
   adUnitID: string;
@@ -8,8 +7,5 @@ export interface IBaseAdProps {
   isAdaptive?: boolean;
   pbAdSlot?: string;
   gpID?: string;
-  keyword?: string;
-  keywords?: string[];
-  appContent?: IAppContent;
   style?: ViewStyle;
 }

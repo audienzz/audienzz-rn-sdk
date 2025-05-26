@@ -1,5 +1,5 @@
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -54,21 +54,11 @@
     _eventHandler = [[AUGAMInterstitialEventHandler alloc] initWithAdUnitID:self.adUnitID];
     _auInterstitialView = [[AUInterstitialRenderingView alloc] initWithConfigId:self.auConfigID isLazyLoad:self.isLazyLoad adFormat:[AUConverter adFormatFromString:_adFormat] minSizePercentage:minSizePerc eventHandler:_eventHandler];
     
-    if(self.keyword != nil) {
-        [_auInterstitialView.adUnitConfiguration addExtKeyword:self.keyword];
-    }
-    if(self.keywords != nil) {
-        NSSet<NSString *> *keywordsSet = [NSSet setWithArray:self.keywords];
-        [_auInterstitialView.adUnitConfiguration addExtKeywords:keywordsSet];
-    }
     if(self.pbAdSlot != nil) {
         [_auInterstitialView.adUnitConfiguration setAdSlot:self.pbAdSlot];
     }
     if(self.gpID != nil) {
         [_auInterstitialView.adUnitConfiguration setGPID:self.gpID];
-    }
-    if(self.appContent != nil) {
-        [_auInterstitialView.adUnitConfiguration setAppContent:self.appContent];
     }
     
     [_auInterstitialView setSkipDelay:_skipDelay];

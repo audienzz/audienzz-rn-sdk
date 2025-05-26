@@ -87,18 +87,6 @@ open class RCTOriginalView(context: Context) : FrameLayout(context) {
     }
   }
 
-  fun updateAppContent(value: AudienzzContentObject) {
-    appContent = value
-  }
-
-  fun updateKeyword(value: String) {
-    keyword = value
-  }
-
-  fun updateKeywords(value: Set<String>) {
-    keywords = value
-  }
-
   fun updatePbAdSlot(value: String) {
     pbAdSlot = value
   }

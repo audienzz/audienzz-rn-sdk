@@ -1,14 +1,14 @@
 PODS:
-  - audienzz (0.1.7):
-    - AudienzziOSSDK (= 0.0.16)
+  - audienzz (0.1.8):
+    - AudienzziOSSDK (= 0.0.21)
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
-  - AudienzziOSSDK (0.0.16):
-    - Google-Mobile-Ads-SDK (= 11.10.0)
-    - GoogleAds-IMA-iOS-SDK (= 3.23.0)
-    - PrebidMobile (= 2.3.0)
-    - PrebidMobileGAMEventHandlers (= 2.3.0)
+  - AudienzziOSSDK (0.0.21):
+    - Google-Mobile-Ads-SDK (= 12.3.0)
+    - GoogleAds-IMA-iOS-SDK (= 3.26.1)
+    - PrebidMobile (= 3.0.0)
+    - PrebidMobileGAMEventHandlers (= 3.0.0)
     - SQLite.swift (= 0.14.1)
   - boost (1.83.0)
   - DoubleConversion (1.1.6)
@@ -22,20 +22,20 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.73.6)
   - fmt (6.2.1)
   - glog (0.3.5)
-  - Google-Mobile-Ads-SDK (11.10.0):
+  - Google-Mobile-Ads-SDK (12.3.0):
     - GoogleUserMessagingPlatform (>= 1.1)
-  - GoogleAds-IMA-iOS-SDK (3.23.0)
-  - GoogleUserMessagingPlatform (2.7.0)
+  - GoogleAds-IMA-iOS-SDK (3.26.1)
+  - GoogleUserMessagingPlatform (3.0.0)
   - hermes-engine (0.73.6):
     - hermes-engine/Pre-built (= 0.73.6)
   - hermes-engine/Pre-built (0.73.6)
   - libevent (2.1.12)
-  - PrebidMobile (2.3.0):
-    - PrebidMobile/core (= 2.3.0)
-  - PrebidMobile/core (2.3.0)
-  - PrebidMobileGAMEventHandlers (2.3.0):
-    - Google-Mobile-Ads-SDK
-    - PrebidMobile (= 2.3.0)
+  - PrebidMobile (3.0.0):
+    - PrebidMobile/core (= 3.0.0)
+  - PrebidMobile/core (3.0.0)
+  - PrebidMobileGAMEventHandlers (3.0.0):
+    - Google-Mobile-Ads-SDK (>= 12.0.0)
+    - PrebidMobile (= 3.0.0)
   - RCT-Folly (2022.05.16.00):
     - boost
     - DoubleConversion
@@ -1249,21 +1249,21 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  audienzz: 88ae5daf16220e80276e5bdac61e980a5eff3557
-  AudienzziOSSDK: 5a53222b4a095bf645969b435f77cfc2e2761455
+  audienzz: 3205b06f31b7d4c05c9865c337f39d0207da4dbe
+  AudienzziOSSDK: 317bed42c5b0fc02601f6a2b0127d103089ac59a
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
   DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
   FBLazyVector: f64d1e2ea739b4d8f7e4740cde18089cd97fe864
   FBReactNativeSpec: 9f2b8b243131565335437dba74923a8d3015e780
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: c5d68082e772fa1c511173d6b30a9de2c05a69a2
-  Google-Mobile-Ads-SDK: 13e6e98edfd78ad8d8a791edb927658cc260a56f
-  GoogleAds-IMA-iOS-SDK: ee2a68ed7a1a17c7bb81bdb1b81590b35a3fc8f3
-  GoogleUserMessagingPlatform: a8b56893477f67212fbc8411c139e61d463349f5
+  Google-Mobile-Ads-SDK: 01b1b77e0bdba8b4027ae62e9bd52e5a95d930aa
+  GoogleAds-IMA-iOS-SDK: 10b8f194e7cd2714d4de9a0587c46c8aaf06c620
+  GoogleUserMessagingPlatform: f8d0cdad3ca835406755d0a69aa634f00e76d576
   hermes-engine: 9cecf9953a681df7556b8cc9c74905de8f3293c0
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
-  PrebidMobile: 459a3a26eea63b7b4687dcadf928514050e26b31
-  PrebidMobileGAMEventHandlers: 7b80a8f8c10f719a7c25abedb3fb6325156de9bd
+  PrebidMobile: faf962849acab6442e0e7fc99eab110a87407e49
+  PrebidMobileGAMEventHandlers: f7631acd2346fb12e349075fac6314da0d8d3639
   RCT-Folly: cd21f1661364f975ae76b3308167ad66b09f53f5
   RCTRequired: ca1d7414aba0b27efcfa2ccd37637edb1ab77d96
   RCTTypeSafety: 678e344fb976ff98343ca61dc62e151f3a042292
@@ -1309,6 +1309,6 @@ SPEC CHECKSUMS:
   SQLite.swift: 2992550ebf3c5b268bf4352603e3df87d2a4ed72
   Yoga: 805bf71192903b20fc14babe48080582fee65a80
 
-PODFILE CHECKSUM: c0e71fe91b874d9740e0d59dc55c7db2d8abc6bd
+PODFILE CHECKSUM: 7dfaf773b8d343b0b0ec6ffb1cc5002988386886
 
 COCOAPODS: 1.16.2
