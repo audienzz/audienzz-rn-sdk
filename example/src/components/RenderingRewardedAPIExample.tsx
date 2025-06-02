@@ -2,7 +2,6 @@ import * as React from 'react';
 import {} from 'react-native';
 import { RenderingRewarded } from 'audienzz';
 import ActionButton from './ActionButton';
-import { APP_CONTENT_FOR_REWARDED } from '../constants';
 
 const RenderingRewardedAPIExample = () => {
   const [isRewarded, setIsRewarded] = React.useState(false);
@@ -37,7 +36,6 @@ const RenderingRewardedAPIExample = () => {
             console.log(`REWARDED ERROR -> ${JSON.stringify(error, null, 2)}`);
             setIsRewarded(false);
           }}
-          appContent={APP_CONTENT_FOR_REWARDED}
         />
       )}
     </>

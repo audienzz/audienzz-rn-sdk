@@ -10,7 +10,6 @@ import {
 } from './ads/rendering';
 
 import type {
-  IAppContent,
   IRNAudienzzModule,
   IAdEvents,
   IParamaters,
@@ -48,7 +47,6 @@ export { default, RNAudienzz } from './RNAudienzz';
 
 export type {
   IAdEvents,
-  IAppContent,
   IBaseAdProps,
   IRNAudienzzModule,
   IOriginalBannerProps,

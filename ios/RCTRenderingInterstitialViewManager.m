@@ -1,5 +1,5 @@
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -28,9 +28,6 @@ RCT_EXPORT_MODULE(RCTRenderingInterstitialView)
 }
 
 RCT_EXPORT_VIEW_PROPERTY(isLazyLoad, NSNumber)
-RCT_EXPORT_VIEW_PROPERTY(keyword, NSString)
-RCT_EXPORT_VIEW_PROPERTY(keywords, NSArray)
-RCT_EXPORT_VIEW_PROPERTY(appContent, NSDictionary)
 RCT_EXPORT_VIEW_PROPERTY(pbAdSlot, NSString)
 RCT_EXPORT_VIEW_PROPERTY(gpID, NSString)
 RCT_EXPORT_VIEW_PROPERTY(adUnitID, NSString)

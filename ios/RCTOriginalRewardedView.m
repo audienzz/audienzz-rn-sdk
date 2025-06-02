@@ -1,5 +1,5 @@
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -37,21 +37,11 @@
     
     _auRewardedView = [[AURewardedView alloc] initWithConfigId: self.auConfigID isLazyLoad:self.isLazyLoad];
     
-    if(self.keyword != nil) {
-        [_auRewardedView.adUnitConfiguration addExtKeyword:self.keyword];
-    }
-    if(self.keywords != nil) {
-        NSSet<NSString *> *keywordsSet = [NSSet setWithArray:self.keywords];
-        [_auRewardedView.adUnitConfiguration addExtKeywords:keywordsSet];
-    }
     if(self.pbAdSlot != nil) {
         [_auRewardedView.adUnitConfiguration setAdSlot:self.pbAdSlot];
     }
     if(self.gpID != nil) {
         [_auRewardedView.adUnitConfiguration setGPID:self.gpID];
-    }
-    if(self.appContent != nil) {
-        [_auRewardedView.adUnitConfiguration setAppContent:self.appContent];
     }
     
     _auRewardedView.parameters = self.videoParameters;

@@ -1,7 +1,7 @@
 package com.audienzz
 
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.audienzz.mobile.AudienzzRewardedVideoAdUnit
 import org.audienzz.mobile.original.AudienzzRewardedVideoAdHandler
 import org.audienzz.mobile.util.lazyLoadAd
 import org.audienzz.mobile.util.AudienzzFullScreenContentCallback
+import org.audienzz.mobile.util.lazyAdLoader
 
 class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
   private var auRewardedView: AudienzzRewardedVideoAdUnit? = null
@@ -85,23 +86,14 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
     if (gpID != null) {
       auRewardedView?.gpid = gpID
     }
-    if (keyword != null) {
-      auRewardedView?.addExtKeyword(keyword!!)
-    }
-    if (keywords != null) {
-      auRewardedView?.addExtKeywords(keywords!!)
-    }
-    if (appContent != null) {
-      auRewardedView?.appContent = appContent
-    }
 
     auRewardedView?.videoParameters = videoParameters
 
     val activity = (context as? ReactContext)?.currentActivity
 
-    this.lazyLoadAd(
+    this.lazyAdLoader(
       adHandler = handler,
-      listener = object : RewardedAdLoadCallback() {
+      adLoadCallback = object : RewardedAdLoadCallback() {
         override fun onAdLoaded(ad: RewardedAd) {
           rewardedAd = ad
           rewardedAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
@@ -142,9 +134,7 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
           handleAdFailedToLoad(loadAdError)
         }
       },
-      resultCallback = {},
-      manager = AudienzzFullScreenContentCallback(),
-      requestCallback = { request, listener ->
+      resultCallback = { resultCode, request, listener ->
         RewardedAd.load(
           activity!!,
           adUnitID,

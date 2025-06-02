@@ -1,7 +1,7 @@
 package com.audienzz
 
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -76,15 +76,6 @@ class RCTRenderingInterstitialView(context: Context) : RCTOriginalView(context) 
 
     if (pbAdSlot != null) {
       auInterstitialView?.pbAdSlot = pbAdSlot
-    }
-    if (keyword != null) {
-      auInterstitialView?.addExtKeyword(keyword!!)
-    }
-    if (keywords != null) {
-      auInterstitialView?.addExtKeywords(keywords!!)
-    }
-    if (appContent != null) {
-      auInterstitialView?.appContent = appContent
     }
 
     auInterstitialView?.setSkipDelay(skipDelay)

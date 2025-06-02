@@ -2,7 +2,6 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { OriginalInterstitial } from 'audienzz';
 import ActionButton from './ActionButton';
-import { APP_CONTENT_FOR_INTERSTITIAL } from '../constants';
 import { getRandomConfigIdInterstitial } from '../utils';
 
 const OriginalInterstitialAPIExample = () => {
@@ -47,9 +46,6 @@ const OriginalInterstitialAPIExample = () => {
           isLazyLoad={false}
           pbAdSlot="pbAdSlot"
           gpID="gpID"
-          keyword="mainKeyword"
-          keywords={['clothing', 'sport']}
-          appContent={APP_CONTENT_FOR_INTERSTITIAL}
           onAdLoaded={() => console.log('INTERSTITIAL success')}
           onAdClicked={() => console.log('INTERSTITIAL clicked')}
           onAdOpened={() => console.log('INTERSTITIAL ad opened')}
