@@ -1,7 +1,7 @@
 package com.audienzz
 
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -74,26 +74,6 @@ class RCTRenderingRewardedViewManager : SimpleViewManager<RCTRenderingRewardedVi
   @ReactProp(name = "pbAdSlot")
   fun setPbAdSlot(view: RCTRenderingRewardedView, value: String) {
     view.updatePbAdSlot(value)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "keyword")
-  fun setKeyword(view: RCTRenderingRewardedView, value: String) {
-    view.updateKeyword(value)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "keywords")
-  fun setKeywords(view: RCTRenderingRewardedView, value: ReadableArray) {
-    val keywordsSet = Utils.readableArrayToSet(value)
-    view.updateKeywords(keywordsSet)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "appContent")
-  fun setAppContent(view: RCTRenderingRewardedView, value: ReadableMap) {
-    val appContent = Utils.createContentObject(value)
-    view.updateAppContent(appContent)
     view.updatePropsChanged(true)
   }
 

@@ -1,5 +1,5 @@
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 
 #import "RCTOriginalView.h"
 #import "AUConverter.h"
-#import "Utils.h"
+#import "AudienzzUtils.h"
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 
 @implementation RCTOriginalView
@@ -77,22 +77,6 @@
 
 - (void)setVideoDuration:(NSArray<NSNumber *> *)value {
     _videoDuration = value;
-    _propsChanged = YES;
-}
-
-- (void)setKeyword:(NSString *)value {
-    _keyword = value;
-    _propsChanged = YES;
-}
-
-- (void)setKeywords:(NSArray<NSString *> *)value {
-    _keywords = value;
-    _propsChanged = YES;
-}
-
-- (void)setAppContent:(NSDictionary *)value {
-    AUMORTBAppContent *appContent = [Utils createContentObjectFromDictionary:value];
-    _appContent = appContent;
     _propsChanged = YES;
 }
 

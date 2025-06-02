@@ -1,7 +1,7 @@
 package com.audienzz
 
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -151,26 +151,6 @@ class RCTOriginalRewardedViewManager : SimpleViewManager<RCTOriginalRewardedView
   @ReactProp(name = "gpID")
   fun setGpID(view: RCTOriginalRewardedView, value: String) {
     view.updateGpID(value)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "keyword")
-  fun setKeyword(view: RCTOriginalRewardedView, value: String) {
-    view.updateKeyword(value)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "keywords")
-  fun setKeywords(view: RCTOriginalRewardedView, value: ReadableArray) {
-    val keywordsSet = Utils.readableArrayToSet(value)
-    view.updateKeywords(keywordsSet)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "appContent")
-  fun setAppContent(view: RCTOriginalRewardedView, value: ReadableMap) {
-    val appContent = Utils.createContentObject(value)
-    view.updateAppContent(appContent)
     view.updatePropsChanged(true)
   }
 

@@ -1,5 +1,5 @@
 /*
- Copyright 2024 Audienzz AG
+ Copyright 2025 Audienzz AG
  
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ RCT_EXPORT_METHOD(initialize:(NSString *)companyId
 - (void)initializeWithCompanyId:(NSString *)companyId
                        resolver:(RCTPromiseResolveBlock)resolve
                        rejecter:(RCTPromiseRejectBlock)reject {
-    [[Audienzz shared] configureSDK_RNWithAudienzzKey:companyId :^{
+    [[Audienzz shared] configureSDK_RNWithCompanyId:companyId :^{
         NSDictionary *result = @{
             @"status" : @"SUCCEEDED",
             @"description" : @"SDK initialized successfully!"

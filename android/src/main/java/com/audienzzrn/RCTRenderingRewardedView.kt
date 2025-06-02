@@ -1,7 +1,7 @@
 package com.audienzz
 
 /*
-    Copyright 2024 Audienzz AG
+    Copyright 2025 Audienzz AG
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.RCTEventEmitter
+import org.audienzz.mobile.AudienzzReward
 import org.audienzz.mobile.api.exceptions.AudienzzAdException
 import org.audienzz.mobile.api.rendering.AudienzzRewardedAdUnit
 import org.audienzz.mobile.api.rendering.listeners.AudienzzRewardedAdUnitListener
@@ -70,15 +71,6 @@ class RCTRenderingRewardedView(context: Context) : RCTOriginalView(context) {
     if (pbAdSlot != null) {
       auRewardedView?.pbAdSlot = pbAdSlot
     }
-    if (keyword != null) {
-      auRewardedView?.addExtKeyword(keyword!!)
-    }
-    if (keywords != null) {
-      auRewardedView?.addExtKeywords(keywords!!)
-    }
-    if (appContent != null) {
-      auRewardedView?.appContent = appContent
-    }
 
     auRewardedView?.setRewardedAdUnitListener(object : AudienzzRewardedAdUnitListener {
       override fun onAdLoaded(rewardedAdUnit: AudienzzRewardedAdUnit?) {
@@ -100,7 +92,7 @@ class RCTRenderingRewardedView(context: Context) : RCTOriginalView(context) {
 
       override fun onAdClosed(rewardedAdUnit: AudienzzRewardedAdUnit?) {}
 
-      override fun onUserEarnedReward(rewardedAdUnit: AudienzzRewardedAdUnit?) {
+      override fun onUserEarnedReward(rewardedAdUnit: AudienzzRewardedAdUnit?, reward: AudienzzReward?) {
         handleAdClosed()
       }
     })

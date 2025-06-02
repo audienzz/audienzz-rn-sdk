@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {} from 'react-native';
 import { OriginalRewarded } from 'audienzz';
-import { APP_CONTENT_FOR_REWARDED } from '../constants';
 import ActionButton from './ActionButton';
 
 const OriginalRewardedAPIExample = () => {
@@ -21,9 +20,6 @@ const OriginalRewardedAPIExample = () => {
           isLazyLoad={false}
           pbAdSlot="pbAdSlot"
           gpID="gpID"
-          keyword="mainKeyword"
-          keywords={['clothing', 'sport']}
-          appContent={APP_CONTENT_FOR_REWARDED}
           onAdLoaded={() => console.log('REWARDED success')}
           onAdFailedToLoad={(error) => {
             console.log(`REWARDED ERROR -> ${JSON.stringify(error, null, 2)}`);

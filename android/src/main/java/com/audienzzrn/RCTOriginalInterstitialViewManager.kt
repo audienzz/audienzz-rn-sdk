@@ -182,26 +182,6 @@ class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalIntersti
     view.updatePropsChanged(true)
   }
 
-  @ReactProp(name = "keyword")
-  fun setKeyword(view: RCTOriginalInterstitialView, value: String) {
-    view.updateKeyword(value)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "keywords")
-  fun setKeywords(view: RCTOriginalInterstitialView, value: ReadableArray) {
-    val keywordsSet = Utils.readableArrayToSet(value)
-    view.updateKeywords(keywordsSet)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "appContent")
-  fun setAppContent(view: RCTOriginalInterstitialView, value: ReadableMap) {
-    val appContent = Utils.createContentObject(value)
-    view.updateAppContent(appContent)
-    view.updatePropsChanged(true)
-  }
-
   companion object {
     const val REACT_CLASS = "RCTOriginalInterstitialView"
   }
