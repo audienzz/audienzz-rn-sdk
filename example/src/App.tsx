@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   Text,
   View,
@@ -22,7 +21,7 @@ RNAudienzz()
 
 export default function App() {
   return (
-    <SafeAreaView style={styles.mainContainer}>
+    <View style={styles.mainContainer}>
       <ScrollView
         style={styles.mainContainer}
         contentContainerStyle={styles.scrollviewcontentContainerStyle}
@@ -47,7 +46,7 @@ export default function App() {
         <Text style={styles.bigText}>LAZY LOADING</Text>
         <LazyLoadingExample />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
