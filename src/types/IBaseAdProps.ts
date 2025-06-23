@@ -7,5 +7,6 @@ export interface IBaseAdProps {
   isAdaptive?: boolean;
   pbAdSlot?: string;
   gpID?: string;
+  impOrtbConfig?: string;
   style?: ViewStyle;
 }

@@ -46,6 +46,11 @@ const OriginalInterstitialAPIExample = () => {
           isLazyLoad={false}
           pbAdSlot="pbAdSlot"
           gpID="gpID"
+          impOrtbConfig={`{
+          "banner": {
+            "check": "true"
+          }
+        }`}
           onAdLoaded={() => console.log('INTERSTITIAL success')}
           onAdClicked={() => console.log('INTERSTITIAL clicked')}
           onAdOpened={() => console.log('INTERSTITIAL ad opened')}
@@ -67,6 +72,11 @@ const OriginalInterstitialAPIExample = () => {
           auConfigID="prebid-demo-video-interstitial-320-480-original-api"
           adFormats={['video']}
           isLazyLoad={false}
+          impOrtbConfig={`{
+          "banner": {
+            "check": "true"
+          }
+        }`}
           onAdClosed={() => {
             console.log('INTERSTITIAL ad closed');
             setIsInterstitialVideo(false);
@@ -78,6 +88,11 @@ const OriginalInterstitialAPIExample = () => {
           adUnitID="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
           auConfigID={interstitialMultiformatAuConfigID}
           isLazyLoad={false}
+          impOrtbConfig={`{
+          "banner": {
+            "check": "true"
+          }
+        }`}
           onAdClosed={() => {
             console.log('INTERSTITIAL ad closed');
             setIsInterstitialMulti(false);

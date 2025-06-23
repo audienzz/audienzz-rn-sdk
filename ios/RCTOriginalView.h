@@ -39,6 +39,7 @@
 @property(nonatomic, copy) NSString *gpID;
 @property(nonatomic, copy) NSString *adUnitID;
 @property(nonatomic, copy) NSString *auConfigID;
+@property(nonatomic, copy) NSString *impOrtbConfig;
 @property(nonatomic, assign) BOOL propsChanged;
 
 @end
