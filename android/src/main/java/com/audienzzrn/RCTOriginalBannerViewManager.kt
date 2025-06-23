@@ -24,7 +24,6 @@ import android.view.ViewGroup
 import androidx.core.view.doOnNextLayout
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableArray
-import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
@@ -34,7 +33,6 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.admanager.AdManagerAdView
 import org.audienzz.mobile.AudienzzBannerAdUnit
 import org.audienzz.mobile.AudienzzBannerParameters
-import org.audienzz.mobile.AudienzzContentObject
 import org.audienzz.mobile.AudienzzSignals
 import org.audienzz.mobile.AudienzzVideoParameters
 import org.audienzz.mobile.original.AudienzzAdViewHandler
@@ -178,6 +176,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     val autoRefreshPeriodMillis: Int? = reactViewGroup.getAutoRefreshPeriodMillis()?.div(1000)
     val pbAdSlot: String? = reactViewGroup.pbAdSlot
     val gpID: String? = reactViewGroup.gpID
+    val impOrtbConfig: String? = reactViewGroup.impOrtbConfig
     val auBannerView =
       AudienzzBannerAdUnit(
         auConfigID,
@@ -185,6 +184,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
         height,
         AudienzzConversionUtils.convertToAudienzzAdFormats(adFormats)
       )
+    auBannerView.impOrtbConfig = impOrtbConfig
 
     reactViewGroup.updateAuBannerView(auBannerView)
 
@@ -408,6 +408,12 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
   @ReactProp(name = "gpID")
   fun setGpID(view: RCTOriginalBannerView, value: String) {
     view.updateGpID(value)
+    view.updatePropsChanged(true)
+  }
+
+  @ReactProp(name = "impOrtbConfig")
+  fun setImpOrtbConfig(view: RCTOriginalBannerView, value: String) {
+    view.updateImpOrtbConfig(value)
     view.updatePropsChanged(true)
   }
 

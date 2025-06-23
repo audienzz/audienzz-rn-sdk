@@ -20,6 +20,11 @@ const OriginalRewardedAPIExample = () => {
           isLazyLoad={false}
           pbAdSlot="pbAdSlot"
           gpID="gpID"
+          impOrtbConfig={`{
+          "banner": {
+            "check": "true"
+          }
+        }`}
           onAdLoaded={() => console.log('REWARDED success')}
           onAdFailedToLoad={(error) => {
             console.log(`REWARDED ERROR -> ${JSON.stringify(error, null, 2)}`);

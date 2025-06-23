@@ -17,7 +17,6 @@
 
 #import "RCTOriginalView.h"
 #import "AUConverter.h"
-#import "AudienzzUtils.h"
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 
 @implementation RCTOriginalView
@@ -97,6 +96,11 @@
 
 - (void)setAdUnitID:(NSString *)value {
     _adUnitID = value;
+    _propsChanged = YES;
+}
+
+- (void)setImpOrtbConfig:(NSString *)value {
+    _impOrtbConfig = value;
     _propsChanged = YES;
 }
 

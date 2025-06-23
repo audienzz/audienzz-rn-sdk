@@ -20,7 +20,6 @@ package com.audienzz
 import android.os.Handler
 import android.os.Looper
 import com.facebook.react.bridge.ReadableArray
-import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
@@ -151,6 +150,13 @@ class RCTOriginalRewardedViewManager : SimpleViewManager<RCTOriginalRewardedView
   @ReactProp(name = "gpID")
   fun setGpID(view: RCTOriginalRewardedView, value: String) {
     view.updateGpID(value)
+    view.updatePropsChanged(true)
+  }
+
+
+  @ReactProp(name = "impOrtbConfig")
+  fun setImpOrtbConfig(view: RCTOriginalRewardedView, value: String) {
+    view.updateImpOrtbConfig(value)
     view.updatePropsChanged(true)
   }
 

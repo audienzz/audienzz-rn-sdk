@@ -87,6 +87,7 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
 
     auInterstitialView?.bannerParameters = bannerParameters
     auInterstitialView?.videoParameters = videoParameters
+    auInterstitialView?.impOrtbConfig = impOrtbConfig
     auInterstitialView?.setMinSizePercentage(minSizesPercentage[0], minSizesPercentage[1])
 
     val activity = (context as? ReactContext)?.currentActivity
