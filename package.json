@@ -1,6 +1,6 @@
 {
   "name": "audienzz",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "React Native implementation of the Audienzz SDK",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -48,23 +48,28 @@
   "devDependencies": {
     "@commitlint/config-conventional": "^17.0.2",
     "@evilmartians/lefthook": "^1.5.0",
-    "@react-native/eslint-config": "^0.73.1",
+    "@react-native-community/cli": "18.0.0",
+    "@react-native-community/cli-platform-android": "18.0.0",
+    "@react-native-community/cli-platform-ios": "18.0.0",
+    "@react-native/eslint-config": "0.79.3",
     "@release-it/conventional-changelog": "^5.0.0",
-    "@types/jest": "^29.5.5",
-    "@types/react": "^18.2.44",
+    "@types/jest": "29.5.13",
+    "@types/react": "19.0.0",
+    "@types/react-test-renderer": "19.0.0",
     "commitlint": "^17.0.2",
     "del-cli": "^5.1.0",
-    "eslint": "^8.51.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.1",
-    "jest": "^29.7.0",
-    "prettier": "^3.0.3",
-    "react": "18.2.0",
-    "react-native": "0.74",
-    "react-native-builder-bob": "^0.20.0",
-    "release-it": "^15.0.0",
-    "turbo": "^1.10.7",
-    "typescript": "^5.2.2"
+    "eslint": "^8.19.0",
+    "eslint-config-prettier": "10.1.5",
+    "eslint-plugin-prettier": "5.4.1",
+    "jest": "^29.6.3",
+    "prettier": "2.8.8",
+    "react": "19.0.0",
+    "react-native": "0.79.3",
+    "react-native-builder-bob": "0.40.11",
+    "react-test-renderer": "19.0.0",
+    "release-it": "19.0.3",
+    "turbo": "2.5.4",
+    "typescript": "5.8.3"
   },
   "resolutions": {
     "@types/react": "^18.2.44"
@@ -149,8 +154,5 @@
         }
       ]
     ]
-  },
-  "dependencies": {
-    "@react-native-community/cli-platform-android": "^18.0.0"
   }
 }

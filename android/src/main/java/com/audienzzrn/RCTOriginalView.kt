@@ -19,9 +19,7 @@ package com.audienzz
 
 import android.content.Context
 import android.widget.FrameLayout
-import com.google.android.gms.ads.admanager.AdManagerAdRequest
 import org.audienzz.mobile.AudienzzBannerParameters
-import org.audienzz.mobile.AudienzzContentObject
 import org.audienzz.mobile.AudienzzSignals
 import org.audienzz.mobile.AudienzzVideoParameters
 
@@ -34,13 +32,12 @@ open class RCTOriginalView(context: Context) : FrameLayout(context) {
   var pbAdSlot: String? = null
   var gpID: String? = null
   var keyword: String? = null
-  var keywords: Set<String>? = null
-  var appContent: AudienzzContentObject? = null
   var playbackMethods: List<String> = listOf()
   var apiParameters: List<String> = listOf()
   var videoProtocols: List<String> = listOf()
   var isLazyLoad: Boolean = true
   var isAdaptive: Boolean = false
+  var impOrtbConfig: String? = null
   private var propsChanged: Boolean = false
 
   var bannerParameters = AudienzzBannerParameters()
@@ -85,6 +82,7 @@ open class RCTOriginalView(context: Context) : FrameLayout(context) {
       videoParameters.minBitrate = videoBitrate!![0]
       videoParameters.maxBitrate = videoBitrate!![1]
     }
+
   }
 
   fun updatePbAdSlot(value: String) {
@@ -125,6 +123,10 @@ open class RCTOriginalView(context: Context) : FrameLayout(context) {
 
   fun updateAdUnitID(value: String) {
     adUnitID = value
+  }
+
+  fun updateImpOrtbConfig(value: String){
+    impOrtbConfig = value
   }
 
   fun updateIsLazyLoad(value: Boolean) {

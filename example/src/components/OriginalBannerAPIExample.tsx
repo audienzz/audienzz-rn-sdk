@@ -39,6 +39,11 @@ const OriginalBannerAPIExample = () => {
           autoRefreshPeriodMillis={30000}
           pbAdSlot="pbAdSlot"
           gpID="gpID"
+          impOrtbConfig={`{
+          "banner": {
+            "check": "yeash"
+          }
+        }`}
           onAdLoaded={() => console.log('success')}
           onAdClicked={() => console.log('clicked')}
           onAdOpened={() => console.log('ad opened')}
@@ -72,6 +77,11 @@ const OriginalBannerAPIExample = () => {
           auConfigID="prebid-demo-banner-320-50"
           width={320}
           height={50}
+          impOrtbConfig={`{
+          "banner": {
+            "check": "true"
+          }
+        }`}
           adFormats={['banner']}
           isLazyLoad={false}
           autoRefreshPeriodMillis={30000}
@@ -87,6 +97,11 @@ const OriginalBannerAPIExample = () => {
         auConfigID={bannerMultiformatAuConfigID}
         width={300}
         height={250}
+        impOrtbConfig={`{
+          "banner": {
+            "check": "yeash"
+          }
+        }`}
         isLazyLoad={false}
         onAdFailedToLoad={(error) =>
           console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)
@@ -101,6 +116,11 @@ const OriginalBannerAPIExample = () => {
         height={250}
         adFormats={['video']}
         isLazyLoad={false}
+        impOrtbConfig={`{
+          "banner": {
+            "check": "true"
+          }
+        }`}
         onAdFailedToLoad={(error) =>
           console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)
         }
@@ -115,6 +135,11 @@ const OriginalBannerAPIExample = () => {
         height={250}
         adFormats={['banner']}
         isLazyLoad={false}
+        impOrtbConfig={`{
+          "banner": {
+            "check": "true"
+          }
+        }`}
         onAdFailedToLoad={(error) =>
           console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)
         }

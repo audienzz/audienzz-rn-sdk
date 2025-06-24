@@ -30,8 +30,6 @@ import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import org.audienzz.mobile.AudienzzRewardedVideoAdUnit
 import org.audienzz.mobile.original.AudienzzRewardedVideoAdHandler
-import org.audienzz.mobile.util.lazyLoadAd
-import org.audienzz.mobile.util.AudienzzFullScreenContentCallback
 import org.audienzz.mobile.util.lazyAdLoader
 
 class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
@@ -87,6 +85,7 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
       auRewardedView?.gpid = gpID
     }
 
+    auRewardedView?.impOrtbConfig = impOrtbConfig
     auRewardedView?.videoParameters = videoParameters
 
     val activity = (context as? ReactContext)?.currentActivity
