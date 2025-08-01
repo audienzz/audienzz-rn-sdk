@@ -14,10 +14,13 @@ import OriginalInterstitialAPIExample from './components/OriginalInterstitialAPI
 import OriginalRewardedAPIExample from './components/OriginalRewardedAPIExample';
 import LazyLoadingExample from './components/LazyLoadingExample';
 import RenderingInterstitialAPIExample from './components/RenderingInterstitialAPIExample';
+import RNTargeting from '../../src/RNTargeting';
 
 RNAudienzz()
   .initialize('Company ID provided for the app by Audienzz')
-  .then((value) => console.log(JSON.stringify(value, null, 2)));
+  .then((value) => console.log(JSON.stringify(value, null, 2))).then((_)=>
+    RNTargeting().addGlobalTargeting("TEST", "1")
+  );
 
 export default function App() {
   return (

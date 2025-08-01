@@ -8,6 +8,6 @@ export const getRandomConfigIdBanner = () => {
 export const getRandomConfigIdInterstitial = () => {
   const randomNumber = Math.random();
   return randomNumber < 0.5
-    ? 'prebid-demo-display-interstitial-320-480'
-    : 'prebid-demo-video-interstitial-320-480-original-api';
+    ? '34400101'
+    : '34400101';
 };

@@ -23,13 +23,13 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.RCTEventEmitter
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.rewarded.RewardItem
 import com.google.android.gms.ads.rewarded.RewardedAd
-import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import org.audienzz.mobile.AudienzzRewardedVideoAdUnit
 import org.audienzz.mobile.original.AudienzzRewardedVideoAdHandler
+import org.audienzz.mobile.original.callbacks.AudienzzFullScreenContentCallback
+import org.audienzz.mobile.original.callbacks.AudienzzRewardedAdLoadCallback
 import org.audienzz.mobile.util.lazyAdLoader
 
 class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
@@ -92,38 +92,14 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
 
     this.lazyAdLoader(
       adHandler = handler,
-      adLoadCallback = object : RewardedAdLoadCallback() {
+      adLoadCallback = object : AudienzzRewardedAdLoadCallback() {
         override fun onAdLoaded(ad: RewardedAd) {
           rewardedAd = ad
-          rewardedAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdClicked() {
-              handleAdClicked()
-            }
-
-            override fun onAdDismissedFullScreenContent() {
-              val rewardAmount = reward.amount
-              val rewardType = reward.type
-
-              handleAdClosed(rewardType, rewardAmount)
-
-              rewardedAd = null
-            }
-
-            override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-              rewardedAd = null
-            }
-
-            override fun onAdImpression() {}
-
-            override fun onAdShowedFullScreenContent() {
-              handleAdOpened()
-            }
-          }
 
           handleAdLoaded()
 
           if (activity != null) {
-            rewardedAd!!.show(activity) { rewardItem ->
+            rewardedAd?.show(activity) { rewardItem ->
               reward = rewardItem
             }
           }
@@ -131,6 +107,28 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
 
         override fun onAdFailedToLoad(loadAdError: LoadAdError) {
           handleAdFailedToLoad(loadAdError)
+        }
+      },
+      fullScreenContentCallback = object : AudienzzFullScreenContentCallback() {
+        override fun onAdClicked() {
+          handleAdClicked()
+        }
+
+        override fun onAdDismissedFullScreenContent() {
+          val rewardAmount = reward.amount
+          val rewardType = reward.type
+
+          handleAdClosed(rewardType, rewardAmount)
+
+          rewardedAd = null
+        }
+
+        override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+          rewardedAd = null
+        }
+
+        override fun onAdShowedFullScreenContent() {
+          handleAdOpened()
         }
       },
       resultCallback = { resultCode, request, listener ->
