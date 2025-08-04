@@ -11,6 +11,7 @@ import {
 
 import type {
   IRNAudienzzModule,
+  IRNAudienzzTargetingModule,
   IAdEvents,
   IParamaters,
   IRenderingBannerProps,
@@ -49,6 +50,7 @@ export type {
   IAdEvents,
   IBaseAdProps,
   IRNAudienzzModule,
+  IRNAudienzzTargetingModule,
   IOriginalBannerProps,
   IOriginalInterstitialProps,
   IOriginalRewardedProps,

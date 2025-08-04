@@ -16,6 +16,11 @@ import type {
   TAudienzzInitStatus,
 } from './IRNAudienzzModule';
 import type {
+  IRNAudienzzTargetingModule,
+  AudienzzUniqueId,
+  AudienzzExternalUserId,
+} from './IRNAudienzzTargetingModule';
+import type {
   TAdError,
   TAdFormat,
   TAdFormats,
@@ -41,6 +46,9 @@ export type {
   IRenderingRewardedProps,
   IRNAudienzzModule,
   TAudienzzInitStatus,
+  IRNAudienzzTargetingModule,
+  AudienzzExternalUserId,
+  AudienzzUniqueId,
   TAdError,
   TAdFormat,
   TAdFormats,
