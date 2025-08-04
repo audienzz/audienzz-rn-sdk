@@ -23,13 +23,13 @@ import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.RCTEventEmitter
 import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.admanager.AdManagerInterstitialAd
-import com.google.android.gms.ads.admanager.AdManagerInterstitialAdLoadCallback
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import org.audienzz.mobile.AudienzzInterstitialAdUnit
 import org.audienzz.mobile.original.AudienzzInterstitialAdHandler
+import org.audienzz.mobile.original.callbacks.AudienzzFullScreenContentCallback
+import org.audienzz.mobile.original.callbacks.AudienzzInterstitialAdLoadCallback
 import org.audienzz.mobile.util.lazyAdLoader
 
 class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
@@ -76,7 +76,6 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
       auInterstitialView!!,
       adUnitID,
     )
-    var interstitial: AdManagerInterstitialAd?
 
     if (pbAdSlot != null) {
       auInterstitialView?.pbAdSlot = pbAdSlot
@@ -94,36 +93,12 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
 
     this.lazyAdLoader(
       adHandler = handler,
-      adLoadCallback = object : AdManagerInterstitialAdLoadCallback() {
+      adLoadCallback = object : AudienzzInterstitialAdLoadCallback() {
         override fun onAdLoaded(interstitialAd: AdManagerInterstitialAd) {
-
-          interstitial = interstitialAd
           mInterstitialAd = interstitialAd
-          mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdClicked() {
-              handleAdClicked()
-            }
-
-            override fun onAdDismissedFullScreenContent() {
-              handleAdClosed()
-              mInterstitialAd = null
-            }
-
-            override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-              mInterstitialAd = null
-            }
-
-            override fun onAdImpression() {}
-
-            override fun onAdShowedFullScreenContent() {
-              handleAdOpened()
-            }
-          }
-
           handleAdLoaded()
-
           if (activity != null) {
-            interstitial.show(activity)
+            mInterstitialAd?.show(activity)
           }
         }
 
@@ -131,6 +106,24 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
           handleAdFailedToLoad(loadAdError)
         }
       },
+      fullScreenContentCallback = object : AudienzzFullScreenContentCallback() {
+        override fun onAdClicked() {
+          handleAdClicked()
+        }
+
+        override fun onAdDismissedFullScreenContent() {
+          handleAdClosed()
+          mInterstitialAd = null
+        }
+
+        override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+          mInterstitialAd = null
+        }
+
+        override fun onAdShowedFullScreenContent() {
+          handleAdOpened()
+        }
+  },
       resultCallback = { resultCode, request, listener ->
         AdManagerInterstitialAd.load(
           activity!!,

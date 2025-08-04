@@ -100,6 +100,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 }
 
 - (void)adWillPresentFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
+  [UIApplication.sharedApplication setStatusBarHidden:YES];
   if (self.onAdOpened) {
     self.onAdOpened(@{});
   }
@@ -115,6 +116,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
   [self.auInterstitialView removeFromSuperview];
   self.auInterstitialView = nil;
   
+  [UIApplication.sharedApplication setStatusBarHidden:NO];
   if (self.onAdClosed) {
     self.onAdClosed(@{});
   }

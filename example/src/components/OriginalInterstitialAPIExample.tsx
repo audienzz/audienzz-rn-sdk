@@ -40,27 +40,22 @@ const OriginalInterstitialAPIExample = () => {
 
       {isInterstitialBanner && (
         <OriginalInterstitial
-          adUnitID="ca-app-pub-3940256099942544/4411468910"
+          adUnitID="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
           auConfigID="34400101"
           adFormats={['banner']}
           isLazyLoad={false}
           pbAdSlot="pbAdSlot"
           gpID="gpID"
-          impOrtbConfig={`{
-          "banner": {
-            "check": "true"
-          }
-        }`}
-          onAdLoaded={() => console.log('INTERSTITIAL success')}
-          onAdClicked={() => console.log('INTERSTITIAL clicked')}
-          onAdOpened={() => console.log('INTERSTITIAL ad opened')}
+          onAdLoaded={() => console.log('INTERSTITIAL HTML loaded')}
+          onAdClicked={() => console.log('INTERSTITIAL HTML clicked')}
+          onAdOpened={() => console.log('INTERSTITIAL HTML opened')}
           onAdClosed={() => {
-            console.log('INTERSTITIAL ad closed');
+            console.log('INTERSTITIAL HTML closed');
             setIsInterstitialBanner(false);
           }}
           onAdFailedToLoad={(error) => {
             console.log(
-              `INTERSTITIAL ERROR -> ${JSON.stringify(error, null, 2)}`
+              `INTERSTITIAL HTML ERROR -> ${JSON.stringify(error, null, 2)}`
             );
             setIsInterstitialBanner(false);
           }}
@@ -68,8 +63,8 @@ const OriginalInterstitialAPIExample = () => {
       )}
       {isInterstitialVideo && (
         <OriginalInterstitial
-          adUnitID="ca-app-pub-3940256099942544/5135589807"
-          auConfigID="prebid-demo-video-interstitial-320-480-original-api"
+          adUnitID="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
+          auConfigID="34400101"
           adFormats={['video']}
           isLazyLoad={false}
           impOrtbConfig={`{
@@ -77,8 +72,17 @@ const OriginalInterstitialAPIExample = () => {
             "check": "true"
           }
         }`}
+          onAdLoaded={() => console.log('INTERSTITIAL VIDEO loaded')}
+          onAdClicked={() => console.log('INTERSTITIAL VIDEO clicked')}
+          onAdOpened={() => console.log('INTERSTITIAL VIDEO opened')}
           onAdClosed={() => {
-            console.log('INTERSTITIAL ad closed');
+            console.log('INTERSTITIAL VIDEO closed');
+            setIsInterstitialVideo(false);
+          }}
+          onAdFailedToLoad={(error) => {
+            console.log(
+              `INTERSTITIAL VIDEO ERROR -> ${JSON.stringify(error, null, 2)}`
+            );
             setIsInterstitialVideo(false);
           }}
         />
@@ -93,8 +97,17 @@ const OriginalInterstitialAPIExample = () => {
             "check": "true"
           }
         }`}
+          onAdLoaded={() => console.log('INTERSTITIAL MULTI loaded')}
+          onAdClicked={() => console.log('INTERSTITIAL MULTI clicked')}
+          onAdOpened={() => console.log('INTERSTITIAL MULTI opened')}
           onAdClosed={() => {
-            console.log('INTERSTITIAL ad closed');
+            console.log('INTERSTITIAL MULTI closed');
+            setIsInterstitialMulti(false);
+          }}
+          onAdFailedToLoad={(error) => {
+            console.log(
+              `INTERSTITIAL MULTI ERROR -> ${JSON.stringify(error, null, 2)}`
+            );
             setIsInterstitialMulti(false);
           }}
         />

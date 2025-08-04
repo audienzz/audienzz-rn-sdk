@@ -44,12 +44,26 @@ const OriginalBannerAPIExample = () => {
             "check": "yeash"
           }
         }`}
-          onAdLoaded={() => console.log('success')}
-          onAdClicked={() => console.log('clicked')}
-          onAdOpened={() => console.log('ad opened')}
-          onAdClosed={() => console.log('ad closed')}
+          onAdLoaded={() =>
+            console.log('Original Banner API HTML 300x250 success')
+          }
+          onAdClicked={() =>
+            console.log('Original Banner API HTML 300x250 clicked')
+          }
+          onAdOpened={() =>
+            console.log('Original Banner API HTML 300x250 ad opened')
+          }
+          onAdClosed={() =>
+            console.log('Original Banner API HTML 300x250 ad closed')
+          }
           onAdFailedToLoad={(error) =>
-            console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)
+            console.log(
+              `Original Banner API HTML 300x250 ERROR -> ${JSON.stringify(
+                error,
+                null,
+                2
+              )}`
+            )
           }
           isReserved
         />
@@ -85,8 +99,26 @@ const OriginalBannerAPIExample = () => {
           adFormats={['banner']}
           isLazyLoad={false}
           autoRefreshPeriodMillis={30000}
+          onAdLoaded={() =>
+            console.log(' Original Banner API HTML 320x50 success')
+          }
+          onAdClicked={() =>
+            console.log(' Original Banner API HTML 320x50 clicked')
+          }
+          onAdOpened={() =>
+            console.log(' Original Banner API HTML 320x50 opened')
+          }
+          onAdClosed={() =>
+            console.log(' Original Banner API HTML 320x50 closed')
+          }
           onAdFailedToLoad={(error) =>
-            console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)
+            console.log(
+              ` Original Banner API HTML 320x50 ERROR -> ${JSON.stringify(
+                error,
+                null,
+                2
+              )}`
+            )
           }
         />
       </View>
@@ -103,8 +135,22 @@ const OriginalBannerAPIExample = () => {
           }
         }`}
         isLazyLoad={false}
+        onAdLoaded={() =>
+          console.log('Original Banner API Multiformat success')
+        }
+        onAdClicked={() =>
+          console.log('Original Banner API Multiformat clicked')
+        }
+        onAdOpened={() => console.log('Original Banner API Multiformat opened')}
+        onAdClosed={() => console.log('Original Banner API Multiformat closed')}
         onAdFailedToLoad={(error) =>
-          console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)
+          console.log(
+            `Original Banner API Multiformat ERROR -> ${JSON.stringify(
+              error,
+              null,
+              2
+            )}`
+          )
         }
       />
       <View style={styles.height30} />
@@ -121,8 +167,18 @@ const OriginalBannerAPIExample = () => {
             "check": "true"
           }
         }`}
+        onAdLoaded={() => console.log('Original Banner API Video success')}
+        onAdClicked={() => console.log('Original Banner API Video clicked')}
+        onAdOpened={() => console.log('Original Banner API Video opened')}
+        onAdClosed={() => console.log('Original Banner API Video closed')}
         onAdFailedToLoad={(error) =>
-          console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)
+          console.log(
+            `Original Banner API Video ERROR -> ${JSON.stringify(
+              error,
+              null,
+              2
+            )}`
+          )
         }
         isReserved
       />
@@ -140,8 +196,18 @@ const OriginalBannerAPIExample = () => {
             "check": "true"
           }
         }`}
+        onAdLoaded={() => console.log('Original Banner API Multisize success')}
+        onAdClicked={() => console.log('Original Banner API Multisize clicked')}
+        onAdOpened={() => console.log('Original Banner API Multisize opened')}
+        onAdClosed={() => console.log('Original Banner API Multisize closed')}
         onAdFailedToLoad={(error) =>
-          console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)
+          console.log(
+            `Original Banner API Multisize ERROR -> ${JSON.stringify(
+              error,
+              null,
+              2
+            )}`
+          )
         }
         isAdaptive={true}
       />
