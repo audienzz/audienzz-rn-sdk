@@ -3,6 +3,11 @@ export type TAdError = {
   message: string;
 };
 
+export type TAdSize = {
+  width: number;
+  height: number;
+}
+
 export type TAdFormat = 'banner' | 'video';
 
 export type TAdFormats = Array<'banner' | 'video'>;

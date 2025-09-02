@@ -18,8 +18,7 @@ const LazyLoadingExample = () => {
       <OriginalBanner
         adUnitID="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
         auConfigID="33994718"
-        width={300}
-        height={250}
+        sizes={[{width: 300, height: 250}]}
         adFormats={['banner']}
       />
       <View style={styles.height30} />
@@ -27,8 +26,7 @@ const LazyLoadingExample = () => {
       <OriginalBanner
         adUnitID="ca-app-pub-3940256099942544/2934735716"
         auConfigID="prebid-demo-banner-320-50"
-        width={320}
-        height={50}
+        sizes={[{width: 320, height: 50}]}
         adFormats={['banner']}
       />
       <View style={styles.height30} />

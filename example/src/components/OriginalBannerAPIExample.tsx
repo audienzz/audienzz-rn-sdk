@@ -32,8 +32,7 @@ const OriginalBannerAPIExample = () => {
           ref={bannerRef}
           adUnitID="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
           auConfigID="33994718"
-          width={300}
-          height={250}
+          sizes={[{width: 300, height: 250}, {width: 220, height: 80}]}
           adFormats={['banner']}
           isLazyLoad={false}
           autoRefreshPeriodMillis={30000}
@@ -41,7 +40,7 @@ const OriginalBannerAPIExample = () => {
           gpID="gpID"
           impOrtbConfig={`{
           "banner": {
-            "check": "yeash"
+            "check": "yeash2222"
           }
         }`}
           onAdLoaded={() =>
@@ -89,8 +88,7 @@ const OriginalBannerAPIExample = () => {
         <OriginalBanner
           adUnitID="ca-app-pub-3940256099942544/2934735716"
           auConfigID="prebid-demo-banner-320-50"
-          width={320}
-          height={50}
+          sizes={[{width: 320, height: 50}]}
           impOrtbConfig={`{
           "banner": {
             "check": "true"
@@ -127,8 +125,7 @@ const OriginalBannerAPIExample = () => {
       <OriginalBanner
         adUnitID="/21808260008/prebid-demo-original-banner-multiformat"
         auConfigID={bannerMultiformatAuConfigID}
-        width={300}
-        height={250}
+        sizes={[{width: 300, height: 250}]}
         impOrtbConfig={`{
           "banner": {
             "check": "yeash"
@@ -158,8 +155,7 @@ const OriginalBannerAPIExample = () => {
       <OriginalBanner
         adUnitID="/21808260008/prebid-demo-original-api-video-banner"
         auConfigID="prebid-demo-video-outstream-original-api"
-        width={300}
-        height={250}
+       sizes={[{width: 300, height: 250}]}
         adFormats={['video']}
         isLazyLoad={false}
         impOrtbConfig={`{
@@ -187,8 +183,7 @@ const OriginalBannerAPIExample = () => {
       <OriginalBanner
         adUnitID="ca-app-pub-3940256099942544/2435281174"
         auConfigID="prebid-demo-banner-320-50"
-        width={Dimensions.get('window').width}
-        height={250}
+        sizes={[{width: Dimensions.get('window').width, height: 250}]}
         adFormats={['banner']}
         isLazyLoad={false}
         impOrtbConfig={`{

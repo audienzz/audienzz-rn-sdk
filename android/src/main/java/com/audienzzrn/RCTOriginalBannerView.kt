@@ -22,12 +22,14 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.events.RCTEventEmitter
+import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.LoadAdError
+import org.audienzz.mobile.AudienzzAdSize
 import org.audienzz.mobile.AudienzzBannerAdUnit
 
 class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
-  private var adWidth: Int = 0
-  private var adHeight: Int = 0
+  private var sizes: Array<AudienzzAdSize> = arrayOf()
+  private var receivedSize: AdSize = AdSize(1,1)
   private var autoRefreshPeriodMillis: Int? = null
   private var videoPlacement: String = ""
 
@@ -39,14 +41,20 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
   }
 
   private val measureAndLayout = Runnable {
-    val heightMeasureSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
-    measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), heightMeasureSpec)
-    layout(left, top, right, top + height)
+    val heightPx = (receivedSize.height  * resources.displayMetrics.density).toInt()
+    val widthPx = (receivedSize.width * resources.displayMetrics.density).toInt()
+
+    val heightMeasureSpec = MeasureSpec.makeMeasureSpec(heightPx, MeasureSpec.EXACTLY)
+    measure(MeasureSpec.makeMeasureSpec(widthPx, MeasureSpec.EXACTLY), heightMeasureSpec)
+    layout(left, top, right, top + heightPx)
   }
 
-  fun handleAdLoaded() {
+  fun handleAdLoaded(adSize: AdSize) {
+    val size: WritableMap = Arguments.createMap()
+    size.putInt("width", adSize.width)
+    size.putInt("height", adSize.height)
     (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(id, "onAdLoaded", null)
+      .receiveEvent(id, "onAdLoaded", size)
   }
 
   fun handleAdClicked() {
@@ -101,19 +109,16 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
     return videoPlacement
   }
 
-  fun updateWidth(value: Int) {
-    adWidth = value
+  fun updateSizes(value: Array<AudienzzAdSize>) {
+    sizes = value
   }
 
-  fun getWIDTH(): Int {
-    return adWidth
+  fun getSizes(): Array<AudienzzAdSize>{
+    return sizes
   }
 
-  fun updateHeight(value: Int) {
-    adHeight = value
-  }
-
-  fun getHEIGHT(): Int {
-    return adHeight
+  fun setSize(adSize: AdSize){
+    receivedSize = adSize
+    requestLayout()
   }
 }

@@ -22,6 +22,7 @@ import type {
 } from './IRNAudienzzTargetingModule';
 import type {
   TAdError,
+  TAdSize,
   TAdFormat,
   TAdFormats,
   TApiParameters,
@@ -50,6 +51,7 @@ export type {
   AudienzzExternalUserId,
   AudienzzUniqueId,
   TAdError,
+  TAdSize,
   TAdFormat,
   TAdFormats,
   TApiParameters,
