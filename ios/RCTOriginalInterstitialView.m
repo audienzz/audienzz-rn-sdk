@@ -27,6 +27,58 @@
   self.propsChanged = YES;
 }
 
+- (void)setSizes:(NSArray *)sizes {
+    _sizes = sizes;
+    self.propsChanged = YES;
+}
+
+- (NSString *)createInterstitialORTBConfigWithSizes:(NSArray *)sizes {
+    if (!sizes || sizes.count == 0) {
+        return nil;
+    }
+    
+    NSMutableArray *formatStrings = [[NSMutableArray alloc] init];
+    
+    for (NSDictionary *sizeDict in sizes) {
+        if ([sizeDict isKindOfClass:[NSDictionary class]]) {
+            NSNumber *width = sizeDict[@"width"];
+            NSNumber *height = sizeDict[@"height"];
+            
+            if (width && height) {
+                NSString *formatString = [NSString stringWithFormat:@"{ \"w\": %d, \"h\": %d }",
+                                        [width intValue], [height intValue]];
+                [formatStrings addObject:formatString];
+            }
+        }
+    }
+    
+    if (formatStrings.count == 0) {
+        return nil;
+    }
+    
+    NSString *formatArrayString = [formatStrings componentsJoinedByString:@", "];
+    
+    return [NSString stringWithFormat:@"{\n  \"banner\": {\n    \"format\": [ %@ ]\n  }\n}", formatArrayString];
+}
+
+- (NSArray<NSValue *> *)convertSizesToCGSizeArray:(NSArray *)sizes {
+    NSMutableArray<NSValue *> *cgSizes = [[NSMutableArray alloc] init];
+    
+    for (NSDictionary *sizeDict in sizes) {
+        if ([sizeDict isKindOfClass:[NSDictionary class]]) {
+            NSNumber *width = sizeDict[@"width"];
+            NSNumber *height = sizeDict[@"height"];
+            
+            if (width && height) {
+                CGSize cgSize = CGSizeMake([width floatValue], [height floatValue]);
+                [cgSizes addObject:[NSValue valueWithCGSize:cgSize]];
+            }
+        }
+    }
+    
+    return [cgSizes copy];
+}
+
 - (void)createAd {
   dispatch_semaphore_wait(self.semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)));
   
@@ -38,7 +90,7 @@
 - (void)internalCreateAd {
   [super internalCreateAd];
   
-  GADRequest *request = [GADRequest request];
+  GAMRequest *request = [GAMRequest request];
   
   _auInterstitialView = [[AUInterstitialView alloc] initWithConfigId:self.auConfigID adFormats:[AUConverter convertToAUAdFormats:self.adFormats] isLazyLoad:self.isLazyLoad minWidthPerc:[_minSizesPercentage[0] integerValue] minHeightPerc:[_minSizesPercentage[1] integerValue]];
   
@@ -52,10 +104,19 @@
     [_auInterstitialView setImpOrtbConfigWithOrtbConfig:self.impOrtbConfig];
   }
   
+  //TODO: remove hack when fixed - https://github.com/prebid/prebid-mobile-ios/issues/1135
+      if (_sizes && _sizes.count > 0) {
+          NSString *ortbConfig = [self createInterstitialORTBConfigWithSizes:_sizes];
+          NSArray<NSValue *> *cgSizeArray = [self convertSizesToCGSizeArray:_sizes];
+          [self.bannerParameters setAdSizes: cgSizeArray];
+          if (ortbConfig) {
+              [_auInterstitialView setImpOrtbConfigWithOrtbConfig:ortbConfig];
+          }
+      }
+  
+  _auInterstitialView.bannerParameters = self.bannerParameters;
   _auInterstitialView.videoParameters = self.videoParameters;
   _auInterstitialView.frame = CGRectMake(0, 0, 10, 10);
-  
-  
   
   [self addSubview:_auInterstitialView];
   [_auInterstitialView createAdWith:request adUnitID:self.adUnitID];

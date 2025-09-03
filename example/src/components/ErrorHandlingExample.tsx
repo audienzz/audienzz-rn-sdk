@@ -25,8 +25,7 @@ const ErrorHandlingExample = () => {
         <OriginalBanner
           adUnitID="/21808260008/prebid_demo_app_original_api_banne"
           auConfigID="prebid-demo-banner-320-50"
-          width={320}
-          height={50}
+          sizes={[{width: 320, height: 50}]}
           adFormats={['banner']}
           isLazyLoad={false}
           isReserved
@@ -40,8 +39,7 @@ const ErrorHandlingExample = () => {
         <OriginalBanner
           adUnitID="/21808260008/prebid_demo_app_original_api_banne"
           auConfigID="prebid-demo-banner-320-50"
-          width={320}
-          height={50}
+          sizes={[{width: 320, height: 50}]}
           adFormats={['banner']}
           isLazyLoad={false}
         />

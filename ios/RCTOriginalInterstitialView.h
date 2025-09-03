@@ -22,6 +22,7 @@
 
 @property(nonatomic, strong) AUInterstitialView *auInterstitialView;
 @property(nonatomic, copy) NSArray<NSNumber *> *minSizesPercentage;
+@property (nonatomic, strong) NSArray *sizes;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdLoaded;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdFailedToLoad;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdClicked;

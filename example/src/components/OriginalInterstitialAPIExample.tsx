@@ -44,6 +44,7 @@ const OriginalInterstitialAPIExample = () => {
           auConfigID="34400101"
           adFormats={['banner']}
           isLazyLoad={false}
+          sizes={[{width: 333, height: 333}, {width: 444, height: 444}]}
           pbAdSlot="pbAdSlot"
           gpID="gpID"
           onAdLoaded={() => console.log('INTERSTITIAL HTML loaded')}

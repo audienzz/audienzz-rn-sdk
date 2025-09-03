@@ -1,7 +1,7 @@
-import type { TAdError } from './Types';
+import type { TAdError, TAdSize } from './Types';
 
 export interface IAdEvents {
-  onAdLoaded?(): void;
+  onAdLoaded?(adSize: TAdSize): void;
   onAdFailedToLoad?(error: TAdError): void;
   onAdClicked?(): void;
   onAdOpened?(): void;

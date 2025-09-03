@@ -31,7 +31,6 @@ open class RCTOriginalView(context: Context) : FrameLayout(context) {
   var videoDuration: List<Int>? = null
   var pbAdSlot: String? = null
   var gpID: String? = null
-  var keyword: String? = null
   var playbackMethods: List<String> = listOf()
   var apiParameters: List<String> = listOf()
   var videoProtocols: List<String> = listOf()

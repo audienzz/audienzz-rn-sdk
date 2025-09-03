@@ -27,14 +27,8 @@
   self.propsChanged = YES;
 }
 
-- (void)setWidth:(NSNumber *)value {
-  _width = [value floatValue];
-  [self setNeedsLayout];
-  self.propsChanged = YES;
-}
-
-- (void)setHeight:(NSNumber *)value {
-  _height = [value floatValue];
+- (void)setSizes:(NSArray *)sizes {
+  _sizes = sizes;
   [self setNeedsLayout];
   self.propsChanged = YES;
 }
@@ -52,6 +46,43 @@
   [_auBannerView.adUnitConfiguration resumeAutoRefresh];
 }
 
+- (NSArray<NSValue *> *)convertSizesToGADAdSizes:(NSArray *)sizes {
+    NSMutableArray<NSValue *> *gadAdSizes = [[NSMutableArray alloc] init];
+    
+    for (NSDictionary *sizeDict in sizes) {
+        if ([sizeDict isKindOfClass:[NSDictionary class]]) {
+            NSNumber *width = sizeDict[@"width"];
+            NSNumber *height = sizeDict[@"height"];
+            
+            if (width && height) {
+                GADAdSize gadAdSize = GADAdSizeFromCGSize(CGSizeMake([width floatValue], [height floatValue]));
+                [gadAdSizes addObject:NSValueFromGADAdSize(gadAdSize)];
+            }
+        }
+    }
+    
+    return [gadAdSizes copy];
+}
+
+- (NSArray<NSValue *> *)convertSizesToCGSizeArray:(NSArray *)sizes startingFromIndex:(NSUInteger)startIndex {
+    NSMutableArray<NSValue *> *cgSizes = [[NSMutableArray alloc] init];
+    
+    for (NSUInteger i = startIndex; i < sizes.count; i++) {
+        NSDictionary *sizeDict = sizes[i];
+        if ([sizeDict isKindOfClass:[NSDictionary class]]) {
+            NSNumber *width = sizeDict[@"width"];
+            NSNumber *height = sizeDict[@"height"];
+            
+            if (width && height) {
+                CGSize cgSize = CGSizeMake([width floatValue], [height floatValue]);
+                [cgSizes addObject:[NSValue valueWithCGSize:cgSize]];
+            }
+        }
+    }
+    
+    return [cgSizes copy];
+}
+
 - (void)createAd {
   dispatch_semaphore_wait(self.semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)));
   
@@ -62,16 +93,47 @@
 
 - (void)internalCreateAd {
   [super internalCreateAd];
-  BOOL isAdaptive = self.isAdaptive;
-  CGSize adSize = CGSizeMake(_width, _height);
-  GADAdSize gadAdSize = GADAdSizeFromCGSize(adSize);
-  
-  if (isAdaptive) {
-    gadAdSize = GADInlineAdaptiveBannerAdSizeWithWidthAndMaxHeight(_width, _height);
-  }
-  
   GAMRequest *request = [GAMRequest request];
-  _bannerView = [[GAMBannerView alloc] initWithAdSize:gadAdSize];
+  
+  if (self.isAdaptive && _sizes && _sizes.count > 0) {
+          NSDictionary *firstSize = _sizes[0];
+          if ([firstSize isKindOfClass:[NSDictionary class]]) {
+              NSNumber *width = firstSize[@"width"];
+              NSNumber *height = firstSize[@"height"];
+              
+              if (width && height) {
+                  GADAdSize gadAdSize = GADInlineAdaptiveBannerAdSizeWithWidthAndMaxHeight([width floatValue], [height floatValue]);
+                  _bannerView = [[GAMBannerView alloc] initWithAdSize:gadAdSize];
+              }
+          }
+      } else if (_sizes && _sizes.count > 0) {
+          NSArray<NSValue *> *gadAdSizes = [self convertSizesToGADAdSizes:_sizes];
+          
+          if (gadAdSizes.count > 0) {
+              GADAdSize primarySize = GADAdSizeFromNSValue(gadAdSizes[0]);
+              _bannerView = [[GAMBannerView alloc] initWithAdSize:primarySize];
+              _bannerView.validAdSizes = gadAdSizes;
+          }
+      }
+      
+      if (!_bannerView) {
+          NSLog(@"Failed to create banner view - no valid sizes provided");
+          return;
+      }
+      
+      CGSize adSize = CGSizeZero;
+      if (_sizes && _sizes.count > 0) {
+          NSDictionary *firstSize = _sizes[0];
+          if ([firstSize isKindOfClass:[NSDictionary class]]) {
+              NSNumber *width = firstSize[@"width"];
+              NSNumber *height = firstSize[@"height"];
+              
+              if (width && height) {
+                  adSize = CGSizeMake([width floatValue], [height floatValue]);
+              }
+          }
+      }
+  
   _auBannerView = [[AUBannerView alloc] initWithConfigId:self.auConfigID adSize:adSize adFormats:[AUConverter convertToAUAdFormats:self.adFormats] isLazyLoad:self.isLazyLoad];
   
   [self.videoParameters setPlacement:[AUConverter convertToAUPlacement:_videoPlacement]];
@@ -89,6 +151,9 @@
     [_auBannerView setImpOrtbConfigWithOrtbConfig:self.impOrtbConfig];
   }
   
+  NSArray<NSValue *> *cgSizeArray = [self convertSizesToCGSizeArray:_sizes startingFromIndex:1];
+  [self.bannerParameters setAdSizes: cgSizeArray];
+  [_auBannerView addAdditionalSizeWithSizes: cgSizeArray];
   _auBannerView.bannerParameters = self.bannerParameters;
   _auBannerView.videoParameters = self.videoParameters;
   
@@ -98,7 +163,7 @@
   
   AUBannerEventHandler *eventHandler = [[AUBannerEventHandler alloc] initWithAdUnitId:self.adUnitID gamView:_bannerView];
   [_auBannerView createAdWith:request gamBanner:_bannerView eventHandler:eventHandler];
-  
+
   void (^onLoadRequest)(id) = ^(id gamRequest) {
     if (![request isKindOfClass:[GAMRequest class]]) {
       NSLog(@"Failed request unwrap");
@@ -106,20 +171,22 @@
     }
     [self.bannerView loadRequest:request];
   };
-  
+
   _auBannerView.onLoadRequest = onLoadRequest;
   
-  _auBannerView.frame = CGRectMake(0, 0, self.width, self.height);
+  _auBannerView.frame = CGRectMake(0, 0, adSize.width, adSize.height);
   [self addSubview:_auBannerView];
   [super layoutSubviews];
 }
 
 #pragma mark - GADBannerViewDelegate
-
 - (void)bannerViewDidReceiveAd:(GADBannerView *)bannerView {
-  if (self.onAdLoaded) {
-    self.onAdLoaded(@{});
-  }
+    if (self.onAdLoaded) {
+        self.onAdLoaded(@{
+            @"width": @(bannerView.adSize.size.width),
+            @"height": @(bannerView.adSize.size.height)
+        });
+    }
 }
 
 - (void)bannerViewDidRecordClick:(GADBannerView *)bannerView {
