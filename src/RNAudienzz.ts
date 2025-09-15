@@ -5,6 +5,10 @@ class RNAudienzzClass implements IRNAudienzzModule {
   initialize(companyID: string) {
     return NativeModulesCombined.AudienzzModule.initialize(companyID);
   }
+
+  setSchainObject(schain: string): Promise<void> {
+    return NativeModulesCombined.AudienzzModule.setSchainObject(schain);
+  }
 }
 
 const Instance = new RNAudienzzClass();
