@@ -23,7 +23,7 @@ import {
   View,
   StyleSheet,
 } from 'react-native';
-import type { IOriginalBannerProps, TAdError } from '../../types';
+import type { IOriginalBannerProps, TAdError, TAdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTOriginalBannerView';
@@ -32,6 +32,7 @@ const NativeComponent =
 
 interface IOriginalBannerState {
   isBannerVisible: boolean;
+  adSize?: TAdSize;
 }
 
 export class OriginalBanner extends Component<
@@ -90,9 +91,14 @@ export class OriginalBanner extends Component<
       throw new Error(LINKING_ERROR);
     }
 
-    const handleAdLoaded = () => {
-      this.setState({ isBannerVisible: true });
-      this.props.onAdLoaded?.();
+    const handleAdLoaded = (event: TAdSize | { nativeEvent: {width: number; height: number }}) => {
+      const adSize : TAdSize =
+       'nativeEvent' in event ? event.nativeEvent : event;
+
+       console.log("Adsize", adSize);
+
+      this.setState({ isBannerVisible: true, adSize: adSize });
+      this.props.onAdLoaded?.(adSize);
     };
 
     const handleAdFailedToLoad = (
@@ -104,8 +110,8 @@ export class OriginalBanner extends Component<
       this.props.onAdFailedToLoad?.(error);
     };
 
-    const bannerStyle = this.state.isBannerVisible
-      ? { width: this.props.width, height: this.props.height }
+    const bannerStyle = this.state.isBannerVisible && this.state.adSize != null
+      ? { width: this.state.adSize.width, height: this.state.adSize.height }
       : styles.hiddenBanner;
 
     return (

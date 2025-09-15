@@ -26,6 +26,7 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.admanager.AdManagerInterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAd
+import org.audienzz.mobile.AudienzzAdSize
 import org.audienzz.mobile.AudienzzInterstitialAdUnit
 import org.audienzz.mobile.original.AudienzzInterstitialAdHandler
 import org.audienzz.mobile.original.callbacks.AudienzzFullScreenContentCallback
@@ -34,6 +35,7 @@ import org.audienzz.mobile.util.lazyAdLoader
 
 class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
   private var minSizesPercentage: List<Int> = listOf()
+  private var sizes: Array<AudienzzAdSize> = arrayOf()
   private var auInterstitialView: AudienzzInterstitialAdUnit? = null
   private var mInterstitialAd: InterstitialAd? = null
 
@@ -82,6 +84,10 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
     }
     if (gpID != null) {
       auInterstitialView?.gpid = gpID
+    }
+
+    if(sizes.isNotEmpty()){
+      bannerParameters.adSizes = sizes.toSet()
     }
 
     auInterstitialView?.bannerParameters = bannerParameters
@@ -133,6 +139,10 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
         )
       }
     )
+  }
+
+  fun updateSizes(value: Array<AudienzzAdSize>) {
+    sizes = value
   }
 
   fun updateMinSizesPercentage(value: List<Int>) {

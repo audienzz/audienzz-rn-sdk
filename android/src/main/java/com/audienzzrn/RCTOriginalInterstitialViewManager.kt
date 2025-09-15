@@ -23,6 +23,7 @@ import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
+import org.audienzz.mobile.AudienzzAdSize
 
 class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalInterstitialView>() {
   override fun getName(): String {
@@ -153,6 +154,24 @@ class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalIntersti
     }
 
     view.updateVideoBitrate(videoBitrateNumbers)
+    view.updatePropsChanged(true)
+  }
+
+  @ReactProp(name = "sizes")
+  fun setSizes(view: RCTOriginalInterstitialView, value: ReadableArray) {
+    val adSizes = mutableListOf<AudienzzAdSize>()
+
+    for (i in 0 until value.size()) {
+      val sizeMap = value.getMap(i)
+      if (sizeMap != null) {
+        val width = sizeMap.getInt("width")
+        val height = sizeMap.getInt("height")
+
+        adSizes.add(AudienzzAdSize(width, height))
+      }
+    }
+
+    view.updateSizes(adSizes.toTypedArray())
     view.updatePropsChanged(true)
   }
 

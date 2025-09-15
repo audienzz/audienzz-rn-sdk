@@ -22,7 +22,7 @@ import {
   View,
   StyleSheet,
 } from 'react-native';
-import type { IRenderingBannerProps, TAdError } from '../../types';
+import type { IRenderingBannerProps, TAdError, TAdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTRenderingBannerView';
@@ -31,6 +31,7 @@ const NativeComponent =
 
 interface IOriginalBannerState {
   isBannerVisible: boolean;
+   adSize?: TAdSize;
 }
 
 export class RenderingBanner extends Component<
@@ -60,9 +61,14 @@ export class RenderingBanner extends Component<
       throw new Error(LINKING_ERROR);
     }
 
-    const handleAdLoaded = () => {
-      this.setState({ isBannerVisible: true });
-      this.props.onAdLoaded?.();
+    const handleAdLoaded = (event: TAdSize | { nativeEvent: {width: number; height: number }}) => {
+      const adSize : TAdSize =
+       'nativeEvent' in event ? event.nativeEvent : event;
+
+       console.log("Adsize", adSize);
+
+      this.setState({ isBannerVisible: true, adSize: adSize });
+      this.props.onAdLoaded?.(adSize);
     };
 
     const handleAdFailedToLoad = (
@@ -75,7 +81,7 @@ export class RenderingBanner extends Component<
     };
 
     const bannerStyle = this.state.isBannerVisible
-      ? { width: this.props.width, height: this.props.height }
+      ? { width: this.state.adSize?.width, height: this.state.adSize?.height }
       : styles.hiddenBanner;
 
     return (

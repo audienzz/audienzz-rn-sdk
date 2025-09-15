@@ -49,6 +49,11 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
     }
   }
 
+  @ReactMethod
+  fun setSchainObject(schain: String) {
+    AudienzzPrebidMobile.setSchainObject(schain)
+  }
+
   companion object {
     private const val SERVICE = "RNAudienzzModule"
     private const val TAG = "AudienzzSDKInitializer"

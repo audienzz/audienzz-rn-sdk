@@ -19,6 +19,7 @@ package com.audienzz
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnNextLayout
@@ -31,6 +32,7 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.admanager.AdManagerAdView
+import org.audienzz.mobile.AudienzzAdSize
 import org.audienzz.mobile.AudienzzBannerAdUnit
 import org.audienzz.mobile.AudienzzBannerParameters
 import org.audienzz.mobile.AudienzzSignals
@@ -135,7 +137,15 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     adView.adListener =
       object : AdListener() {
         override fun onAdLoaded() {
-          reactViewGroup.handleAdLoaded()
+          val adSize = adView.adSize
+
+          if(adSize == null){
+            Log.d("RCTOriginalBannerView", "Ad size is null")
+            return
+          }
+
+          reactViewGroup.handleAdLoaded(adSize)
+          reactViewGroup.setSize(adSize)
         }
 
         override fun onAdClicked() {
@@ -164,8 +174,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     val isAdaptive = reactViewGroup.isAdaptive
     val adUnitID: String = reactViewGroup.adUnitID
     val auConfigID: String = reactViewGroup.auConfigID
-    val width: Int = reactViewGroup.getWIDTH()
-    val height: Int = reactViewGroup.getHEIGHT()
+    val sizes: Array<AudienzzAdSize> = reactViewGroup.getSizes()
     val adFormats: List<String> = reactViewGroup.adFormats
     val apiParameters: List<String> = reactViewGroup.apiParameters
     val videoProtocols: List<String> = reactViewGroup.videoProtocols
@@ -180,8 +189,8 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     val auBannerView =
       AudienzzBannerAdUnit(
         auConfigID,
-        width,
-        height,
+        sizes.first().width,
+        sizes.first().height,
         AudienzzConversionUtils.convertToAudienzzAdFormats(adFormats)
       )
     auBannerView.impOrtbConfig = impOrtbConfig
@@ -221,6 +230,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     }
 
     bannerParameters.api = allowedApis
+    bannerParameters.adSizes = sizes.toSet()
 
     videoParameters.api = allowedApis
     videoParameters.protocols = allowedProtocols
@@ -231,6 +241,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     videoParameters.maxBitrate = videoBitrate[1]
     videoParameters.minDuration = videoDuration[0]
     videoParameters.maxDuration = videoDuration[1]
+
 
     if (autoRefreshPeriodMillis != null) {
       auBannerView.setAutoRefreshInterval(autoRefreshPeriodMillis)
@@ -247,14 +258,15 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
 
     if (adView != null) {
       adView.apply {
-        setAdSize(AdSize(width, height))
+        val adSizes = sizes.map { size -> AdSize(size.width, size.height) }.toTypedArray()
+        setAdSizes(*adSizes)
         adUnitId = adUnitID
       }
 
       if (isAdaptive) {
         adView.doOnNextLayout {
           adView.setAdSizes(
-            AdSize.getInlineAdaptiveBannerAdSize(width, height)
+            AdSize.getInlineAdaptiveBannerAdSize(sizes.first().width, sizes.first().height)
           )
         }
       }
@@ -381,15 +393,21 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     view.updatePropsChanged(true)
   }
 
-  @ReactProp(name = "width")
-  fun setWidth(view: RCTOriginalBannerView, value: Int) {
-    view.updateWidth(value)
-    view.updatePropsChanged(true)
-  }
+  @ReactProp(name = "sizes")
+  fun setSizes(view: RCTOriginalBannerView, value: ReadableArray) {
+    val adSizes = mutableListOf<AudienzzAdSize>()
 
-  @ReactProp(name = "height")
-  fun setHeight(view: RCTOriginalBannerView, value: Int) {
-    view.updateHeight(value)
+    for (i in 0 until value.size()) {
+      val sizeMap = value.getMap(i)
+      if (sizeMap != null) {
+        val width = sizeMap.getInt("width")
+        val height = sizeMap.getInt("height")
+
+        adSizes.add(AudienzzAdSize(width, height))
+      }
+    }
+
+    view.updateSizes(adSizes.toTypedArray())
     view.updatePropsChanged(true)
   }
 

@@ -32,6 +32,12 @@ RCT_EXPORT_METHOD(initialize:(NSString *)companyId
     [self initializeWithCompanyId:companyId resolver:resolve rejecter:reject];
 }
 
+RCT_EXPORT_METHOD(setSchainObject:(NSString *)schain
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    [self setSchainObjectWithSchain:schain resolver:resolve rejecter:reject];
+}
+
 - (void)initializeWithCompanyId:(NSString *)companyId
                        resolver:(RCTPromiseResolveBlock)resolve
                        rejecter:(RCTPromiseRejectBlock)reject {
@@ -45,5 +51,15 @@ RCT_EXPORT_METHOD(initialize:(NSString *)companyId
     }];
     [[AudienzzGAMUtils shared] initializeGAM];
 }
+
+- (void)setSchainObjectWithSchain:(NSString *)schain
+                         resolver:(RCTPromiseResolveBlock)resolve
+                         rejecter:(RCTPromiseRejectBlock)reject {
+
+        [[Audienzz shared] setSchainObjectWithSchain:schain];
+        
+  resolve(nil);
+}
+
 
 @end
