@@ -18,9 +18,20 @@ import RNTargeting from '../../src/RNTargeting';
 
 RNAudienzz()
   .initialize('Company ID provided for the app by Audienzz')
-  .then((value) => console.log(JSON.stringify(value, null, 2))).then((_)=>
+  .then((value) => console.log(JSON.stringify(value, null, 2))).then((_) => {
+    RNAudienzz().setSchainObject(`{
+    "source": {
+        "schain": [
+            {
+                "asi": "audienzz.ch",
+                "sid": "812net",
+                "hp": 1
+            }
+        ]
+    }
+}`)
     RNTargeting().addGlobalTargeting("TEST", "1")
-  );
+  });
 
 export default function App() {
   return (

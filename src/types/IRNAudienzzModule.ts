@@ -5,4 +5,6 @@ export type TAudienzzInitStatus = {
 
 export interface IRNAudienzzModule {
   initialize(companyID: string): Promise<TAudienzzInitStatus>;
+
+  setSchainObject(schain: string): Promise<void>;
 }
