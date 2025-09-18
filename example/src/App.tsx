@@ -1,11 +1,5 @@
 import * as React from 'react';
-import {
-  ScrollView,
-  Text,
-  View,
-  Platform,
-  StyleSheet,
-} from 'react-native';
+import { ScrollView, Text, View, Platform, StyleSheet } from 'react-native';
 import RNAudienzz from 'audienzz';
 import { LOREM } from './constants';
 import ErrorHandlingExample from './components/ErrorHandlingExample';
@@ -18,19 +12,25 @@ import RNTargeting from '../../src/RNTargeting';
 
 RNAudienzz()
   .initialize('Company ID provided for the app by Audienzz')
-  .then((value) => console.log(JSON.stringify(value, null, 2))).then((_) => {
-    RNAudienzz().setSchainObject(`{
-    "source": {
-        "schain": [
-            {
-                "asi": "audienzz.ch",
-                "sid": "812net",
-                "hp": 1
-            }
-        ]
-    }
-}`)
-    RNTargeting().addGlobalTargeting("TEST", "1")
+  .then((value) => console.log(JSON.stringify(value, null, 2)))
+  .then((_) => {
+    RNAudienzz().setSchainObject(`
+                        { "source": 
+                            { "schain": {
+                                "ver": "1.0",
+                                "complete": 1,
+                                "nodes": [
+                                    {
+                                        "asi": "netpoint-media.de",
+                                        "sid": "np-7255",
+                                        "hp": 1
+                                    }
+                                  ]
+                                }
+                            } 
+                        }
+                    `);
+    RNTargeting().addGlobalTargeting('TEST', '1');
   });
 
 export default function App() {
@@ -41,7 +41,7 @@ export default function App() {
         contentContainerStyle={styles.scrollviewcontentContainerStyle}
       >
         <Text style={styles.bigText}>ORIGINAL</Text>
-         <ErrorHandlingExample /> 
+        <ErrorHandlingExample />
         <View style={styles.height30} />
         <OriginalBannerAPIExample />
         <View style={styles.height30} />
@@ -67,7 +67,7 @@ export default function App() {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: 'white',
   },
   scrollviewcontentContainerStyle: {
     alignItems: 'center',
