@@ -4,7 +4,11 @@ export type TAudienzzInitStatus = {
 };
 
 export interface IRNAudienzzModule {
-  initialize(companyID: string): Promise<TAudienzzInitStatus>;
+  initialize(companyID: string, enablePpid: Boolean): Promise<TAudienzzInitStatus>;
+
+  isAutomaticPpidEnabled(): Promise<Boolean>;
+  setAutomaticPpidEnabled(enablePpid: Boolean): Promise<void>;
+  getPpid(): Promise<string | null>;
 
   setSchainObject(schain: string): Promise<void>;
 }

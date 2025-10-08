@@ -275,13 +275,13 @@ In a real app, replace the sample app ID with your **_actual AdMob app ID_**. Yo
 
 ### Initialize the Audienzz React Native SDK
 
-Before loading and displaying ads, initialize the Audienzz React Native SDK. This needs to be done only once, ideally at app launch.
+Before loading and displaying ads, initialize the Audienzz React Native SDK. This needs to be done only once, ideally at app launch. Automatic Ppid could be enabled or disabled.
 
 ```js
 import RNAudienzz from 'audienzz';
 
 RNAudienzz()
-  .initialize('Company ID provided for the app by Audienzz') // Open-Ended Question
+  .initialize('Company ID provided for the app by Audienzz', false) // Open-Ended Question
   .then((value) => console.log(JSON.stringify(value, null, 2)));
 ```
 

@@ -25,12 +25,13 @@ import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.WritableMap
 import org.audienzz.mobile.AudienzzPrebidMobile
 import org.audienzz.mobile.api.data.AudienzzInitializationStatus
+import org.audienzz.mobile.util.PpidManager
 
 class RNAudienzzModule(reactContext: ReactApplicationContext) :
   ReactNativeModule(reactContext, SERVICE) {
   @ReactMethod
-  fun initialize(companyID: String, promise: Promise) {
-    AudienzzPrebidMobile.initializeSdk(applicationContext, companyID) { status ->
+  fun initialize(companyID: String, enablePpid: Boolean = false, promise: Promise) {
+    AudienzzPrebidMobile.initializeSdk(applicationContext, companyID, enablePpid = enablePpid) { status ->
       when (status) {
         AudienzzInitializationStatus.SUCCEEDED -> {
           val result: WritableMap =
@@ -47,6 +48,21 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
         }
       }
     }
+  }
+
+  @ReactMethod
+  fun isAutomaticPpidEnabled(promise: Promise) {
+    promise.resolve(AudienzzPrebidMobile.ppidManager?.isAutomaticPpidEnabled() ?: false)
+  }
+
+  @ReactMethod
+  fun setAutomaticPpidEnabled(isPpidEnabled: Boolean) {
+    AudienzzPrebidMobile.ppidManager?.setAutomaticPpidEnabled(isPpidEnabled)
+  }
+
+  @ReactMethod
+  fun getPpid(promise: Promise) {
+    promise.resolve(AudienzzPrebidMobile.ppidManager?.getPpid())
   }
 
   @ReactMethod
