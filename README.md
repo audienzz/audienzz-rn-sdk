@@ -285,6 +285,14 @@ RNAudienzz()
   .then((value) => console.log(JSON.stringify(value, null, 2)));
 ```
 
+------------------------------------
+| Method                   | Parameters             | Description                                                                                                                              |
+|--------------------------|------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `isAutomaticPpidEnabled` |                        | Used to get current status of automatic PPID usage (if true - PPID is generated and used with all requests, if false - PPID is not used) |
+| `setAutomaticPpidEnabled` |  `enablePpid: Boolean` | Used to enable or disable automatic PPID usage                                                                                           |
+| `getPpid`                |                        | Used to obtain current PPID if automaticPpid is enabled                                                                                  |
+| `setSchainObject`        | `schain: string`       | Method used to set Schain object for all ad requests.                                                                                    |
+
 ### Displaying Ads
 
 The Audienzz React Native SDK allows you to display three types Ads - `Banner`, `Interstitial` and `Rewarded`.
