@@ -1,6 +1,6 @@
 PODS:
-  - audienzz (0.2.2):
-    - AudienzziOSSDK (= 0.1.1)
+  - audienzz (0.3.0):
+    - AudienzziOSSDK (= 0.1.2)
     - DoubleConversion
     - glog
     - hermes-engine
@@ -24,7 +24,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - AudienzziOSSDK (0.1.1):
+  - AudienzziOSSDK (0.1.2):
     - Google-Mobile-Ads-SDK (= 12.3.0)
     - GoogleAds-IMA-iOS-SDK (= 3.26.1)
     - PrebidMobile (= 3.0.0)
@@ -1933,8 +1933,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  audienzz: 55015f8f05dca5b57cc6a1c287004996e3339c47
-  AudienzziOSSDK: 8dd9c9379d6b8068198264e9bb755a6cc2145de7
+  audienzz: 50ad359bf751c20e33738055c9aaa606c6852b7a
+  AudienzziOSSDK: 6a8c250b8ce332858661a1d65aa601782343ea71
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6

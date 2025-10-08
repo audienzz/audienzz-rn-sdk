@@ -27,9 +27,13 @@ RCT_EXPORT_MODULE();
 }
 
 RCT_EXPORT_METHOD(initialize:(NSString *)companyId
+                  enablePPID:(BOOL)enablePPID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
-    [self initializeWithCompanyId:companyId resolver:resolve rejecter:reject];
+    [self initializeWithCompanyId:companyId
+                       enablePPID: enablePPID
+                         resolver:resolve
+                         rejecter:reject];
 }
 
 RCT_EXPORT_METHOD(setSchainObject:(NSString *)schain
@@ -39,9 +43,10 @@ RCT_EXPORT_METHOD(setSchainObject:(NSString *)schain
 }
 
 - (void)initializeWithCompanyId:(NSString *)companyId
+                     enablePPID:(BOOL)enablePPID
                        resolver:(RCTPromiseResolveBlock)resolve
                        rejecter:(RCTPromiseRejectBlock)reject {
-    [[Audienzz shared] configureSDK_RNWithCompanyId:companyId :^{
+    [[Audienzz shared] configureSDK_RNWithCompanyId:companyId enablePPID:enablePPID :^{
         NSDictionary *result = @{
             @"status" : @"SUCCEEDED",
             @"description" : @"SDK initialized successfully!"
@@ -56,10 +61,24 @@ RCT_EXPORT_METHOD(setSchainObject:(NSString *)schain
                          resolver:(RCTPromiseResolveBlock)resolve
                          rejecter:(RCTPromiseRejectBlock)reject {
 
-        [[Audienzz shared] setSchainObjectWithSchain:schain];
-        
-  resolve(nil);
+    [[Audienzz shared] setSchainObjectWithSchain:schain];
+    resolve(nil);
 }
 
+RCT_EXPORT_METHOD(isAutomaticPpidEnabled:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    NSNumber *getAutomaticPpidEnabled = [NSNumber numberWithBool:[[PPIDManager shared] getAutomaticPpidEnabled]];
+    resolve(getAutomaticPpidEnabled);
+}
+
+RCT_EXPORT_METHOD(setAutomaticPpidEnabled:(BOOL)isPpidEnabled) {
+  [[PPIDManager shared] setAutomaticPpidEnabled:isPpidEnabled];
+}
+
+RCT_EXPORT_METHOD(getPpid:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    NSString *ppid = [[PPIDManager shared] getPPID];
+    resolve(ppid);
+}
 
 @end

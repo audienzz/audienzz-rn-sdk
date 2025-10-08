@@ -2,8 +2,20 @@ import NativeModulesCombined from './NativeRNAudienzzModule';
 import type { IRNAudienzzModule } from './types';
 
 class RNAudienzzClass implements IRNAudienzzModule {
-  initialize(companyID: string) {
-    return NativeModulesCombined.AudienzzModule.initialize(companyID);
+  initialize(companyID: string, enablePpid: Boolean = false) {
+    return NativeModulesCombined.AudienzzModule.initialize(companyID, enablePpid);
+  }
+
+  isAutomaticPpidEnabled(): Promise<Boolean> {
+    return NativeModulesCombined.AudienzzModule.isAutomaticPpidEnabled();
+  }
+
+  setAutomaticPpidEnabled(enablePpid: Boolean): Promise<void> {
+    return NativeModulesCombined.AudienzzModule.setAutomaticPpidEnabled(enablePpid);
+  }
+
+  getPpid(): Promise<string | null> {
+    return NativeModulesCombined.AudienzzModule.getPpid();
   }
 
   setSchainObject(schain: string): Promise<void> {
