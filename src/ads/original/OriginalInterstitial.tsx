@@ -29,7 +29,7 @@ export const OriginalInterstitial = (props: IOriginalInterstitialProps) => {
     playbackMethod = ['AutoPlaySoundOn'],
     isLazyLoad = true,
     adFormats = ['banner', 'video'],
-    apiParameters = ['MRAID_2'],
+    apiParameters = ['MRAID_1', 'MRAID_2', 'MRAID_3', 'OMID_1'],
     videoProtocols = ['VAST_2_0'],
     videoBitrate = [300, 1500],
     videoDuration = [5, 30],
