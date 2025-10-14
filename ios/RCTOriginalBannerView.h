@@ -25,7 +25,7 @@
 
 @property(nonatomic, strong) GAMBannerView *bannerView;
 @property(nonatomic, strong) AUBannerView *auBannerView;
-@property(nonatomic, assign) NSArray *sizes;
+@property(nonatomic, strong) NSArray *sizes;
 @property(nonatomic, assign) CGFloat width;
 @property(nonatomic, assign) CGFloat height;
 @property(nonatomic, assign) CGFloat autoRefreshPeriodMillis;
