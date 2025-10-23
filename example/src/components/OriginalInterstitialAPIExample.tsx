@@ -19,6 +19,8 @@ const OriginalInterstitialAPIExample = () => {
     setIsInterstitialMulti(true);
   };
 
+  const interstitialAdUnitTestID = "/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1";
+  const interstitialTestConfigID = "34400101";
   const interstitialMultiformatAuConfigID = getRandomConfigIdInterstitial();
 
   return (
@@ -40,8 +42,8 @@ const OriginalInterstitialAPIExample = () => {
 
       {isInterstitialBanner && (
         <OriginalInterstitial
-          adUnitID="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
-          auConfigID="34400101"
+          adUnitID={interstitialAdUnitTestID}
+          auConfigID={interstitialTestConfigID}
           adFormats={['banner']}
           isLazyLoad={false}
           sizes={[{width: 333, height: 333}, {width: 444, height: 444}]}
@@ -64,8 +66,8 @@ const OriginalInterstitialAPIExample = () => {
       )}
       {isInterstitialVideo && (
         <OriginalInterstitial
-          adUnitID="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
-          auConfigID="34400101"
+          adUnitID={interstitialAdUnitTestID}
+          auConfigID={interstitialTestConfigID}
           adFormats={['video']}
           isLazyLoad={false}
           impOrtbConfig={`{
@@ -90,7 +92,7 @@ const OriginalInterstitialAPIExample = () => {
       )}
       {isInterstitialMulti && (
         <OriginalInterstitial
-          adUnitID="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
+          adUnitID={interstitialAdUnitTestID}
           auConfigID={interstitialMultiformatAuConfigID}
           isLazyLoad={false}
           impOrtbConfig={`{
