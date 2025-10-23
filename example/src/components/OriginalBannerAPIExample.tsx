@@ -3,7 +3,7 @@ import { Text, View, StyleSheet } from 'react-native';
 import { OriginalBanner } from 'audienzz';
 import { getRandomConfigIdBanner } from '../utils';
 import ActionButton from './ActionButton';
-import { Dimensions } from 'react-native';
+import { ADS } from '../ads_constants';
 
 const OriginalBannerAPIExample = () => {
   const bannerMultiformatAuConfigID = getRandomConfigIdBanner();
@@ -30,9 +30,9 @@ const OriginalBannerAPIExample = () => {
         </Text>
         <OriginalBanner
           ref={bannerRef}
-          adUnitID="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
-          auConfigID="33994718"
-          sizes={[{width: 300, height: 250}, {width: 220, height: 80}]}
+          adUnitID={ADS.ORIGINAL_BANNER_HTML_300_250.adUnitID}
+          auConfigID={ADS.ORIGINAL_BANNER_HTML_300_250.auConfigID}
+          sizes={ADS.ORIGINAL_BANNER_HTML_300_250.sizes}
           adFormats={['banner']}
           isLazyLoad={false}
           autoRefreshPeriodMillis={30000}
@@ -86,9 +86,9 @@ const OriginalBannerAPIExample = () => {
           Original Banner API HTML 320x50 is not reserved
         </Text>
         <OriginalBanner
-          adUnitID="ca-app-pub-3940256099942544/2934735716"
-          auConfigID="prebid-demo-banner-320-50"
-          sizes={[{width: 320, height: 50}]}
+          adUnitID={ADS.ORIGINAL_BANNER_HTML_320_50.adUnitID}
+          auConfigID={ADS.ORIGINAL_BANNER_HTML_320_50.auConfigID}
+          sizes={ADS.ORIGINAL_BANNER_HTML_320_50.sizes}
           impOrtbConfig={`{
           "banner": {
             "check": "true"
@@ -123,9 +123,9 @@ const OriginalBannerAPIExample = () => {
       <View style={styles.height30} />
       <Text style={styles.text}>Original Banner API Multiformat</Text>
       <OriginalBanner
-        adUnitID="/21808260008/prebid-demo-original-banner-multiformat"
+        adUnitID={ADS.ORIGINAL_BANNER_MULTIFORMAT.adUnitID}
         auConfigID={bannerMultiformatAuConfigID}
-        sizes={[{width: 300, height: 250}]}
+        sizes={ADS.ORIGINAL_BANNER_MULTIFORMAT.sizes}
         impOrtbConfig={`{
           "banner": {
             "check": "yeash"
@@ -153,9 +153,9 @@ const OriginalBannerAPIExample = () => {
       <View style={styles.height30} />
       <Text style={styles.text}>Original Banner API Video</Text>
       <OriginalBanner
-        adUnitID="/21808260008/prebid-demo-original-api-video-banner"
-        auConfigID="prebid-demo-video-outstream-original-api"
-       sizes={[{width: 300, height: 250}]}
+        adUnitID={ADS.ORIGINAL_BANNER_VIDEO_300_250.adUnitID}
+        auConfigID={ADS.ORIGINAL_BANNER_VIDEO_300_250.auConfigID}
+        sizes={ADS.ORIGINAL_BANNER_VIDEO_300_250.sizes}
         adFormats={['video']}
         isLazyLoad={false}
         impOrtbConfig={`{
@@ -181,9 +181,9 @@ const OriginalBannerAPIExample = () => {
       <View style={styles.height30} />
       <Text style={styles.text}>Original Banner API Multisize</Text>
       <OriginalBanner
-        adUnitID="ca-app-pub-3940256099942544/2435281174"
-        auConfigID="prebid-demo-banner-320-50"
-        sizes={[{width: Dimensions.get('window').width, height: 250}]}
+        adUnitID={ADS.ORIGINAL_BANNER_MULTISIZE.adUnitID}
+        auConfigID={ADS.ORIGINAL_BANNER_MULTISIZE.auConfigID}
+        sizes={ADS.ORIGINAL_BANNER_MULTISIZE.sizes}
         adFormats={['banner']}
         isLazyLoad={false}
         impOrtbConfig={`{

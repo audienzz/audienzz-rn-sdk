@@ -7,6 +7,7 @@ import {
   type ViewToken,
 } from 'react-native';
 import { mockData, type ListItem } from '../preloading-example/MockData';
+import { ADS } from '../../ads_constants';
 
 interface DynamicItemProps {
   item: ListItem;
@@ -27,11 +28,11 @@ const DynamicItem: React.FC<DynamicItemProps> = ({ item, shouldLoadAd }) => {
         >
           <OriginalBanner
             sizes={[{ width: 300, height: 250 }]}
-            adUnitID="/96628199/testapp_publisher/banner_test_ad_unit"
-            auConfigID="15624474"
+            adUnitID={ADS.PRELOADING.adUnitID}
+            auConfigID={ADS.PRELOADING.auConfigID}
             isLazyLoad={false}
-            onAdLoaded={() => {console.log("Ad loaded", item.adId)}}
-            onAdFailedToLoad={(error) => {console.log("Ad failed to load", item.adId, error)}}
+            onAdLoaded={() => { console.log("Ad loaded", item.adId) }}
+            onAdFailedToLoad={(error) => { console.log("Ad failed to load", item.adId, error) }}
           />
         </View>
       );
@@ -65,7 +66,7 @@ const PreloadingInListExample: React.FC = () => {
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
       if (viewableItems.length === 0) return;
 
-      const lastIndex : number | null = viewableItems[viewableItems.length - 1]?.index || 0;
+      const lastIndex: number | null = viewableItems[viewableItems.length - 1]?.index || 0;
 
       const newActiveAdIds = new Set<string>();
 
@@ -82,7 +83,7 @@ const PreloadingInListExample: React.FC = () => {
         if (itemRef) {
           itemRef.measureInWindow((_, y, __, ___) => {
             const pixelsToAd = Math.max(0, y);
-            
+
             console.log(`Ad ${adItem.adId}: ${pixelsToAd}px away`);
 
             if (pixelsToAd <= TRIGGER_DISTANCE) {
@@ -137,9 +138,9 @@ const PreloadingInListExample: React.FC = () => {
         viewabilityConfig={{
           itemVisiblePercentThreshold: 10,
           minimumViewTime: 100,
-        }}/>
-      </View>
-      );
+        }} />
+    </View>
+  );
 };
 
 export default PreloadingInListExample;
