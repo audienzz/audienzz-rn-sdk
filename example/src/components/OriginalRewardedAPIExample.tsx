@@ -2,6 +2,7 @@ import * as React from 'react';
 import {} from 'react-native';
 import { OriginalRewarded } from 'audienzz';
 import ActionButton from './ActionButton';
+import { ADS } from '../ads_constants';
 
 const OriginalRewardedAPIExample = () => {
   const [isRewarded, setIsRewarded] = React.useState(false);
@@ -15,8 +16,8 @@ const OriginalRewardedAPIExample = () => {
       <ActionButton labelButton="Rewarded Video" onPress={showRewarded} />
       {isRewarded && (
         <OriginalRewarded
-          adUnitID="ca-app-pub-3940256099942544/1712485313"
-          auConfigID="prebid-demo-video-rewarded-320-480-original-api"
+          adUnitID={ADS.REWARDED_ORIGINAL_API.adUnitID}
+          auConfigID={ADS.REWARDED_ORIGINAL_API.auConfigID}
           isLazyLoad={false}
           pbAdSlot="pbAdSlot"
           gpID="gpID"

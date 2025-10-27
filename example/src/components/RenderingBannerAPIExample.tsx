@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, View, StyleSheet, Platform } from 'react-native';
 import { RenderingBanner } from 'audienzz';
+import { ADS } from '../ads_constants';
 
 const RenderingBannerAPIExample = () => {
   return (
@@ -10,14 +11,10 @@ const RenderingBannerAPIExample = () => {
           Rendering Banner API HTML 320x50 is a reserved
         </Text>
         <RenderingBanner
-          adUnitID={
-            Platform.OS === 'android'
-              ? 'ca-app-pub-3940256099942544/2934735716'
-              : '/21808260008/prebid_oxb_320x50_banner'
-          }
-          auConfigID="prebid-demo-banner-320-50"
-          width={320}
-          height={50}
+          adUnitID={ADS.RENDERING_BANNER_RESERVED.adUnitID}
+          auConfigID={ADS.RENDERING_BANNER_RESERVED.auConfigID}
+          width={ADS.RENDERING_BANNER_RESERVED.width}
+          height={ADS.RENDERING_BANNER_RESERVED.height}
           adFormat="banner"
           isLazyLoad={false}
           pbAdSlot="pbAdSlot"
@@ -37,10 +34,10 @@ const RenderingBannerAPIExample = () => {
         Rendering Banner API Video is not reserved
       </Text>
       <RenderingBanner
-        adUnitID="/21808260008/prebid_oxb_300x250_banner"
-        auConfigID="prebid-demo-video-outstream"
-        width={300}
-        height={250}
+        adUnitID={ADS.RENDERING_BANNER_VIDEO.adUnitID}
+        auConfigID={ADS.RENDERING_BANNER_VIDEO.auConfigID}
+        width={ADS.RENDERING_BANNER_VIDEO.width}
+        height={ADS.RENDERING_BANNER_VIDEO.height}
         adFormat="video"
         isLazyLoad={false}
       />

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { RenderingInterstitial } from 'audienzz';
 import ActionButton from './ActionButton';
+import { ADS } from '../ads_constants';
 
 const RenderingInterstitialAPIExample = () => {
   const [isInterstitialBanner, setIsInterstitialBanner] = React.useState(false);
@@ -28,8 +29,8 @@ const RenderingInterstitialAPIExample = () => {
 
       {isInterstitialBanner && (
         <RenderingInterstitial
-          adUnitID="/21808260008/prebid_oxb_html_interstitial"
-          auConfigID="prebid-demo-display-interstitial-320-480"
+          adUnitID={ADS.RENDERING_INTERSTITIAL_BANNER.adUnitID}
+          auConfigID={ADS.RENDERING_INTERSTITIAL_BANNER.auConfigID}
           adFormat="banner"
           isLazyLoad={false}
           onAdLoaded={() => console.log('onAdLoaded')}
@@ -47,8 +48,8 @@ const RenderingInterstitialAPIExample = () => {
       )}
       {isInterstitialVideo && (
         <RenderingInterstitial
-          adUnitID="/21808260008/prebid_oxb_interstitial_video"
-          auConfigID="prebid-demo-video-interstitial-320-480"
+          adUnitID={ADS.RENDERING_INTERSTITIAL_VIDEO.adUnitID}
+          auConfigID={ADS.RENDERING_INTERSTITIAL_VIDEO.auConfigID}
           adFormat="video"
           isLazyLoad={false}
           onAdFailedToLoad={(error) => {

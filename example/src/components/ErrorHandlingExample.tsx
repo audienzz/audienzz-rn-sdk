@@ -6,6 +6,7 @@ import {
   OriginalRewarded,
 } from 'audienzz';
 import ActionButton from './ActionButton';
+import { ADS } from '../ads_constants';
 
 const ErrorHandlingExample = () => {
   const [isInterstitialError, setIsInterstitialError] = React.useState(false);
@@ -23,9 +24,9 @@ const ErrorHandlingExample = () => {
       <View style={styles.border}>
         <Text style={styles.text}>Banner 320x50 100% ERROR is a reserved</Text>
         <OriginalBanner
-          adUnitID="/21808260008/prebid_demo_app_original_api_banne"
-          auConfigID="prebid-demo-banner-320-50"
-          sizes={[{width: 320, height: 50}]}
+          adUnitID={ADS.BANNER_RESERVED_DEMO.adUnitID}
+          auConfigID={ADS.BANNER_RESERVED_DEMO.auConfigID}
+          sizes={ADS.BANNER_RESERVED_DEMO.sizes}
           adFormats={['banner']}
           isLazyLoad={false}
           isReserved
@@ -37,9 +38,9 @@ const ErrorHandlingExample = () => {
           Banner 320x50 100% ERROR is not reserved
         </Text>
         <OriginalBanner
-          adUnitID="/21808260008/prebid_demo_app_original_api_banne"
-          auConfigID="prebid-demo-banner-320-50"
-          sizes={[{width: 320, height: 50}]}
+          adUnitID={ADS.BANNER_RESERVED_DEMO.adUnitID}
+          auConfigID={ADS.BANNER_RESERVED_DEMO.auConfigID}
+          sizes={ADS.BANNER_RESERVED_DEMO.sizes}
           adFormats={['banner']}
           isLazyLoad={false}
         />
@@ -57,8 +58,8 @@ const ErrorHandlingExample = () => {
 
       {isInterstitialError && (
         <OriginalInterstitial
-          adUnitID="/21808260008/prebid-demo-app-original-api-display-interstitia"
-          auConfigID="prebid-demo-display-interstitial-320-480"
+          adUnitID={ADS.INTERSTITIAL_DEMO.adUnitID}
+          auConfigID={ADS.INTERSTITIAL_DEMO.auConfigID}
           adFormats={['banner']}
           isLazyLoad={false}
           onAdLoaded={() => console.log('INTERSTITIAL success')}
@@ -76,8 +77,8 @@ const ErrorHandlingExample = () => {
       )}
       {isRewardedError && (
         <OriginalRewarded
-          adUnitID="ca-app-pub-3940256099942544/171248531"
-          auConfigID="prebid-demo-video-rewarded-320-480-original-api"
+          adUnitID={ADS.REWARDED_DEMO.adUnitID}
+          auConfigID={ADS.REWARDED_DEMO.auConfigID}
           isLazyLoad={false}
           onAdLoaded={() => console.log('REWARDED success')}
           onAdFailedToLoad={(error) => {
