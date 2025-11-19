@@ -118,6 +118,7 @@ export class OriginalBanner extends Component<
       <View style={[bannerStyle]}>
         <NativeComponent
           {...restProps}
+          style={styles.nativeComponent}
           ref={this.nativeComponentRef}
           playbackMethod={playbackMethod}
           isLazyLoad={isLazyLoad}
@@ -141,5 +142,9 @@ const styles = StyleSheet.create({
     width: 0,
     height: 0,
     overflow: 'hidden',
+  },
+  nativeComponent: {
+    width: '100%',
+    height: '100%',
   },
 });
