@@ -23,62 +23,97 @@
 RCT_EXPORT_MODULE();
 
 - (dispatch_queue_t)methodQueue {
-    return dispatch_get_main_queue();
+  return dispatch_get_main_queue();
 }
 
-RCT_EXPORT_METHOD(initialize:(NSString *)companyId
-                  enablePPID:(BOOL)enablePPID
-                  resolver:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject) {
-    [self initializeWithCompanyId:companyId
-                       enablePPID: enablePPID
-                         resolver:resolve
-                         rejecter:reject];
+RCT_EXPORT_METHOD(initialize: (NSString *)companyId
+                  enablePPID: (BOOL)enablePPID
+                    resolver: (RCTPromiseResolveBlock)resolve
+                    rejecter: (RCTPromiseRejectBlock)reject) {
+  [self initializeWithCompanyId:companyId
+                     enablePPID:enablePPID
+                       resolver:resolve
+                       rejecter:reject];
 }
 
-RCT_EXPORT_METHOD(setSchainObject:(NSString *)schain
-                  resolver:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject) {
-    [self setSchainObjectWithSchain:schain resolver:resolve rejecter:reject];
+RCT_EXPORT_METHOD(setSchainObject: (NSString *)schain
+                  resolver: (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject) {
+  [self setSchainObjectWithSchain:schain resolver:resolve rejecter:reject];
 }
 
 - (void)initializeWithCompanyId:(NSString *)companyId
                      enablePPID:(BOOL)enablePPID
                        resolver:(RCTPromiseResolveBlock)resolve
                        rejecter:(RCTPromiseRejectBlock)reject {
-    [[Audienzz shared] configureSDK_RNWithCompanyId:companyId enablePPID:enablePPID :^{
-        NSDictionary *result = @{
-            @"status" : @"SUCCEEDED",
-            @"description" : @"SDK initialized successfully!"
-        };
-        
-        resolve(result);
-    }];
-    [[AudienzzGAMUtils shared] initializeGAM];
+  [[Audienzz shared]
+      configureSDK_RNWithCompanyId:companyId
+                        enablePPID:enablePPID:^{
+                          NSDictionary *result = @{
+                            @"status" : @"SUCCEEDED",
+                            @"description" : @"SDK initialized successfully!"
+                          };
+
+                          resolve(result);
+                        }];
+  [[AudienzzGAMUtils shared] initializeGAM];
 }
 
 - (void)setSchainObjectWithSchain:(NSString *)schain
                          resolver:(RCTPromiseResolveBlock)resolve
                          rejecter:(RCTPromiseRejectBlock)reject {
 
-    [[Audienzz shared] setSchainObjectWithSchain:schain];
-    resolve(nil);
+  [[Audienzz shared] setSchainObjectWithSchain:schain];
+  resolve(nil);
 }
 
-RCT_EXPORT_METHOD(isAutomaticPpidEnabled:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject) {
-    NSNumber *getAutomaticPpidEnabled = [NSNumber numberWithBool:[[PPIDManager shared] getAutomaticPpidEnabled]];
-    resolve(getAutomaticPpidEnabled);
+RCT_EXPORT_METHOD(isAutomaticPpidEnabled: (RCTPromiseResolveBlock)
+                        resolve rejecter: (RCTPromiseRejectBlock)reject) {
+  NSNumber *getAutomaticPpidEnabled =
+      [NSNumber numberWithBool:[[PPIDManager shared] getAutomaticPpidEnabled]];
+  resolve(getAutomaticPpidEnabled);
 }
 
-RCT_EXPORT_METHOD(setAutomaticPpidEnabled:(BOOL)isPpidEnabled) {
+RCT_EXPORT_METHOD(setAutomaticPpidEnabled: (BOOL)isPpidEnabled) {
   [[PPIDManager shared] setAutomaticPpidEnabled:isPpidEnabled];
 }
 
-RCT_EXPORT_METHOD(getPpid:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject) {
-    NSString *ppid = [[PPIDManager shared] getPPID];
-    resolve(ppid);
+RCT_EXPORT_METHOD(getPpid: (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject) {
+  NSString *ppid = [[PPIDManager shared] getPPID];
+  resolve(ppid);
+}
+
+RCT_EXPORT_METHOD(configureRemote : (NSString *)remoteUrl publisherId : (
+    NSString *)publisherId resolver : (RCTPromiseResolveBlock)
+                      resolve rejecter : (RCTPromiseRejectBlock)reject) {
+  NSURL *url = [NSURL URLWithString:remoteUrl];
+
+  if (url == nil) {
+    reject(@"INVALID_URL", @"Invalid remote URL provided", nil);
+    return;
+  }
+
+  [[AudienzzRemoteConfig shared] configureRemoteWithRemoteUrl:url
+                                                  publisherId:publisherId];
+  resolve(nil);
+}
+
+RCT_EXPORT_METHOD(fetchPublisherConfig: (NSString *)publisherId
+                            enablePPID: (BOOL)enablePPID
+                              resolver: (RCTPromiseResolveBlock)resolve
+                              rejecter: (RCTPromiseRejectBlock)reject) {
+  [[Audienzz shared]
+      configureWithRemoteSDKWithGadMobileAdsVersion:nil
+                               enablePPID:enablePPID
+                        completionHandler:^(NSError *_Nullable error) {
+                          if (error != nil) {
+                            reject(@"FETCH_FAILED",
+                                   [error localizedDescription], error);
+                          } else {
+                            resolve(nil);
+                          }
+                        }];
 }
 
 @end

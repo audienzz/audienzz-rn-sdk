@@ -17,14 +17,14 @@
 
 import React from 'react';
 import { requireNativeComponent, UIManager } from 'react-native';
-import type { IRenderingRewardedProps, TAdError } from '../../types';
+import type { RenderingRewardedProps, AdError } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTRenderingRewardedView';
 const NativeComponent =
-  requireNativeComponent<IRenderingRewardedProps>(ComponentName);
+  requireNativeComponent<RenderingRewardedProps>(ComponentName);
 
-export const RenderingRewarded = (props: IRenderingRewardedProps) => {
+export const RenderingRewarded = (props: RenderingRewardedProps) => {
   const {
     isLazyLoad = true,
     onAdFailedToLoad,
@@ -37,9 +37,9 @@ export const RenderingRewarded = (props: IRenderingRewardedProps) => {
   }
 
   const handleAdFailedToLoad = (
-    event: TAdError | { nativeEvent: { code: number; message: string } }
+    event: AdError | { nativeEvent: { code: number; message: string } }
   ) => {
-    const error: TAdError = 'nativeEvent' in event ? event.nativeEvent : event;
+    const error: AdError = 'nativeEvent' in event ? event.nativeEvent : event;
     onAdFailedToLoad?.(error);
   };
 

@@ -1,6 +1,6 @@
 import type { ViewStyle } from 'react-native';
 
-export interface IBaseAdProps {
+export interface BaseAdProps {
   adUnitID: string;
   auConfigID: string;
   isLazyLoad?: boolean;

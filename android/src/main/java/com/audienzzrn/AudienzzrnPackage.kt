@@ -38,6 +38,8 @@ class AudienzzPackage : ReactPackage {
       RCTRenderingBannerViewManager(),
       RCTRenderingInterstitialViewManager(),
       RCTRenderingRewardedViewManager(),
+      RCTRemoteConfigBannerViewManager(),
+      RCTRemoteConfigInterstitialManager(),
     )
   }
 }

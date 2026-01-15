@@ -1,8 +1,7 @@
 import NativeModulesCombined from './NativeRNAudienzzModule';
-import type { AudienzzExternalUserId, IRNAudienzzTargetingModule } from './types';
-import type { AudienzzLocation } from './types/IRNAudienzzTargetingModule';
+import type { AudienzzExternalUserId, RNAudienzzTargetingModule, AudienzzLocation } from './types';
 
-class RNTargetingClass implements IRNAudienzzTargetingModule {
+class RNTargetingClass implements RNAudienzzTargetingModule {
   setUserLatLng(latitude: number, longitude: number): Promise<void> {
     return NativeModulesCombined.AudienzzTargetingModule.setUserLatLng(
       latitude,

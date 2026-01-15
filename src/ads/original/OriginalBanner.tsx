@@ -23,25 +23,25 @@ import {
   View,
   StyleSheet,
 } from 'react-native';
-import type { IOriginalBannerProps, TAdError, TAdSize } from '../../types';
+import type { OriginalBannerProps, AdError, AdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTOriginalBannerView';
 const NativeComponent =
-  requireNativeComponent<IOriginalBannerProps>(ComponentName);
+  requireNativeComponent<OriginalBannerProps>(ComponentName);
 
-interface IOriginalBannerState {
+interface OriginalBannerState {
   isBannerVisible: boolean;
-  adSize?: TAdSize;
+  adSize?: AdSize;
 }
 
 export class OriginalBanner extends Component<
-  IOriginalBannerProps,
-  IOriginalBannerState
+  OriginalBannerProps,
+  OriginalBannerState
 > {
   private nativeComponentRef: React.RefObject<any>;
 
-  constructor(props: IOriginalBannerProps) {
+  constructor(props: OriginalBannerProps) {
     super(props);
     this.nativeComponentRef = createRef();
     this.state = {
@@ -91,20 +91,20 @@ export class OriginalBanner extends Component<
       throw new Error(LINKING_ERROR);
     }
 
-    const handleAdLoaded = (event: TAdSize | { nativeEvent: {width: number; height: number }}) => {
-      const adSize : TAdSize =
-       'nativeEvent' in event ? event.nativeEvent : event;
+    const handleAdLoaded = (event: AdSize | { nativeEvent: { width: number; height: number } }) => {
+      const adSize: AdSize =
+        'nativeEvent' in event ? event.nativeEvent : event;
 
-       console.log("Adsize", adSize);
+      console.log("Adsize", adSize);
 
       this.setState({ isBannerVisible: true, adSize: adSize });
       this.props.onAdLoaded?.(adSize);
     };
 
     const handleAdFailedToLoad = (
-      event: TAdError | { nativeEvent: { code: number; message: string } }
+      event: AdError | { nativeEvent: { code: number; message: string } }
     ) => {
-      const error: TAdError =
+      const error: AdError =
         'nativeEvent' in event ? event.nativeEvent : event;
       this.setState({ isBannerVisible: false });
       this.props.onAdFailedToLoad?.(error);

@@ -17,14 +17,14 @@
 
 import React from 'react';
 import { requireNativeComponent, UIManager } from 'react-native';
-import type { IOriginalInterstitialProps, TAdError } from '../../types';
+import type { OriginalInterstitialProps, AdError } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTOriginalInterstitialView';
 const NativeComponent =
-  requireNativeComponent<IOriginalInterstitialProps>(ComponentName);
+  requireNativeComponent<OriginalInterstitialProps>(ComponentName);
 
-export const OriginalInterstitial = (props: IOriginalInterstitialProps) => {
+export const OriginalInterstitial = (props: OriginalInterstitialProps) => {
   const {
     playbackMethod = ['AutoPlaySoundOn'],
     isLazyLoad = true,
@@ -43,9 +43,9 @@ export const OriginalInterstitial = (props: IOriginalInterstitialProps) => {
   }
 
   const handleAdFailedToLoad = (
-    event: TAdError | { nativeEvent: { code: number; message: string } }
+    event: AdError | { nativeEvent: { code: number; message: string } }
   ) => {
-    const error: TAdError = 'nativeEvent' in event ? event.nativeEvent : event;
+    const error: AdError = 'nativeEvent' in event ? event.nativeEvent : event;
     onAdFailedToLoad?.(error);
   };
 

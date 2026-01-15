@@ -1,24 +1,24 @@
-export type TAdError = {
+export type AdError = {
   code: number;
   message: string;
 };
 
-export type TAdSize = {
+export type AdSize = {
   width: number;
   height: number;
 }
 
-export type TAdFormat = 'banner' | 'video';
+export type AdFormat = 'banner' | 'video';
 
-export type TAdFormats = Array<'banner' | 'video'>;
+export type AdFormats = Array<'banner' | 'video'>;
 
-export type TApiParameters = Array<
+export type ApiParameters = Array<
   'MRAID_1' | 'MRAID_2' | 'MRAID_3' | 'VPAID_1' | 'VPAID_2' | 'OMID_1' | 'ORMMA'
 >;
 
-export type TMinSizesPercentage = [number, number];
+export type MinSizesPercentage = [number, number];
 
-export type TPlaybackMethod = Array<
+export type PlaybackMethod = Array<
   | 'AutoPlaySoundOn'
   | 'AutoPlaySoundOff'
   | 'ClickToPlay'
@@ -27,22 +27,22 @@ export type TPlaybackMethod = Array<
   | 'EnterSoundOff'
 >;
 
-export type TRewardEarnedEvent = {
+export type RewardEarnedEvent = {
   type: string;
   amount: number;
 };
 
-export type TVideoBitrate = [number, number];
+export type VideoBitrate = [number, number];
 
-export type TVideoDuration = [number, number];
+export type VideoDuration = [number, number];
 
-export type TVideoPlacement =
+export type VideoPlacement =
   | 'inBanner'
   | 'inArticle'
   | 'inFeed'
   | 'interstitial';
 
-export type TVideoProtocols = Array<
+export type VideoProtocols = Array<
   | 'VAST_1_0'
   | 'VAST_2_0'
   | 'VAST_3_0'

@@ -1,16 +1,16 @@
 import NativeModulesCombined from './NativeRNAudienzzModule';
-import type { IRNAudienzzModule } from './types';
+import type { RNAudienzzModule, AudienzzInitStatus } from './types';
 
-class RNAudienzzClass implements IRNAudienzzModule {
-  initialize(companyID: string, enablePpid: Boolean = false) {
+class RNAudienzzClass implements RNAudienzzModule {
+  initialize(companyID: string, enablePpid: boolean = false) {
     return NativeModulesCombined.AudienzzModule.initialize(companyID, enablePpid);
   }
 
-  isAutomaticPpidEnabled(): Promise<Boolean> {
+  isAutomaticPpidEnabled(): Promise<boolean> {
     return NativeModulesCombined.AudienzzModule.isAutomaticPpidEnabled();
   }
 
-  setAutomaticPpidEnabled(enablePpid: Boolean): Promise<void> {
+  setAutomaticPpidEnabled(enablePpid: boolean): Promise<void> {
     return NativeModulesCombined.AudienzzModule.setAutomaticPpidEnabled(enablePpid);
   }
 
@@ -21,7 +21,27 @@ class RNAudienzzClass implements IRNAudienzzModule {
   setSchainObject(schain: string): Promise<void> {
     return NativeModulesCombined.AudienzzModule.setSchainObject(schain);
   }
+
+  configureRemote(remoteUrl: string, publisherId: string): Promise<void> {
+    return NativeModulesCombined.AudienzzModule.configureRemote(remoteUrl, publisherId);
+  }
+
+  fetchPublisherConfig(publisherId: string, enablePpid: boolean = false): Promise<void> {
+    return NativeModulesCombined.AudienzzModule.fetchPublisherConfig(publisherId, enablePpid);
+  }
+
+  initializeRemote(remoteUrl: string, publisherId: string, enablePpid: boolean = false): Promise<AudienzzInitStatus> {
+    return this.configureRemote(remoteUrl, publisherId)
+      .then(() => {
+        return this.fetchPublisherConfig(publisherId, enablePpid);
+      })
+      .then(() => ({
+        status: 'SUCCEEDED',
+        description: `Remote SDK initialized successfully`,
+      }));
+  }
 }
+
 
 const Instance = new RNAudienzzClass();
 

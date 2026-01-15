@@ -18,17 +18,17 @@
 import React from 'react';
 import { requireNativeComponent, UIManager } from 'react-native';
 import type {
-  IOriginalRewardedProps,
-  TAdError,
-  TRewardEarnedEvent,
+  OriginalRewardedProps,
+  AdError,
+  RewardEarnedEvent,
 } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTOriginalRewardedView';
 const NativeComponent =
-  requireNativeComponent<IOriginalRewardedProps>(ComponentName);
+  requireNativeComponent<OriginalRewardedProps>(ComponentName);
 
-export const OriginalRewarded = (props: IOriginalRewardedProps) => {
+export const OriginalRewarded = (props: OriginalRewardedProps) => {
   const {
     playbackMethod = ['AutoPlaySoundOn'],
     isLazyLoad = true,
@@ -47,7 +47,7 @@ export const OriginalRewarded = (props: IOriginalRewardedProps) => {
 
   const handleAdClosed = (
     event:
-      | TRewardEarnedEvent
+      | RewardEarnedEvent
       | { nativeEvent: { type: string; amount: number } }
   ) => {
     const rewardEvent = 'nativeEvent' in event ? event.nativeEvent : event;
@@ -55,9 +55,9 @@ export const OriginalRewarded = (props: IOriginalRewardedProps) => {
   };
 
   const handleAdFailedToLoad = (
-    event: TAdError | { nativeEvent: { code: number; message: string } }
+    event: AdError | { nativeEvent: { code: number; message: string } }
   ) => {
-    const error: TAdError = 'nativeEvent' in event ? event.nativeEvent : event;
+    const error: AdError = 'nativeEvent' in event ? event.nativeEvent : event;
     onAdFailedToLoad?.(error);
   };
 

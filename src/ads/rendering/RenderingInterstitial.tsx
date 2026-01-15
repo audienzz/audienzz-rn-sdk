@@ -17,14 +17,14 @@
 
 import React from 'react';
 import { requireNativeComponent, UIManager } from 'react-native';
-import type { IRenderingInterstitialProps, TAdError } from '../../types';
+import type { RenderingInterstitialProps, AdError } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTRenderingInterstitialView';
 const NativeComponent =
-  requireNativeComponent<IRenderingInterstitialProps>(ComponentName);
+  requireNativeComponent<RenderingInterstitialProps>(ComponentName);
 
-export const RenderingInterstitial = (props: IRenderingInterstitialProps) => {
+export const RenderingInterstitial = (props: RenderingInterstitialProps) => {
   const {
     isLazyLoad = true,
     onAdFailedToLoad,
@@ -38,9 +38,9 @@ export const RenderingInterstitial = (props: IRenderingInterstitialProps) => {
   }
 
   const handleAdFailedToLoad = (
-    event: TAdError | { nativeEvent: { code: number; message: string } }
+    event: AdError | { nativeEvent: { code: number; message: string } }
   ) => {
-    const error: TAdError = 'nativeEvent' in event ? event.nativeEvent : event;
+    const error: AdError = 'nativeEvent' in event ? event.nativeEvent : event;
     onAdFailedToLoad?.(error);
   };
 
