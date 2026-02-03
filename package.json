@@ -1,6 +1,6 @@
 {
   "name": "audienzz",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "React Native implementation of the Audienzz SDK",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
