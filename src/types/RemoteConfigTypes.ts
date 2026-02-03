@@ -43,8 +43,6 @@ export interface PrebidServer {
     statusUrl: string;
 }
 
- * Supply chain(SCHAIN) configuration
-    */
 export interface Schain {
     sellerId: string;
     advertisingSystemDomain: string;
