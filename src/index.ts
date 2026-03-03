@@ -44,6 +44,9 @@ export {
   RenderingRewarded,
 };
 
+export { AudienzzStickyAdWrapper } from './components/AudienzzStickyAdWrapper';
+export type { AudienzzStickyAdWrapperProps } from './components/AudienzzStickyAdWrapper';
+
 export { default, RNAudienzz } from './RNAudienzz';
 
 export type {
