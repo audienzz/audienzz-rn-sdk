@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ScrollView, Text, View, Platform, StyleSheet } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, Platform, StyleSheet } from 'react-native';
 import RNAudienzz from 'audienzz';
 import { RNTargeting } from 'audienzz';
 import { LOREM } from './constants';
@@ -10,6 +10,7 @@ import OriginalRewardedAPIExample from './components/OriginalRewardedAPIExample'
 import LazyLoadingExample from './components/LazyLoadingExample';
 import RenderingInterstitialAPIExample from './components/RenderingInterstitialAPIExample';
 import RemoteConfigExample from './components/RemoteConfigExample';
+import StickyAdExample from './components/StickyAdExample';
 
 const REMOTE_CONFIG_ENABLED = true;
 const REMOTE_CONFIG_URL = 'https://dev-api.adnz.co/api/ws-sdk-config/public/v1';
@@ -17,6 +18,7 @@ const PUBLISHER_ID = '81';
 
 export default function App() {
   const [initialized, setInitialized] = React.useState(false);
+  const [screen, setScreen] = React.useState<'main' | 'sticky'>('main');
 
   React.useEffect(() => {
     if (REMOTE_CONFIG_ENABLED) {
@@ -68,10 +70,21 @@ export default function App() {
     );
   }
 
-  return REMOTE_CONFIG_ENABLED ? RemoteView() : OriginalView();
+  if (screen === 'sticky') {
+    return (
+      <View style={styles.mainContainer}>
+        <TouchableOpacity style={styles.backButton} onPress={() => setScreen('main')}>
+          <Text style={styles.backButtonText}>← Back</Text>
+        </TouchableOpacity>
+        <StickyAdExample />
+      </View>
+    );
+  }
+
+  return REMOTE_CONFIG_ENABLED ? RemoteView(() => setScreen('sticky')) : OriginalView(() => setScreen('sticky'));
 }
 
-function RemoteView() {
+function RemoteView(onOpenSticky: () => void) {
   return (
     <View style={styles.mainContainer}>
       <ScrollView
@@ -81,12 +94,17 @@ function RemoteView() {
         <Text style={styles.bigText}>REMOTE CONFIG</Text>
         <RemoteConfigExample />
         <View style={styles.height30} />
+        <Text style={styles.bigText}>STICKY AD</Text>
+        <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
+          <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
+        </TouchableOpacity>
+        <View style={styles.height30} />
       </ScrollView>
     </View>
   );
 }
 
-function OriginalView() {
+function OriginalView(onOpenSticky: () => void) {
   return (
     <View style={styles.mainContainer}>
       <ScrollView
@@ -112,6 +130,12 @@ function OriginalView() {
         <Text style={styles.lorem}>{LOREM}</Text>
         <Text style={styles.bigText}>LAZY LOADING</Text>
         <LazyLoadingExample />
+        <View style={styles.height30} />
+        <Text style={styles.bigText}>STICKY AD</Text>
+        <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
+          <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
+        </TouchableOpacity>
+        <View style={styles.height30} />
       </ScrollView>
     </View>
   );
@@ -150,5 +174,27 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '700',
     color: '#000',
+  },
+  backButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#F5F5F5',
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: '#1565C0',
+    fontWeight: '600',
+  },
+  navButton: {
+    backgroundColor: '#1565C0',
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  navButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

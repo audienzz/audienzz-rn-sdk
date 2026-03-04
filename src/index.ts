@@ -59,6 +59,8 @@ export {
 export { default, RNAudienzz } from './RNAudienzz';
 export { RNTargeting } from './RNTargeting';
 export { AdSizes } from './constants';
+export { AudienzzStickyAdWrapper } from './components/AudienzzStickyAdWrapper';
+export type { AudienzzStickyAdWrapperProps } from './components/AudienzzStickyAdWrapper';
 
 export type {
   AdEvents,
