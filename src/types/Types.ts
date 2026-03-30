@@ -16,7 +16,9 @@ export type ApiParameters = Array<
   'MRAID_1' | 'MRAID_2' | 'MRAID_3' | 'VPAID_1' | 'VPAID_2' | 'OMID_1' | 'ORMMA'
 >;
 
-export type MinSizesPercentage = [number, number];
+export type MinSizePercentage = [number, number];
+/** @deprecated Use `MinSizePercentage` instead. */
+export type MinSizesPercentage = MinSizePercentage;
 
 export type PlaybackMethod = Array<
   | 'AutoPlaySoundOn'

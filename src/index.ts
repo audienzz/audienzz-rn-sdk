@@ -5,6 +5,11 @@ import {
   RemoteConfigBanner,
   RemoteConfigInterstitial,
 } from './ads/original';
+import type {
+  OriginalInterstitialHandle,
+  OriginalRewardedHandle,
+  RemoteConfigInterstitialHandle,
+} from './ads/original';
 import {
   RenderingBanner,
   RenderingInterstitial,
@@ -29,6 +34,7 @@ import type {
   AdFormat,
   AdFormats,
   ApiParameters,
+  MinSizePercentage,
   MinSizesPercentage,
   PlaybackMethod,
   RewardEarnedEvent,
@@ -56,8 +62,8 @@ export {
   RenderingRewarded,
 };
 
-export { default, RNAudienzz } from './RNAudienzz';
-export { RNTargeting } from './RNTargeting';
+export { default, Audienzz, RNAudienzz } from './RNAudienzz';
+export { Targeting, RNTargeting } from './RNTargeting';
 export { AdSizes } from './constants';
 export { AudienzzStickyAdWrapper } from './components/AudienzzStickyAdWrapper';
 export type { AudienzzStickyAdWrapperProps } from './components/AudienzzStickyAdWrapper';
@@ -69,9 +75,12 @@ export type {
   RNAudienzzTargetingModule,
   OriginalBannerProps,
   OriginalInterstitialProps,
+  OriginalInterstitialHandle,
   OriginalRewardedProps,
+  OriginalRewardedHandle,
   RemoteConfigBannerProps,
   RemoteConfigInterstitialProps,
+  RemoteConfigInterstitialHandle,
   AudienzzInitStatus,
   Parameters,
   RenderingBannerProps,
@@ -81,6 +90,7 @@ export type {
   AdFormat,
   AdFormats,
   ApiParameters,
+  MinSizePercentage,
   MinSizesPercentage,
   PlaybackMethod,
   RewardEarnedEvent,

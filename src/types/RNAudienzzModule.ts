@@ -4,7 +4,7 @@ export type AudienzzInitStatus = {
 };
 
 export interface RNAudienzzModule {
-  initialize(companyID: string, enablePpid: boolean): Promise<AudienzzInitStatus>;
+  initialize(companyId: string, enablePpid: boolean): Promise<AudienzzInitStatus>;
 
   isAutomaticPpidEnabled(): Promise<boolean>;
   setAutomaticPpidEnabled(enablePpid: boolean): Promise<void>;

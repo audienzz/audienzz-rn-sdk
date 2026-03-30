@@ -21,14 +21,16 @@ import type { RenderingRewardedProps, AdError } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTRenderingRewardedView';
-const NativeComponent =
-  requireNativeComponent<RenderingRewardedProps>(ComponentName);
+const NativeComponent = requireNativeComponent<any>(ComponentName);
 
 export const RenderingRewarded = (props: RenderingRewardedProps) => {
   const {
+    adUnitId,
+    auConfigId,
+    gpId,
+    minSizePercentage = [80, 60],
     isLazyLoad = true,
     onAdFailedToLoad,
-    minSizesPercentage = [80, 60],
     ...restProps
   } = props;
 
@@ -46,8 +48,11 @@ export const RenderingRewarded = (props: RenderingRewardedProps) => {
   return (
     <NativeComponent
       {...restProps}
+      adUnitID={adUnitId}
+      auConfigID={auConfigId}
+      gpID={gpId}
       isLazyLoad={isLazyLoad}
-      minSizesPercentage={minSizesPercentage}
+      minSizesPercentage={minSizePercentage}
       onAdFailedToLoad={handleAdFailedToLoad}
     />
   );

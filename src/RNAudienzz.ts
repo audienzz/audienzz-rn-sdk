@@ -2,8 +2,8 @@ import NativeModulesCombined from './NativeRNAudienzzModule';
 import type { RNAudienzzModule, AudienzzInitStatus } from './types';
 
 class RNAudienzzClass implements RNAudienzzModule {
-  initialize(companyID: string, enablePpid: boolean = false) {
-    return NativeModulesCombined.AudienzzModule.initialize(companyID, enablePpid);
+  initialize(companyId: string, enablePpid: boolean = false) {
+    return NativeModulesCombined.AudienzzModule.initialize(companyId, enablePpid);
   }
 
   isAutomaticPpidEnabled(): Promise<boolean> {
@@ -45,8 +45,25 @@ class RNAudienzzClass implements RNAudienzzModule {
 
 const Instance = new RNAudienzzClass();
 
-export const RNAudienzz = () => {
-  return Instance;
-};
+/**
+ * Singleton SDK entry point.
+ *
+ * @example
+ * import { Audienzz } from 'audienzz';
+ * Audienzz.initialize('companyId', false);
+ */
+export const Audienzz: RNAudienzzModule = Instance;
+
+/**
+ * @deprecated Use `Audienzz` instead.
+ * `RNAudienzz()` will be removed in a future release.
+ *
+ * @example
+ * // Before (deprecated)
+ * RNAudienzz().initialize('companyId', false);
+ * // After
+ * Audienzz.initialize('companyId', false);
+ */
+export const RNAudienzz = () => Instance;
 
 export default RNAudienzz;

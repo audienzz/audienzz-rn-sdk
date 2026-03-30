@@ -1,7 +1,7 @@
 import type { AdEvents } from './AdEvents';
 import type { BaseAdProps } from './BaseAdProps';
 import type { Parameters } from './Parameters';
-import type { AdSize, MinSizesPercentage, RewardEarnedEvent } from './Types';
+import type { AdSize, MinSizePercentage, RewardEarnedEvent } from './Types';
 
 export interface OriginalBannerProps
   extends BaseAdProps,
@@ -9,7 +9,7 @@ export interface OriginalBannerProps
   AdEvents {
   sizes: AdSize[];
   isReserved?: boolean;
-  autoRefreshPeriodMillis?: number;
+  refreshTimeMillis?: number;
 }
 
 export interface OriginalInterstitialProps
@@ -17,7 +17,7 @@ export interface OriginalInterstitialProps
   Omit<Parameters, 'videoPlacement'>,
   AdEvents {
   sizes?: AdSize[];
-  minSizesPercentage?: MinSizesPercentage;
+  minSizePercentage?: MinSizePercentage;
 }
 
 export interface OriginalRewardedProps
@@ -26,6 +26,6 @@ export interface OriginalRewardedProps
     Parameters,
     Exclude<keyof Parameters, 'adFormats' | 'videoPlacement'>
   >,
-  Omit<AdEvents, 'onAdClosed'> {
-  onAdClosed?(reward: RewardEarnedEvent): void;
+  AdEvents {
+  onUserEarnedReward?(reward: RewardEarnedEvent): void;
 }

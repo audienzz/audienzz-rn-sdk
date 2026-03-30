@@ -221,15 +221,14 @@ class RNAudienzzTargetingModule(reactContext: ReactApplicationContext) :
         val userIdMap = Arguments.createMap()
         userIdMap.putString("source", externalUserId.source)
 
-        //TODO: add ability to get ids
-//        val uniqueIdsArray = Arguments.createArray()
-//        externalUserId.uniqueIds.forEach { uniqueId ->
-//          val uniqueIdMap = Arguments.createMap()
-//          uniqueIdMap.putString("id", uniqueId.id)
-//          uniqueId.atype?.let { uniqueIdMap.putInt("atype", it) }
-//          uniqueIdsArray.pushMap(uniqueIdMap)
-//        }
-//        userIdMap.putArray("uniqueIds", uniqueIdsArray)
+        val uniqueIdsArray = Arguments.createArray()
+        externalUserId.uniqueIds.forEach { uniqueId ->
+          val uniqueIdMap = Arguments.createMap()
+          uniqueIdMap.putString("id", uniqueId.id)
+          uniqueId.atype?.let { uniqueIdMap.putInt("atype", it) }
+          uniqueIdsArray.pushMap(uniqueIdMap)
+        }
+        userIdMap.putArray("uniqueIds", uniqueIdsArray)
         array.pushMap(userIdMap)
       }
 

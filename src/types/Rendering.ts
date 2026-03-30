@@ -1,7 +1,7 @@
 import type { AdEvents } from './AdEvents';
 import type { BaseAdProps } from './BaseAdProps';
 import type { Parameters } from './Parameters';
-import type { AdFormat, MinSizesPercentage } from './Types';
+import type { AdFormat, MinSizePercentage, RewardEarnedEvent } from './Types';
 
 export interface RenderingBannerProps
   extends BaseAdProps,
@@ -17,12 +17,13 @@ export interface RenderingInterstitialProps
   extends Omit<BaseAdProps, 'style'>,
   AdEvents {
   adFormat: AdFormat;
-  minSizesPercentage?: MinSizesPercentage;
+  minSizePercentage?: MinSizePercentage;
   skipDelay?: number;
 }
 
 export interface RenderingRewardedProps
   extends Omit<BaseAdProps, 'style'>,
   AdEvents {
-  minSizesPercentage?: MinSizesPercentage;
+  minSizePercentage?: MinSizePercentage;
+  onUserEarnedReward?(reward: RewardEarnedEvent): void;
 }

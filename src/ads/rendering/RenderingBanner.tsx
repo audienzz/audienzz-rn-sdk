@@ -26,8 +26,7 @@ import type { RenderingBannerProps, AdError, AdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTRenderingBannerView';
-const NativeComponent =
-  requireNativeComponent<RenderingBannerProps>(ComponentName);
+const NativeComponent = requireNativeComponent<any>(ComponentName);
 
 interface RenderingBannerState {
   isBannerVisible: boolean;
@@ -47,6 +46,9 @@ export class RenderingBanner extends Component<
 
   render() {
     const {
+      adUnitId,
+      auConfigId,
+      gpId,
       playbackMethod = ['AutoPlaySoundOn'],
       isLazyLoad = true,
       apiParameters = ['MRAID_2'],
@@ -88,6 +90,9 @@ export class RenderingBanner extends Component<
       <View style={[bannerStyle]}>
         <NativeComponent
           {...restProps}
+          adUnitID={adUnitId}
+          auConfigID={auConfigId}
+          gpID={gpId}
           playbackMethod={playbackMethod}
           isLazyLoad={isLazyLoad}
           apiParameters={apiParameters}

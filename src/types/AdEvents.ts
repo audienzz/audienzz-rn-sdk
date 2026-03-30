@@ -6,4 +6,5 @@ export interface AdEvents {
   onAdClicked?(): void;
   onAdOpened?(): void;
   onAdClosed?(): void;
+  onAdImpression?(): void;
 }

@@ -21,14 +21,16 @@ import type { RenderingInterstitialProps, AdError } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTRenderingInterstitialView';
-const NativeComponent =
-  requireNativeComponent<RenderingInterstitialProps>(ComponentName);
+const NativeComponent = requireNativeComponent<any>(ComponentName);
 
 export const RenderingInterstitial = (props: RenderingInterstitialProps) => {
   const {
+    adUnitId,
+    auConfigId,
+    gpId,
+    minSizePercentage = [80, 60],
     isLazyLoad = true,
     onAdFailedToLoad,
-    minSizesPercentage = [80, 60],
     skipDelay = 13,
     ...restProps
   } = props;
@@ -47,8 +49,11 @@ export const RenderingInterstitial = (props: RenderingInterstitialProps) => {
   return (
     <NativeComponent
       {...restProps}
+      adUnitID={adUnitId}
+      auConfigID={auConfigId}
+      gpID={gpId}
       isLazyLoad={isLazyLoad}
-      minSizesPercentage={minSizesPercentage}
+      minSizesPercentage={minSizePercentage}
       skipDelay={skipDelay}
       onAdFailedToLoad={handleAdFailedToLoad}
     />

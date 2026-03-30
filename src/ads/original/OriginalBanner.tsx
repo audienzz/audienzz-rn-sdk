@@ -27,8 +27,7 @@ import type { OriginalBannerProps, AdError, AdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTOriginalBannerView';
-const NativeComponent =
-  requireNativeComponent<OriginalBannerProps>(ComponentName);
+const NativeComponent = requireNativeComponent<any>(ComponentName);
 
 interface OriginalBannerState {
   isBannerVisible: boolean;
@@ -75,6 +74,10 @@ export class OriginalBanner extends Component<
 
   render() {
     const {
+      adUnitId,
+      auConfigId,
+      gpId,
+      refreshTimeMillis,
       playbackMethod = ['AutoPlaySoundOn'],
       isLazyLoad = true,
       isAdaptive = false,
@@ -118,6 +121,10 @@ export class OriginalBanner extends Component<
       <View style={[bannerStyle]}>
         <NativeComponent
           {...restProps}
+          adUnitID={adUnitId}
+          auConfigID={auConfigId}
+          gpID={gpId}
+          autoRefreshPeriodMillis={refreshTimeMillis}
           style={styles.nativeComponent}
           ref={this.nativeComponentRef}
           playbackMethod={playbackMethod}

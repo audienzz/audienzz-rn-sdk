@@ -1,12 +1,12 @@
 import type { ViewStyle } from 'react-native';
 
 export interface BaseAdProps {
-  adUnitID: string;
-  auConfigID: string;
+  adUnitId: string;
+  auConfigId: string;
   isLazyLoad?: boolean;
   isAdaptive?: boolean;
   pbAdSlot?: string;
-  gpID?: string;
+  gpId?: string;
   impOrtbConfig?: string;
   style?: ViewStyle;
 }
