@@ -24,8 +24,8 @@ const ErrorHandlingExample = () => {
       <View style={styles.border}>
         <Text style={styles.text}>Banner 320x50 100% ERROR is a reserved</Text>
         <OriginalBanner
-          adUnitID={ADS.BANNER_RESERVED_DEMO.adUnitID}
-          auConfigID={ADS.BANNER_RESERVED_DEMO.auConfigID}
+          adUnitId={ADS.BANNER_RESERVED_DEMO.adUnitId}
+          auConfigId={ADS.BANNER_RESERVED_DEMO.auConfigId}
           sizes={ADS.BANNER_RESERVED_DEMO.sizes}
           adFormats={['banner']}
           isLazyLoad={false}
@@ -38,8 +38,8 @@ const ErrorHandlingExample = () => {
           Banner 320x50 100% ERROR is not reserved
         </Text>
         <OriginalBanner
-          adUnitID={ADS.BANNER_RESERVED_DEMO.adUnitID}
-          auConfigID={ADS.BANNER_RESERVED_DEMO.auConfigID}
+          adUnitId={ADS.BANNER_RESERVED_DEMO.adUnitId}
+          auConfigId={ADS.BANNER_RESERVED_DEMO.auConfigId}
           sizes={ADS.BANNER_RESERVED_DEMO.sizes}
           adFormats={['banner']}
           isLazyLoad={false}
@@ -58,8 +58,8 @@ const ErrorHandlingExample = () => {
 
       {isInterstitialError && (
         <OriginalInterstitial
-          adUnitID={ADS.INTERSTITIAL_DEMO.adUnitID}
-          auConfigID={ADS.INTERSTITIAL_DEMO.auConfigID}
+          adUnitId={ADS.INTERSTITIAL_DEMO.adUnitId}
+          auConfigId={ADS.INTERSTITIAL_DEMO.auConfigId}
           adFormats={['banner']}
           isLazyLoad={false}
           onAdLoaded={() => console.log('INTERSTITIAL success')}
@@ -77,8 +77,8 @@ const ErrorHandlingExample = () => {
       )}
       {isRewardedError && (
         <OriginalRewarded
-          adUnitID={ADS.REWARDED_DEMO.adUnitID}
-          auConfigID={ADS.REWARDED_DEMO.auConfigID}
+          adUnitId={ADS.REWARDED_DEMO.adUnitId}
+          auConfigId={ADS.REWARDED_DEMO.auConfigId}
           isLazyLoad={false}
           onAdLoaded={() => console.log('REWARDED success')}
           onAdFailedToLoad={(error) => {

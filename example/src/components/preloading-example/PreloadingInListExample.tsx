@@ -28,8 +28,8 @@ const DynamicItem: React.FC<DynamicItemProps> = ({ item, shouldLoadAd }) => {
         >
           <OriginalBanner
             sizes={[{ width: 300, height: 250 }]}
-            adUnitID={ADS.PRELOADING.adUnitID}
-            auConfigID={ADS.PRELOADING.auConfigID}
+            adUnitId={ADS.PRELOADING.adUnitId}
+            auConfigId={ADS.PRELOADING.auConfigId}
             isLazyLoad={false}
             onAdLoaded={() => { console.log("Ad loaded", item.adId) }}
             onAdFailedToLoad={(error) => { console.log("Ad failed to load", item.adId, error) }}

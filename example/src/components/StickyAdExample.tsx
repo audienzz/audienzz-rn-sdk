@@ -61,8 +61,8 @@ export default function StickyAdExample() {
         >
           <View style={styles.bannerHost}>
             <OriginalBanner
-              adUnitID={AD_UNIT_ID}
-              auConfigID={AU_CONFIG_ID}
+              adUnitId={AD_UNIT_ID}
+              auConfigId={AU_CONFIG_ID}
               sizes={[AD_SIZE]}
               adFormats={['banner']}
               isLazyLoad={false}

@@ -11,14 +11,14 @@ const RenderingBannerAPIExample = () => {
           Rendering Banner API HTML 320x50 is a reserved
         </Text>
         <RenderingBanner
-          adUnitID={ADS.RENDERING_BANNER_RESERVED.adUnitID}
-          auConfigID={ADS.RENDERING_BANNER_RESERVED.auConfigID}
+          adUnitId={ADS.RENDERING_BANNER_RESERVED.adUnitId}
+          auConfigId={ADS.RENDERING_BANNER_RESERVED.auConfigId}
           width={ADS.RENDERING_BANNER_RESERVED.width}
           height={ADS.RENDERING_BANNER_RESERVED.height}
           adFormat="banner"
           isLazyLoad={false}
           pbAdSlot="pbAdSlot"
-          gpID="gpID"
+          gpId="gpID"
           onAdLoaded={() => console.log('success')}
           onAdClicked={() => console.log('clicked')}
           onAdOpened={() => console.log('ad opened')}
@@ -34,8 +34,8 @@ const RenderingBannerAPIExample = () => {
         Rendering Banner API Video is not reserved
       </Text>
       <RenderingBanner
-        adUnitID={ADS.RENDERING_BANNER_VIDEO.adUnitID}
-        auConfigID={ADS.RENDERING_BANNER_VIDEO.auConfigID}
+        adUnitId={ADS.RENDERING_BANNER_VIDEO.adUnitId}
+        auConfigId={ADS.RENDERING_BANNER_VIDEO.auConfigId}
         width={ADS.RENDERING_BANNER_VIDEO.width}
         height={ADS.RENDERING_BANNER_VIDEO.height}
         adFormat="video"

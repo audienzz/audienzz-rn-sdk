@@ -20,8 +20,8 @@ const RenderingRewardedAPIExample = () => {
 
       {isRewarded && (
         <RenderingRewarded
-          adUnitID={ADS.REWARDED.adUnitID}
-          auConfigID={ADS.REWARDED.auConfigID}
+          adUnitId={ADS.REWARDED.adUnitId}
+          auConfigId={ADS.REWARDED.auConfigId}
           isLazyLoad={false}
           onAdLoaded={() => console.log('REWARDED onAdLoaded')}
           onAdClicked={() => console.log('REWARDED onAdClicked')}

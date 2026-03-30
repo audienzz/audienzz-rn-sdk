@@ -42,13 +42,13 @@ const OriginalInterstitialAPIExample = () => {
 
       {isInterstitialBanner && (
         <OriginalInterstitial
-          adUnitID={interstitialAdUnitTestID}
-          auConfigID={interstitialTestConfigID}
+          adUnitId={interstitialAdUnitTestID}
+          auConfigId={interstitialTestConfigID}
           adFormats={['banner']}
           isLazyLoad={false}
           sizes={[{width: 333, height: 333}, {width: 444, height: 444}]}
           pbAdSlot="pbAdSlot"
-          gpID="gpID"
+          gpId="gpID"
           onAdLoaded={() => console.log('INTERSTITIAL HTML loaded')}
           onAdClicked={() => console.log('INTERSTITIAL HTML clicked')}
           onAdOpened={() => console.log('INTERSTITIAL HTML opened')}
@@ -66,8 +66,8 @@ const OriginalInterstitialAPIExample = () => {
       )}
       {isInterstitialVideo && (
         <OriginalInterstitial
-          adUnitID={interstitialAdUnitTestID}
-          auConfigID={interstitialTestConfigID}
+          adUnitId={interstitialAdUnitTestID}
+          auConfigId={interstitialTestConfigID}
           adFormats={['video']}
           isLazyLoad={false}
           impOrtbConfig={`{
@@ -92,8 +92,8 @@ const OriginalInterstitialAPIExample = () => {
       )}
       {isInterstitialMulti && (
         <OriginalInterstitial
-          adUnitID={interstitialAdUnitTestID}
-          auConfigID={interstitialMultiformatAuConfigID}
+          adUnitId={interstitialAdUnitTestID}
+          auConfigId={interstitialMultiformatAuConfigID}
           isLazyLoad={false}
           impOrtbConfig={`{
           "banner": {

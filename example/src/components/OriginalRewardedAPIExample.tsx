@@ -16,11 +16,11 @@ const OriginalRewardedAPIExample = () => {
       <ActionButton labelButton="Rewarded Video" onPress={showRewarded} />
       {isRewarded && (
         <OriginalRewarded
-          adUnitID={ADS.REWARDED_ORIGINAL_API.adUnitID}
-          auConfigID={ADS.REWARDED_ORIGINAL_API.auConfigID}
+          adUnitId={ADS.REWARDED_ORIGINAL_API.adUnitId}
+          auConfigId={ADS.REWARDED_ORIGINAL_API.auConfigId}
           isLazyLoad={false}
           pbAdSlot="pbAdSlot"
-          gpID="gpID"
+          gpId="gpID"
           impOrtbConfig={`{
           "banner": {
             "check": "true"

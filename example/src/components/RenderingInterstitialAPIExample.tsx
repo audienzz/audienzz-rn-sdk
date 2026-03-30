@@ -29,8 +29,8 @@ const RenderingInterstitialAPIExample = () => {
 
       {isInterstitialBanner && (
         <RenderingInterstitial
-          adUnitID={ADS.RENDERING_INTERSTITIAL_BANNER.adUnitID}
-          auConfigID={ADS.RENDERING_INTERSTITIAL_BANNER.auConfigID}
+          adUnitId={ADS.RENDERING_INTERSTITIAL_BANNER.adUnitId}
+          auConfigId={ADS.RENDERING_INTERSTITIAL_BANNER.auConfigId}
           adFormat="banner"
           isLazyLoad={false}
           onAdLoaded={() => console.log('onAdLoaded')}
@@ -48,8 +48,8 @@ const RenderingInterstitialAPIExample = () => {
       )}
       {isInterstitialVideo && (
         <RenderingInterstitial
-          adUnitID={ADS.RENDERING_INTERSTITIAL_VIDEO.adUnitID}
-          auConfigID={ADS.RENDERING_INTERSTITIAL_VIDEO.auConfigID}
+          adUnitId={ADS.RENDERING_INTERSTITIAL_VIDEO.adUnitId}
+          auConfigId={ADS.RENDERING_INTERSTITIAL_VIDEO.auConfigId}
           adFormat="video"
           isLazyLoad={false}
           onAdFailedToLoad={(error) => {
