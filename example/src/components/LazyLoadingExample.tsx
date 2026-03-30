@@ -110,8 +110,8 @@ const LazyLoadingExample = () => {
       <OriginalRewarded
         adUnitId="ca-app-pub-3940256099942544/1712485313"
         auConfigId="prebid-demo-video-rewarded-320-480-original-api"
-        onAdClosed={(event) => {
-          console.log(`The user received -> ${JSON.stringify(event, null, 2)}`);
+        onUserEarnedReward={(reward) => {
+          console.log(`The user received -> ${JSON.stringify(reward, null, 2)}`);
         }}
       />
       <View style={styles.height30} />

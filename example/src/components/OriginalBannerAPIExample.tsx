@@ -35,7 +35,7 @@ const OriginalBannerAPIExample = () => {
           sizes={ADS.ORIGINAL_BANNER_HTML_300_250.sizes}
           adFormats={['banner']}
           isLazyLoad={false}
-          autoRefreshPeriodMillis={30000}
+          refreshTimeMillis={30000}
           pbAdSlot="pbAdSlot"
           gpId="gpID"
           impOrtbConfig={`{
@@ -96,7 +96,7 @@ const OriginalBannerAPIExample = () => {
         }`}
           adFormats={['banner']}
           isLazyLoad={false}
-          autoRefreshPeriodMillis={30000}
+          refreshTimeMillis={30000}
           onAdLoaded={() =>
             console.log(' Original Banner API HTML 320x50 success')
           }

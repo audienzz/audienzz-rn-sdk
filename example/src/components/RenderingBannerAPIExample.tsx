@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, StyleSheet, Platform } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
 import { RenderingBanner } from 'audienzz';
 import { ADS } from '../ads_constants';
 

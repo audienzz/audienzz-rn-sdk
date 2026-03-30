@@ -1,7 +1,7 @@
 import NativeModulesCombined from './NativeRNAudienzzModule';
-import type { AudienzzExternalUserId, RNAudienzzTargetingModule, AudienzzLocation } from './types';
+import type { AudienzzExternalUserId, AudienzzLocation } from './types';
 
-class RNTargetingClass implements RNAudienzzTargetingModule {
+class RNTargetingClass {
   setUserLatLng(latitude: number, longitude: number): Promise<void> {
     return NativeModulesCombined.AudienzzTargetingModule.setUserLatLng(
       latitude,
@@ -229,7 +229,7 @@ const Instance = new RNTargetingClass();
  * import { Targeting } from 'audienzz';
  * Targeting.addGlobalTargeting('key', 'value');
  */
-export const Targeting: RNAudienzzTargetingModule = Instance;
+export const Targeting: RNTargetingClass = Instance;
 
 /**
  * @deprecated Use `Targeting` instead.

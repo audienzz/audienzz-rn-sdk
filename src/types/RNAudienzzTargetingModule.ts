@@ -36,12 +36,12 @@ export interface RNAudienzzTargetingModule {
   getOmidPartnerVersion(): Promise<string | null>;
 
   // COPPA and GDPR
-  setSubjectToCoppa(isSubject: boolean | null): Promise<void>;
-  getSubjectToCoppa(): Promise<boolean | null>;
-  setSubjectToGdpr(isSubject: boolean | null): Promise<void>;
-  getSubjectToGdpr(): Promise<boolean | null>;
-  setGdprConsentString(consent: string | null): Promise<void>;
-  getGdprConsentString(): Promise<string | null>;
+  setSubjectToCOPPA(isSubject: boolean | null): Promise<void>;
+  getSubjectToCOPPA(): Promise<boolean | null>;
+  setSubjectToGDPR(isSubject: boolean | null): Promise<void>;
+  getSubjectToGDPR(): Promise<boolean | null>;
+  setGDPRConsentString(consent: string | null): Promise<void>;
+  getGDPRConsentString(): Promise<string | null>;
   setPurposeConsents(consents: string | null): Promise<void>;
   getPurposeConsents(): Promise<string | null>;
   getDeviceAccessConsent(): Promise<boolean | null>;
@@ -84,8 +84,8 @@ export interface RNAudienzzTargetingModule {
   // iOS-specific methods
   setSourceapp(sourceapp: string | null): Promise<void>;
   getSourceapp(): Promise<string | null>;
-  setItunesId(itunesId: string | null): Promise<void>;
-  getItunesId(): Promise<string | null>;
+  setItunesID(itunesId: string | null): Promise<void>;
+  getItunesID(): Promise<string | null>;
   setContentUrl(url: string | null): Promise<void>;
   getContentUrl(): Promise<string | null>;
 

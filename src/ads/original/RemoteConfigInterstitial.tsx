@@ -48,7 +48,7 @@ export const RemoteConfigInterstitial = forwardRef<
       if (node != null) {
         UIManager.dispatchViewManagerCommand(
           node,
-          UIManager.getViewManagerConfig(ComponentName).Commands.show,
+          UIManager.getViewManagerConfig(ComponentName).Commands.show ?? 'show',
           []
         );
       }

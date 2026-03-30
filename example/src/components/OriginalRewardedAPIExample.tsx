@@ -33,11 +33,13 @@ const OriginalRewardedAPIExample = () => {
           }}
           onAdClicked={() => console.log('REWARDED clicked')}
           onAdOpened={() => console.log('REWARDED ad opened')}
-          onAdClosed={(event) => {
-            console.log('REWARDED ad closed');
+          onUserEarnedReward={(reward) => {
             console.log(
-              `The user received -> ${JSON.stringify(event, null, 2)}`
+              `The user received -> ${JSON.stringify(reward, null, 2)}`
             );
+          }}
+          onAdClosed={() => {
+            console.log('REWARDED ad closed');
             setIsRewarded(false);
           }}
         />
