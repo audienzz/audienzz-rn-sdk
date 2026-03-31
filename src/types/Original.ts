@@ -10,6 +10,10 @@ export interface OriginalBannerProps
   sizes: AdSize[];
   isReserved?: boolean;
   refreshTimeMillis?: number;
+  /** Pause auto-refresh when the ad is off-screen, resume on return.
+   *  On return, fires immediately if the creative is stale (off-screen
+   *  longer than the refresh interval), otherwise fires after the remaining time. */
+  smartRefresh?: boolean;
 }
 
 export interface OriginalInterstitialProps
