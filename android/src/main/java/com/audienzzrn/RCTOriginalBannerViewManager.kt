@@ -271,11 +271,14 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
         }
       }
 
-      AudienzzAdViewHandler(
+      val handler = AudienzzAdViewHandler(
         adView = adView,
         adUnit = auBannerView,
       )
-        .load(callback = { request, _ -> adView.loadAd(request) }, withLazyLoading = isLazyLoad)
+      handler.load(callback = { request, _ -> adView.loadAd(request) }, withLazyLoading = isLazyLoad)
+      if (reactViewGroup.getSmartRefresh()) {
+        handler.enableSmartRefresh()
+      }
     }
   }
 
@@ -303,6 +306,12 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
   @ReactProp(name = "isAdaptive")
   fun setIsAdaptive(view: RCTOriginalBannerView, value: Boolean) {
     view.updateIsAdaptive(value)
+    view.updatePropsChanged(true)
+  }
+
+  @ReactProp(name = "smartRefresh")
+  fun setSmartRefresh(view: RCTOriginalBannerView, value: Boolean) {
+    view.updateSmartRefresh(value)
     view.updatePropsChanged(true)
   }
 

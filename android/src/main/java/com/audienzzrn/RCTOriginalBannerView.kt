@@ -32,6 +32,7 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
   private var receivedSize: AdSize = AdSize(1,1)
   private var autoRefreshPeriodMillis: Int? = null
   private var videoPlacement: String = ""
+  private var smartRefresh: Boolean = false
 
   private var auBannerView: AudienzzBannerAdUnit? = null
 
@@ -107,6 +108,14 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
 
   fun getVideoPlacement(): String {
     return videoPlacement
+  }
+
+  fun updateSmartRefresh(value: Boolean) {
+    smartRefresh = value
+  }
+
+  fun getSmartRefresh(): Boolean {
+    return smartRefresh
   }
 
   fun updateSizes(value: Array<AudienzzAdSize>) {

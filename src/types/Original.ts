@@ -10,6 +10,13 @@ export interface OriginalBannerProps
   sizes: AdSize[];
   isReserved?: boolean;
   refreshTimeMillis?: number;
+  /** Defer the ad request until the view scrolls into the viewport.
+   *  Defaults to `true`. Set to `false` to load immediately on mount. */
+  isLazyLoad?: boolean;
+  /** Pause auto-refresh when the ad is off-screen, resume on return.
+   *  On return, fires immediately if the creative is stale (off-screen
+   *  longer than the refresh interval), otherwise fires after the remaining time. */
+  smartRefresh?: boolean;
 }
 
 export interface OriginalInterstitialProps

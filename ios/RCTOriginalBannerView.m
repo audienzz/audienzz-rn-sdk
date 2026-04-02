@@ -33,6 +33,11 @@
   self.propsChanged = YES;
 }
 
+- (void)setSmartRefresh:(BOOL)value {
+  _smartRefresh = value;
+  self.propsChanged = YES;
+}
+
 - (void)setVideoPlacement:(NSString *)value {
   _videoPlacement = value;
   self.propsChanged = YES;
@@ -156,7 +161,8 @@
   [_auBannerView addAdditionalSizeWithSizes: cgSizeArray];
   _auBannerView.bannerParameters = self.bannerParameters;
   _auBannerView.videoParameters = self.videoParameters;
-  
+  _auBannerView.smartRefresh = _smartRefresh;
+
   _bannerView.rootViewController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
   _bannerView.delegate = self;
   _bannerView.adUnitID = self.adUnitID;

@@ -78,6 +78,7 @@ export class OriginalBanner extends Component<
       auConfigId,
       gpId,
       refreshTimeMillis,
+      smartRefresh = false,
       playbackMethod = ['AutoPlaySoundOn'],
       isLazyLoad = true,
       isAdaptive = false,
@@ -129,6 +130,7 @@ export class OriginalBanner extends Component<
           ref={this.nativeComponentRef}
           playbackMethod={playbackMethod}
           isLazyLoad={isLazyLoad}
+          smartRefresh={smartRefresh}
           isAdaptive={isAdaptive}
           adFormats={adFormats}
           apiParameters={apiParameters}
