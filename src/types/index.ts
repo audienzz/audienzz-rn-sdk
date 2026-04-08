@@ -40,6 +40,7 @@ import type {
   RemoteConfigBannerProps,
   RemoteConfigInterstitialProps,
 } from './RemoteConfig';
+import { DEFAULT_REFRESH_TIME_SECONDS } from './RemoteConfigTypes';
 import type {
   RemoteAdConfiguration,
   RemotePublisherConfiguration,
@@ -54,6 +55,8 @@ import type {
   IosConfig,
   WidthStrategy,
 } from './RemoteConfigTypes';
+
+export { DEFAULT_REFRESH_TIME_SECONDS };
 
 export type {
   AdEvents,
