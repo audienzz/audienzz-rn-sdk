@@ -23,25 +23,24 @@ import {
   View,
   StyleSheet,
 } from 'react-native';
-import type { IOriginalBannerProps, TAdError, TAdSize } from '../../types';
+import type { OriginalBannerProps, AdError, AdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTOriginalBannerView';
-const NativeComponent =
-  requireNativeComponent<IOriginalBannerProps>(ComponentName);
+const NativeComponent = requireNativeComponent<any>(ComponentName);
 
-interface IOriginalBannerState {
+interface OriginalBannerState {
   isBannerVisible: boolean;
-  adSize?: TAdSize;
+  adSize?: AdSize;
 }
 
 export class OriginalBanner extends Component<
-  IOriginalBannerProps,
-  IOriginalBannerState
+  OriginalBannerProps,
+  OriginalBannerState
 > {
   private nativeComponentRef: React.RefObject<any>;
 
-  constructor(props: IOriginalBannerProps) {
+  constructor(props: OriginalBannerProps) {
     super(props);
     this.nativeComponentRef = createRef();
     this.state = {
@@ -75,6 +74,10 @@ export class OriginalBanner extends Component<
 
   render() {
     const {
+      adUnitId,
+      auConfigId,
+      gpId,
+      refreshTimeMillis,
       playbackMethod = ['AutoPlaySoundOn'],
       isLazyLoad = true,
       isAdaptive = false,
@@ -91,20 +94,20 @@ export class OriginalBanner extends Component<
       throw new Error(LINKING_ERROR);
     }
 
-    const handleAdLoaded = (event: TAdSize | { nativeEvent: {width: number; height: number }}) => {
-      const adSize : TAdSize =
-       'nativeEvent' in event ? event.nativeEvent : event;
+    const handleAdLoaded = (event: AdSize | { nativeEvent: { width: number; height: number } }) => {
+      const adSize: AdSize =
+        'nativeEvent' in event ? event.nativeEvent : event;
 
-       console.log("Adsize", adSize);
+      console.log("Adsize", adSize);
 
       this.setState({ isBannerVisible: true, adSize: adSize });
       this.props.onAdLoaded?.(adSize);
     };
 
     const handleAdFailedToLoad = (
-      event: TAdError | { nativeEvent: { code: number; message: string } }
+      event: AdError | { nativeEvent: { code: number; message: string } }
     ) => {
-      const error: TAdError =
+      const error: AdError =
         'nativeEvent' in event ? event.nativeEvent : event;
       this.setState({ isBannerVisible: false });
       this.props.onAdFailedToLoad?.(error);
@@ -118,6 +121,11 @@ export class OriginalBanner extends Component<
       <View style={[bannerStyle]}>
         <NativeComponent
           {...restProps}
+          adUnitID={adUnitId}
+          auConfigID={auConfigId}
+          gpID={gpId}
+          autoRefreshPeriodMillis={refreshTimeMillis}
+          style={styles.nativeComponent}
           ref={this.nativeComponentRef}
           playbackMethod={playbackMethod}
           isLazyLoad={isLazyLoad}
@@ -141,5 +149,9 @@ const styles = StyleSheet.create({
     width: 0,
     height: 0,
     overflow: 'hidden',
+  },
+  nativeComponent: {
+    width: '100%',
+    height: '100%',
   },
 });

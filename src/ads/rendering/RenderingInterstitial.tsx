@@ -17,18 +17,20 @@
 
 import React from 'react';
 import { requireNativeComponent, UIManager } from 'react-native';
-import type { IRenderingInterstitialProps, TAdError } from '../../types';
+import type { RenderingInterstitialProps, AdError } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTRenderingInterstitialView';
-const NativeComponent =
-  requireNativeComponent<IRenderingInterstitialProps>(ComponentName);
+const NativeComponent = requireNativeComponent<any>(ComponentName);
 
-export const RenderingInterstitial = (props: IRenderingInterstitialProps) => {
+export const RenderingInterstitial = (props: RenderingInterstitialProps) => {
   const {
+    adUnitId,
+    auConfigId,
+    gpId,
+    minSizePercentage = [80, 60],
     isLazyLoad = true,
     onAdFailedToLoad,
-    minSizesPercentage = [80, 60],
     skipDelay = 13,
     ...restProps
   } = props;
@@ -38,17 +40,20 @@ export const RenderingInterstitial = (props: IRenderingInterstitialProps) => {
   }
 
   const handleAdFailedToLoad = (
-    event: TAdError | { nativeEvent: { code: number; message: string } }
+    event: AdError | { nativeEvent: { code: number; message: string } }
   ) => {
-    const error: TAdError = 'nativeEvent' in event ? event.nativeEvent : event;
+    const error: AdError = 'nativeEvent' in event ? event.nativeEvent : event;
     onAdFailedToLoad?.(error);
   };
 
   return (
     <NativeComponent
       {...restProps}
+      adUnitID={adUnitId}
+      auConfigID={auConfigId}
+      gpID={gpId}
       isLazyLoad={isLazyLoad}
-      minSizesPercentage={minSizesPercentage}
+      minSizesPercentage={minSizePercentage}
       skipDelay={skipDelay}
       onAdFailedToLoad={handleAdFailedToLoad}
     />

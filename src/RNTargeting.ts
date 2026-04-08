@@ -1,8 +1,7 @@
 import NativeModulesCombined from './NativeRNAudienzzModule';
-import type { AudienzzExternalUserId, IRNAudienzzTargetingModule } from './types';
-import type { AudienzzLocation } from './types/IRNAudienzzTargetingModule';
+import type { AudienzzExternalUserId, AudienzzLocation } from './types';
 
-class RNTargetingClass implements IRNAudienzzTargetingModule {
+class RNTargetingClass {
   setUserLatLng(latitude: number, longitude: number): Promise<void> {
     return NativeModulesCombined.AudienzzTargetingModule.setUserLatLng(
       latitude,
@@ -51,22 +50,22 @@ class RNTargetingClass implements IRNAudienzzTargetingModule {
   getOmidPartnerVersion(): Promise<string | null> {
     return NativeModulesCombined.AudienzzTargetingModule.getOmidPartnerVersion();
   }
-  setSubjectToCOPPA(isSubject: boolean | null): Promise<void> {
+  setSubjectToCoppa(isSubject: boolean | null): Promise<void> {
     return NativeModulesCombined.AudienzzTargetingModule.setSubjectToCOPPA(isSubject);
   }
-  getSubjectToCOPPA(): Promise<boolean | null> {
+  getSubjectToCoppa(): Promise<boolean | null> {
     return NativeModulesCombined.AudienzzTargetingModule.getSubjectToCOPPA();
   }
-  setSubjectToGDPR(isSubject: boolean | null): Promise<void> {
+  setSubjectToGdpr(isSubject: boolean | null): Promise<void> {
     return NativeModulesCombined.AudienzzTargetingModule.setSubjectToGDPR(isSubject);
   }
-  getSubjectToGDPR(): Promise<boolean | null> {
+  getSubjectToGdpr(): Promise<boolean | null> {
     return NativeModulesCombined.AudienzzTargetingModule.getSubjectToGDPR();
   }
-  setGDPRConsentString(consent: string | null): Promise<void> {
+  setGdprConsentString(consent: string | null): Promise<void> {
     return NativeModulesCombined.AudienzzTargetingModule.setGDPRConsentString(consent);
   }
-  getGDPRConsentString(): Promise<string | null> {
+  getGdprConsentString(): Promise<string | null> {
     return NativeModulesCombined.AudienzzTargetingModule.getGDPRConsentString();
   }
   setPurposeConsents(consents: string | null): Promise<void> {
@@ -162,10 +161,10 @@ class RNTargetingClass implements IRNAudienzzTargetingModule {
   getSourceapp(): Promise<string | null> {
     return NativeModulesCombined.AudienzzTargetingModule.getSourceapp();
   }
-  setItunesID(itunesID: string | null): Promise<void> {
-    return NativeModulesCombined.AudienzzTargetingModule.setItunesID(itunesID);
+  setItunesId(itunesId: string | null): Promise<void> {
+    return NativeModulesCombined.AudienzzTargetingModule.setItunesID(itunesId);
   }
-  getItunesID(): Promise<string | null> {
+  getItunesId(): Promise<string | null> {
     return NativeModulesCombined.AudienzzTargetingModule.getItunesID();
   }
   setContentUrl(url: string | null): Promise<void> {
@@ -223,8 +222,25 @@ class RNTargetingClass implements IRNAudienzzTargetingModule {
 
 const Instance = new RNTargetingClass();
 
-export const RNTargeting = () => {
-  return Instance;
-};
+/**
+ * Singleton targeting configuration entry point.
+ *
+ * @example
+ * import { Targeting } from 'audienzz';
+ * Targeting.addGlobalTargeting('key', 'value');
+ */
+export const Targeting: RNTargetingClass = Instance;
+
+/**
+ * @deprecated Use `Targeting` instead.
+ * `RNTargeting()` will be removed in a future release.
+ *
+ * @example
+ * // Before (deprecated)
+ * RNTargeting().addGlobalTargeting('key', 'value');
+ * // After
+ * Targeting.addGlobalTargeting('key', 'value');
+ */
+export const RNTargeting = () => Instance;
 
 export default RNTargeting;

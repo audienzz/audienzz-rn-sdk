@@ -1,13 +1,11 @@
 import { NativeModules } from 'react-native';
-import type { IRNAudienzzModule, IRNAudienzzTargetingModule } from './types';
+import type { RNAudienzzModule, RNAudienzzTargetingModule } from './types';
 
-const { RNAudienzzModule, RNAudienzzTargetingModule } = NativeModules;
+const { RNAudienzzModule: NativeRNAudienzzModule, RNAudienzzTargetingModule: NativeRNAudienzzTargetingModule } = NativeModules;
 
-// You could also create a single object to export them all
 const NativeModulesCombined = {
-  AudienzzModule: RNAudienzzModule as IRNAudienzzModule,
-  AudienzzTargetingModule: RNAudienzzTargetingModule as IRNAudienzzTargetingModule,
+  AudienzzModule: NativeRNAudienzzModule as RNAudienzzModule,
+  AudienzzTargetingModule: NativeRNAudienzzTargetingModule as RNAudienzzTargetingModule,
 };
 
 export default NativeModulesCombined;
-

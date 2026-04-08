@@ -25,7 +25,7 @@ import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.WritableMap
 import org.audienzz.mobile.AudienzzPrebidMobile
 import org.audienzz.mobile.api.data.AudienzzInitializationStatus
-import org.audienzz.mobile.util.PpidManager
+import org.audienzz.mobile.util.remote.RemoteConfigManager
 
 class RNAudienzzModule(reactContext: ReactApplicationContext) :
   ReactNativeModule(reactContext, SERVICE) {
@@ -68,6 +68,35 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
   @ReactMethod
   fun setSchainObject(schain: String) {
     AudienzzPrebidMobile.setSchainObject(schain)
+  }
+
+  @ReactMethod
+  fun configureRemote(remoteUrl: String, publisherId: String, promise: Promise) {
+    try {
+      RemoteConfigManager.initialize(
+        publisherId = publisherId,
+        remoteUrl = remoteUrl
+      )
+      promise.resolve(null)
+    } catch (e: Exception) {
+      promise.reject("CONFIGURE_REMOTE_FAILED", e.message, e)
+    }
+  }
+
+  @ReactMethod
+  fun fetchPublisherConfig(publisherId: String, enablePpid: Boolean, promise: Promise) {
+    AudienzzPrebidMobile.initializeRemoteSdk(
+      applicationContext,
+      publisherId,
+      enablePpid = enablePpid
+    ) { status ->
+      if (status == AudienzzInitializationStatus.SUCCEEDED) {
+        promise.resolve(null)
+      } else {
+        val description = status.description ?: "Remote configuration fetch failed"
+        promise.reject("FETCH_FAILED", description)
+      }
+    }
   }
 
   companion object {

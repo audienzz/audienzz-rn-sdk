@@ -21,37 +21,21 @@ import {
   UIManager,
   findNodeHandle,
 } from 'react-native';
-import type { OriginalInterstitialProps, AdError } from '../../types';
+import type { RemoteConfigInterstitialProps } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
-const ComponentName = 'RCTOriginalInterstitialView';
+const ComponentName = 'RNRemoteConfigInterstitial';
 const NativeComponent = requireNativeComponent<any>(ComponentName);
 
-export interface OriginalInterstitialHandle {
+export interface RemoteConfigInterstitialHandle {
   /** Displays the loaded interstitial ad. Call this after `onAdLoaded` fires. */
   show(): void;
 }
 
-export const OriginalInterstitial = forwardRef<
-  OriginalInterstitialHandle,
-  OriginalInterstitialProps
+export const RemoteConfigInterstitial = forwardRef<
+  RemoteConfigInterstitialHandle,
+  RemoteConfigInterstitialProps
 >((props, ref) => {
-  const {
-    adUnitId,
-    auConfigId,
-    gpId,
-    minSizePercentage = [80, 60],
-    playbackMethod = ['AutoPlaySoundOn'],
-    isLazyLoad = true,
-    adFormats = ['banner', 'video'],
-    apiParameters = ['MRAID_1', 'MRAID_2', 'MRAID_3', 'OMID_1'],
-    videoProtocols = ['VAST_2_0'],
-    videoBitrate = [300, 1500],
-    videoDuration = [5, 30],
-    onAdFailedToLoad,
-    ...restProps
-  } = props;
-
   const nativeRef = useRef<any>(null);
 
   if (UIManager.getViewManagerConfig(ComponentName) == null) {
@@ -71,29 +55,5 @@ export const OriginalInterstitial = forwardRef<
     },
   }));
 
-  const handleAdFailedToLoad = (
-    event: AdError | { nativeEvent: { code: number; message: string } }
-  ) => {
-    const error: AdError = 'nativeEvent' in event ? event.nativeEvent : event;
-    onAdFailedToLoad?.(error);
-  };
-
-  return (
-    <NativeComponent
-      ref={nativeRef}
-      {...restProps}
-      adUnitID={adUnitId}
-      auConfigID={auConfigId}
-      gpID={gpId}
-      playbackMethod={playbackMethod}
-      isLazyLoad={isLazyLoad}
-      adFormats={adFormats}
-      apiParameters={apiParameters}
-      videoProtocols={videoProtocols}
-      videoBitrate={videoBitrate}
-      videoDuration={videoDuration}
-      minSizesPercentage={minSizePercentage}
-      onAdFailedToLoad={handleAdFailedToLoad}
-    />
-  );
+  return <NativeComponent ref={nativeRef} {...props} />;
 });

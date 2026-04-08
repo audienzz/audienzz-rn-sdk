@@ -302,25 +302,26 @@ The Audienzz React Native SDK allows you to display three types Ads - `Banner`, 
 <details>
 <summary><span>Components example:</span></summary>
 
-```js
+```jsx
 import React from 'react';
 import {
   OriginalBanner,
   OriginalInterstitial,
   OriginalRewarded,
+  AdSizes,
 } from 'audienzz';
 
     const bannerRef = React.createRef<OriginalBanner>();
 
     const handleStopAutoRefresh = () => {
       if (bannerRef.current) {
-      bannerRef.current.stopAutoRefresh();
+        bannerRef.current.stopAutoRefresh();
       }
     };
 
     const handleResumeAutoRefresh = () => {
       if (bannerRef.current) {
-      bannerRef.current.resumeAutoRefresh();
+        bannerRef.current.resumeAutoRefresh();
       }
     };
 
@@ -329,18 +330,15 @@ import {
       ref={bannerRef}
       adUnitID="adUnitID"
       auConfigID="auConfigID"
-      width={300}
-      height={250}
+      sizes={[AdSizes.MEDIUM_RECTANGLE]}
       adFormats={['banner']}
       isLazyLoad={false}
       autoRefreshPeriodMillis={30000}
-      keywords={['clothing', 'sport']}
-      appContent={APP_CONTENT_FOR_BANNER}
-      onAdLoaded={() => console.log('success')}
+      onAdLoaded={(size) => console.log('success', size)}
       onAdClicked={() => console.log('clicked')}
       onAdOpened={() => console.log('ad opened')}
       onAdClosed={() => console.log('ad closed')}
-      onAdFailedToLoad={(error) =>console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)}
+      onAdFailedToLoad={(error) => console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)}
       isReserved
     />
 
@@ -351,11 +349,8 @@ import {
       auConfigID="auConfigID"
       adFormats={['video']}
       isLazyLoad={false}
-      keyword="mainKeyword"
-      keywords={['clothing', 'sport']}
-      appContent={APP_CONTENT_FOR_INTERSTITIAL}
       onAdLoaded={() => console.log('INTERSTITIAL success')}
-      onAdFailedToLoad={(error) =>console.log(`INTERSTITIAL ERROR -> ${JSON.stringify(error, null, 2)}`)}
+      onAdFailedToLoad={(error) => console.log(`INTERSTITIAL ERROR -> ${JSON.stringify(error, null, 2)}`)}
     />
 
    ...
@@ -367,7 +362,7 @@ import {
       onAdClosed={(event) => {
         console.log('REWARDED ad closed');
         console.log(`The user received -> ${JSON.stringify(event, null, 2)}`);
-        }}
+      }}
       onAdFailedToLoad={(error) => console.log(`REWARDED ERROR -> ${JSON.stringify(error, null, 2)}`)}
     />
 
@@ -382,12 +377,11 @@ import {
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `adUnitID`                | An ID identifies your banner in the system. You should have a valid, active placement ID to monetize your app.                                                                                                                                                                                                                                | **YES**  | string                                                                                                                                                                                                                        | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
 | `auConfigID`              | An ID of the Stored Impression on the Audienzz Server.                                                                                                                                                                                                                                                                                        | **YES**  | string                                                                                                                                                                                                                        | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
-| `width`                   | The width of the ad unit which will be used in the bid request.                                                                                                                                                                                                                                                                               | **YES**  | number                                                                                                                                                                                                                        | `OriginalBanner`                                             |
-| `height`                  | The height of the ad unit which will be used in the bid request.                                                                                                                                                                                                                                                                              | **YES**  | number                                                                                                                                                                                                                        | `OriginalBanner`                                             |
+| `sizes`                   | Array of ad sizes that will be used in the bid request.                                                                                                                                                                                                                                                                              | **YES**  | AdSize[]                                                                                                                                                                                                                        | `OriginalBanner`                                             |
 | `isLazyLoad`              | The property that controls when an ad request will be made (tracks the viewport). **Default:** `true`.                                                                                                                                                                                                                                        |    No    | boolean                                                                                                                                                                                                                       | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
 | `pbAdSlot`                | PB Ad Slot is an identifier tied to the placement the ad will be delivered in. The use case for PB Ad Slot is to pass to exchange an ID they can use to tie to reporting systems or use for data science driven model building to match with impressions sourced from alternate integrations. A common ID to pass is the ad server slot name. |    No    | string                                                                                                                                                                                                                        | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
-| `gpID`                    | The Global Placement ID (GPID) is a key that uniquely identifies a specific instance of an adunit.                                                                                                                                                                                                                                            |    No    | string
-| `impOrtbConfig`                    | The property is used to supply ad request with a custom ORTB configuration that would be merged with imp field in request.                                                                                                                                                                                                                                            |    No    | string                                                                                                                                                                                                                         | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |                                                                                                                                                                                                         | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
+| `gpID`                    | The Global Placement ID (GPID) is a key that uniquely identifies a specific instance of an adunit.                                                                                                                                                                                                                                            |    No    | string                                                                                                                                                                                                                        | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
+| `impOrtbConfig`                    | The property is used to supply ad request with a custom ORTB configuration that would be merged with imp field in request.                                                                                                                                                                                                                                            |    No    | string                                                                                                                                                                                                                         | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
 | `apiParameters`           | The property is dedicated to adding values for API Frameworks to a bid response according to the OpenRTB 2.5 spec. **Default:** `['MRAID_2']`.                                                                                                                                                                                                |    No    | Array<'MRAID_1' &#124; 'MRAID_2' &#124; 'MRAID_3' &#124; 'VPAID_1' &#124; 'VPAID_2' &#124; 'OMID_1' &#124; 'ORMMA'>                                                                                                           | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
 | `videoProtocols`          | Array or enum of OpenRTB 2.5 supported Protocols. **Default:** `['VAST_2_0']`.                                                                                                                                                                                                                                                                |    No    | Array<'VAST_1_0' &#124; 'VAST_2_0' &#124; 'VAST_3_0' &#124; 'VAST_4_0' &#124; 'DAAST_1_0' &#124; 'VAST_1_0_Wrapped' &#124; 'VAST_2_0_Wrapped' &#124; 'VAST_3_0_Wrapped' &#124; 'VAST_4_0_Wrapped' &#124; 'DAAST_1_0_Wrapped'> | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
 | `videoDuration`           | A property representing the OpenRTB 2.5 video ad duration in seconds. **Default:** `[5, 30]` // [min, max].                                                                                                                                                                                                                                   |    No    | [number, number]                                                                                                                                                                                                              | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
@@ -399,11 +393,11 @@ import {
 | `isAdaptive`              | The property that can be used to work with multiply size banner. **Default:** `false`.                                                                                                                             |    No    | boolean                                                                                                                                                                                                                       | `OriginalBanner`                                             |
 | `autoRefreshPeriodMillis` | Number defining the refresh time in milliseconds. The value cannot be less than 30000ms. To stop or renew auto refresh, use the `stopAutoRefresh` and `resumeAutoRefresh` methods.                                                                                                                                                            |    No    | number                                                                                                                                                                                                                        | `OriginalBanner`                                             |
 | `minSizesPercentage`      | Optional parameter to specify the minimum width/height percent an ad may occupy of a device’s screen. **Default:** `[80, 60]` // [width, height].                                                                                                                                                                                             |    No    | [number, number]                                                                                                                                                                                                              | `OriginalInterstitial`                                       |
-| `onAdLoaded`              | A callback triggered when an ad is received.                                                                                                                                                                                                                                                                                                  |    No    | onAdLoaded?(): void                                                                                                                                                                                                           | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
-| `onAdFailedToLoad`        | A callback triggered when an ad request failed.                                                                                                                                                                                                                                                                                               |    No    | onAdFailedToLoad?(error: {code: number, message: string}): void                                                                                                                                                               | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
+| `onAdLoaded`              | A callback triggered when an ad is received.                                                                                                                                                                                                                                                                                                  |    No    | onAdLoaded?(size: AdSize): void                                                                                                                                                                                                           | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
+| `onAdFailedToLoad`        | A callback triggered when an ad request failed.                                                                                                                                                                                                                                                                                               |    No    | onAdFailedToLoad?(error: AdError): void                                                                                                                                                               | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
 | `onAdClicked`             | A callback triggered when a click is recorded for an ad.                                                                                                                                                                                                                                                                                      |    No    | onAdClicked?(): void                                                                                                                                                                                                          | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
 | `onAdOpened`              | A callback triggered when an ad opens an overlay that covers the screen.                                                                                                                                                                                                                                                                      |    No    | onAdOpened?(): void                                                                                                                                                                                                           | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
-| `onAdClosed`              | A callback triggered when the user is about to return to the app. **NOTE:** For `OriginalRewarded`, there is a parameter that contains information about the reward received when interacting with ads.                                                                                                                                       |    No    | onAdClosed?(): void &#124;&#124; onAdClosed?(reward: {type: string, amount: number}): void                                                                                                                                    | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
+| `onAdClosed`              | A callback triggered when the user is about to return to the app. **NOTE:** For `OriginalRewarded`, there is a parameter that contains information about the reward received when interacting with ads.                                                                                                                                       |    No    | onAdClosed?(): void &#124;&#124; onAdClosed?(reward: RewardEarnedEvent): void                                                                                                                                    | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
 
 </details>
 
@@ -412,7 +406,7 @@ import {
 <details>
 <summary><span>Components example:</span></summary>
 
-```js
+```jsx
 import React from 'react';
 import {
   RenderingBanner,
@@ -427,13 +421,11 @@ import {
       height={250}
       adFormat="banner"
       isLazyLoad={false}
-      keywords={['clothing', 'sport']}
-      appContent={APP_CONTENT_FOR_BANNER}
       onAdLoaded={() => console.log('success')}
       onAdClicked={() => console.log('clicked')}
       onAdOpened={() => console.log('ad opened')}
       onAdClosed={() => console.log('ad closed')}
-      onAdFailedToLoad={(error) =>console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)}
+      onAdFailedToLoad={(error) => console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)}
       isReserved
     />
 
@@ -443,11 +435,8 @@ import {
       adUnitID="adUnitID"
       auConfigID="auConfigID"
       adFormat="video"
-      keyword="mainKeyword"
-      keywords={['clothing', 'sport']}
-      appContent={APP_CONTENT_FOR_INTERSTITIAL}
       onAdLoaded={() => console.log('INTERSTITIAL success')}
-      onAdFailedToLoad={(error) =>console.log(`INTERSTITIAL ERROR -> ${JSON.stringify(error, null, 2)}`)}
+      onAdFailedToLoad={(error) => console.log(`INTERSTITIAL ERROR -> ${JSON.stringify(error, null, 2)}`)}
     />
 
    ...
@@ -459,7 +448,7 @@ import {
       onAdClosed={() => {
         console.log('REWARDED ad closed');
         console.log('The user can receive reward (own implementation) -> 💰');
-        }}
+      }}
       onAdFailedToLoad={(error) => console.log(`REWARDED ERROR -> ${JSON.stringify(error, null, 2)}`)}
     />
 
@@ -480,16 +469,204 @@ import {
 | `isLazyLoad`         | The property that controls when an ad request will be made (tracks the viewport). **Default:** `true`.                                                                                                                                                                                                                                        |    No    | boolean                                                         | `RenderingBanner`, `RenderingInterstitial`, `RenderingRewarded` |
 | `pbAdSlot`           | PB Ad Slot is an identifier tied to the placement the ad will be delivered in. The use case for PB Ad Slot is to pass to exchange an ID they can use to tie to reporting systems or use for data science driven model building to match with impressions sourced from alternate integrations. A common ID to pass is the ad server slot name. |    No    | string                                                          | `RenderingBanner`, `RenderingInterstitial`, `RenderingRewarded` |
 | `gpID`               | The Global Placement ID (GPID) is a key that uniquely identifies a specific instance of an adunit.                                                                                                                                                                                                                                            |    No    | string                                                          | `RenderingBanner`, `RenderingInterstitial`, `RenderingRewarded` |
-| `keyword`            | This the context keyword for adunit context targeting. Inserts the given element in the set if it is not already present.                                                                                                                                                                                                                     |    No    | string                                                          | `RenderingBanner`, `RenderingInterstitial`, `RenderingRewarded` |
-| `keywords`           | This the context keyword set for adunit context targeting. Adds the elements of the given set to the set.                                                                                                                                                                                                                                     |    No    | string[]                                                        | `RenderingBanner`, `RenderingInterstitial`, `RenderingRewarded` |
-| `appContent`         | This the content for adunit, content, in which impression will appear.                                                                                                                                                                                                                                                                        |    No    | IAppContent                                                     | `RenderingBanner`, `RenderingInterstitial`, `RenderingRewarded` |
 | `isReserved`         | The property that can be used to determine how the banner will appear. With or without reserved space. _Note: May be useful if the ad will be used where there is a lot of static content._ **Default:** `false`.                                                                                                                             |    No    | boolean                                                         | `RenderingBanner`                                               |
 | `skipDelay`          | Sets delay in seconds to show close button. **Default:** `13`.                                                                                                                                                                                                                                                                                |    No    | number                                                          | `RenderingInterstitial`                                         |
 | `minSizesPercentage` | Optional parameter to specify the minimum width/height percent an ad may occupy of a device’s screen. **Default:** `[80, 60]` // [width, height].                                                                                                                                                                                             |    No    | [number, number]                                                | `RenderingInterstitial`, `RenderingRewarded`                    |
 | `onAdLoaded`         | A callback triggered when an ad is received.                                                                                                                                                                                                                                                                                                  |    No    | onAdLoaded?(): void                                             | `RenderingBanner`, `RenderingInterstitial`, `RenderingRewarded` |
-| `onAdFailedToLoad`   | A callback triggered when an ad request failed.                                                                                                                                                                                                                                                                                               |    No    | onAdFailedToLoad?(error: {code: number, message: string}): void | `RenderingBanner`, `RenderingInterstitial`, `RenderingRewarded` |
+| `onAdFailedToLoad`   | A callback triggered when an ad request failed.                                                                                                                                                                                                                                                                                               |    No    | onAdFailedToLoad?(error: AdError): void | `RenderingBanner`, `RenderingInterstitial`, `RenderingRewarded` |
 | `onAdClicked`        | A callback triggered when a click is recorded for an ad.                                                                                                                                                                                                                                                                                      |    No    | onAdClicked?(): void                                            | `RenderingBanner`, `RenderingInterstitial`, `RenderingRewarded` |
 | `onAdOpened`         | A callback triggered when an ad opens an overlay that covers the screen.                                                                                                                                                                                                                                                                      |    No    | onAdOpened?(): void                                             | `RenderingBanner`, `RenderingInterstitial`, `RenderingRewarded` |
 | `onAdClosed`         | A callback triggered when the user is about to return to the app.                                                                                                                                                                                                                                                                             |    No    | onAdClosed?(): void                                             | `RenderingBanner`, `RenderingInterstitial`, `RenderingRewarded` |
 
 </details>
+
+## Remote Configuration Integration
+
+The SDK supports a simplified integration using remote configuration. This allows you to manage ad units (GAM IDs, Prebid Config IDs, sizes, etc.) from the backend, requiring only a simple configuration ID in your app.
+
+### Initialize SDK with Remote Configuration
+
+Before using remote configuration ads, ensure the SDK is properly initialized:
+
+```js
+import { RNAudienzz, RNTargeting } from 'audienzz';
+
+RNAudienzz()
+  .initializeRemote(
+    'https://dev-api.adnz.co/api/ws-sdk-config/public/v1/', // Audienzz remove config URL
+    'YOUR_PUBLISHER_ID', // Will be provided for you
+    false // enablePPID
+  )
+  .then((value) => {
+    console.log('SDK initialized with remote config:', JSON.stringify(value, null, 2));
+    // Optional: Add global targeting
+    RNTargeting().addGlobalTargeting('TEST', '1');
+  })
+  .catch((error) => {
+    console.error('Initialization error:', error);
+  });
+```
+
+### Banner Ad (Remote Config)
+
+Use `RemoteConfigBanner` to load a banner defined by a remote configuration ID.
+
+<details>
+<summary><span>Component example:</span></summary>
+
+```jsx
+import React from 'react';
+import { RemoteConfigBanner } from 'audienzz';
+
+function MyComponent() {
+  return (
+    <RemoteConfigBanner
+      configId="YOUR_CONFIG_ID"
+      onAdLoaded={(size) => {
+        console.log('Remote banner loaded successfully');
+        console.log('Ad size:', size);
+      }}
+      onAdFailedToLoad={(error) => {
+        console.log('Remote banner failed to load:', error.message);
+      }}
+      onAdClicked={() => console.log('Remote banner clicked')}
+      onAdOpened={() => console.log('Remote banner opened')}
+      onAdClosed={() => console.log('Remote banner closed')}
+    />
+  );
+}
+```
+
+</details>
+
+#### Fixed Size Banner
+To enforce a specific fixed size, pass the `width` and `height` props to the `RemoteConfigBanner` component. These dimensions will be used to request and display the ad:
+
+```jsx
+<RemoteConfigBanner
+  configId="YOUR_CONFIG_ID"
+  width={320}
+  height={50}
+/>
+```
+
+#### Adaptive Banner
+If adaptive banners are enabled in the remote configuration, and you don't provide explicit `width` and `height` props (or provide 0), the SDK will automatically calculate the optimal size based on the container's layout dimensions:
+
+```jsx
+<RemoteConfigBanner
+  configId="YOUR_CONFIG_ID"
+  // size calculated automatically if enabled in backend
+/>
+```
+
+<details>
+<summary><span>Props:</span></summary>
+
+| Name               | Description                                                | Required | Type                                                    |
+| ------------------ | ---------------------------------------------------------- | :------: | ------------------------------------------------------- |
+| `configId`         | Remote configuration ID for the ad unit.                   | **YES**  | string                                                  |
+| `onAdLoaded`       | Callback when ad is loaded. Returns ad size.               |    No    | onAdLoaded?(size: AdSize): void |
+| `onAdFailedToLoad` | Callback when ad fails to load.                            |    No    | onAdFailedToLoad?(error: {message: string}): void       |
+| `onAdClicked`      | Callback when ad is clicked.                               |    No    | onAdClicked?(): void                                    |
+| `onAdOpened`       | Callback when ad opens an overlay.                         |    No    | onAdOpened?(): void                                     |
+| `onAdClosed`       | Callback when user returns to the app.                     |    No    | onAdClosed?(): void                                     |
+
+</details>
+
+### Interstitial Ad (Remote Config)
+
+Use `RemoteConfigInterstitial` to load an interstitial defined by a remote configuration ID.
+
+<details>
+<summary><span>Component example:</span></summary>
+
+```jsx
+import React from 'react';
+import { RemoteConfigInterstitial } from 'audienzz';
+
+function MyComponent() {
+  return (
+    <RemoteConfigInterstitial
+      configId="YOUR_CONFIG_ID"
+      onAdLoaded={() => {
+        console.log('Remote interstitial loaded successfully');
+      }}
+      onAdFailedToLoad={(error) => {
+        console.log('Remote interstitial failed to load:', error.message);
+      }}
+      onAdClicked={() => console.log('Remote interstitial clicked')}
+      onAdOpened={() => console.log('Remote interstitial opened')}
+      onAdClosed={() => console.log('Remote interstitial closed')}
+    />
+  );
+}
+```
+
+</details>
+
+<details>
+<summary><span>Props:</span></summary>
+
+| Name               | Description                                                | Required | Type                                                    |
+| ------------------ | ---------------------------------------------------------- | :------: | ------------------------------------------------------- |
+| `configId`         | Remote configuration ID for the ad unit.                   | **YES**  | string                                                  |
+| `onAdLoaded`       | Callback when ad is loaded.                                |    No    | onAdLoaded?(): void                                     |
+| `onAdFailedToLoad` | Callback when ad fails to load.                            |    No    | onAdFailedToLoad?(error: {message: string}): void       |
+| `onAdClicked`      | Callback when ad is clicked.                               |    No    | onAdClicked?(): void                                    |
+| `onAdOpened`       | Callback when ad opens an overlay.                         |    No    | onAdOpened?(): void                                     |
+| `onAdClosed`       | Callback when user returns to the app.                     |    No    | onAdClosed?(): void                                     |
+
+</details>
+
+## Targeting
+
+The `RNTargeting()` module provides extensive methods for user and application targeting, GDPR/COPPA compliance, and ORTB configuration.
+
+### Usage Example
+```js
+import { RNTargeting } from 'audienzz';
+
+// Set global targeting
+RNTargeting().addGlobalTargeting('section', 'news');
+
+// Set GDPR compliance
+RNTargeting().setSubjectToGDPR(true);
+RNTargeting().setGDPRConsentString('your-consent-string');
+
+// Set user location
+RNTargeting().setUserLatLng(47.3769, 8.5417);
+```
+
+### Available Methods
+
+#### User & App Keywords
+- `addUserKeyword(keyword: string)`: Adds a context keyword for user targeting.
+- `addUserKeywords(keywords: string[])`: Adds multiple keywords for user targeting.
+- `clearUserKeywords()`: Removes all user keywords.
+- `addAppKeyword(keyword: string)`: Adds a context keyword for app targeting.
+- `addAppKeywords(keywords: string[])`: Adds multiple app keywords.
+
+#### Compliance
+- `setSubjectToCOPPA(isSubject: boolean)`: Sets the COPPA compliance status.
+- `setSubjectToGDPR(isSubject: boolean)`: Sets the GDPR compliance status.
+- `setGDPRConsentString(consent: string)`: Sets the GDPR consent string.
+
+#### External User IDs
+- `setExternalUserIds(userIds: AudienzzExternalUserId[])`: Sets the external user IDs for cross-device targeting.
+
+#### Global Targeting
+- `addGlobalTargeting(key: string, value: string)`: Adds a global targeting parameter.
+- `removeGlobalTargeting(key: string)`: Removes a specific global targeting parameter.
+- `clearGlobalTargeting()`: Clears all global targeting.
+
+#### Location
+- `setUserLatLng(lat: number, lng: number)`: Sets the user's geographic location.
+- `clearUserLatLng()`: Clears the user's location.
+
+#### ORTB Configuration
+- `setGlobalOrtbConfig(ortbConfig: string)`: Sets a global OpenRTB configuration string.
+
+License
+
+Apache License 2.0

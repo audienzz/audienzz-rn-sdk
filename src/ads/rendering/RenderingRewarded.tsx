@@ -17,18 +17,20 @@
 
 import React from 'react';
 import { requireNativeComponent, UIManager } from 'react-native';
-import type { IRenderingRewardedProps, TAdError } from '../../types';
+import type { RenderingRewardedProps, AdError } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTRenderingRewardedView';
-const NativeComponent =
-  requireNativeComponent<IRenderingRewardedProps>(ComponentName);
+const NativeComponent = requireNativeComponent<any>(ComponentName);
 
-export const RenderingRewarded = (props: IRenderingRewardedProps) => {
+export const RenderingRewarded = (props: RenderingRewardedProps) => {
   const {
+    adUnitId,
+    auConfigId,
+    gpId,
+    minSizePercentage = [80, 60],
     isLazyLoad = true,
     onAdFailedToLoad,
-    minSizesPercentage = [80, 60],
     ...restProps
   } = props;
 
@@ -37,17 +39,20 @@ export const RenderingRewarded = (props: IRenderingRewardedProps) => {
   }
 
   const handleAdFailedToLoad = (
-    event: TAdError | { nativeEvent: { code: number; message: string } }
+    event: AdError | { nativeEvent: { code: number; message: string } }
   ) => {
-    const error: TAdError = 'nativeEvent' in event ? event.nativeEvent : event;
+    const error: AdError = 'nativeEvent' in event ? event.nativeEvent : event;
     onAdFailedToLoad?.(error);
   };
 
   return (
     <NativeComponent
       {...restProps}
+      adUnitID={adUnitId}
+      auConfigID={auConfigId}
+      gpID={gpId}
       isLazyLoad={isLazyLoad}
-      minSizesPercentage={minSizesPercentage}
+      minSizesPercentage={minSizePercentage}
       onAdFailedToLoad={handleAdFailedToLoad}
     />
   );

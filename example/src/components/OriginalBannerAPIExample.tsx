@@ -30,14 +30,14 @@ const OriginalBannerAPIExample = () => {
         </Text>
         <OriginalBanner
           ref={bannerRef}
-          adUnitID={ADS.ORIGINAL_BANNER_HTML_300_250.adUnitID}
-          auConfigID={ADS.ORIGINAL_BANNER_HTML_300_250.auConfigID}
+          adUnitId={ADS.ORIGINAL_BANNER_HTML_300_250.adUnitId}
+          auConfigId={ADS.ORIGINAL_BANNER_HTML_300_250.auConfigId}
           sizes={ADS.ORIGINAL_BANNER_HTML_300_250.sizes}
           adFormats={['banner']}
           isLazyLoad={false}
-          autoRefreshPeriodMillis={30000}
+          refreshTimeMillis={30000}
           pbAdSlot="pbAdSlot"
-          gpID="gpID"
+          gpId="gpID"
           impOrtbConfig={`{
           "banner": {
             "check": "yeash2222"
@@ -86,8 +86,8 @@ const OriginalBannerAPIExample = () => {
           Original Banner API HTML 320x50 is not reserved
         </Text>
         <OriginalBanner
-          adUnitID={ADS.ORIGINAL_BANNER_HTML_320_50.adUnitID}
-          auConfigID={ADS.ORIGINAL_BANNER_HTML_320_50.auConfigID}
+          adUnitId={ADS.ORIGINAL_BANNER_HTML_320_50.adUnitId}
+          auConfigId={ADS.ORIGINAL_BANNER_HTML_320_50.auConfigId}
           sizes={ADS.ORIGINAL_BANNER_HTML_320_50.sizes}
           impOrtbConfig={`{
           "banner": {
@@ -96,7 +96,7 @@ const OriginalBannerAPIExample = () => {
         }`}
           adFormats={['banner']}
           isLazyLoad={false}
-          autoRefreshPeriodMillis={30000}
+          refreshTimeMillis={30000}
           onAdLoaded={() =>
             console.log(' Original Banner API HTML 320x50 success')
           }
@@ -123,8 +123,8 @@ const OriginalBannerAPIExample = () => {
       <View style={styles.height30} />
       <Text style={styles.text}>Original Banner API Multiformat</Text>
       <OriginalBanner
-        adUnitID={ADS.ORIGINAL_BANNER_MULTIFORMAT.adUnitID}
-        auConfigID={bannerMultiformatAuConfigID}
+        adUnitId={ADS.ORIGINAL_BANNER_MULTIFORMAT.adUnitId}
+        auConfigId={bannerMultiformatAuConfigID}
         sizes={ADS.ORIGINAL_BANNER_MULTIFORMAT.sizes}
         impOrtbConfig={`{
           "banner": {
@@ -153,8 +153,8 @@ const OriginalBannerAPIExample = () => {
       <View style={styles.height30} />
       <Text style={styles.text}>Original Banner API Video</Text>
       <OriginalBanner
-        adUnitID={ADS.ORIGINAL_BANNER_VIDEO_300_250.adUnitID}
-        auConfigID={ADS.ORIGINAL_BANNER_VIDEO_300_250.auConfigID}
+        adUnitId={ADS.ORIGINAL_BANNER_VIDEO_300_250.adUnitId}
+        auConfigId={ADS.ORIGINAL_BANNER_VIDEO_300_250.auConfigId}
         sizes={ADS.ORIGINAL_BANNER_VIDEO_300_250.sizes}
         adFormats={['video']}
         isLazyLoad={false}
@@ -181,8 +181,8 @@ const OriginalBannerAPIExample = () => {
       <View style={styles.height30} />
       <Text style={styles.text}>Original Banner API Multisize</Text>
       <OriginalBanner
-        adUnitID={ADS.ORIGINAL_BANNER_MULTISIZE.adUnitID}
-        auConfigID={ADS.ORIGINAL_BANNER_MULTISIZE.auConfigID}
+        adUnitId={ADS.ORIGINAL_BANNER_MULTISIZE.adUnitId}
+        auConfigId={ADS.ORIGINAL_BANNER_MULTISIZE.auConfigId}
         sizes={ADS.ORIGINAL_BANNER_MULTISIZE.sizes}
         adFormats={['banner']}
         isLazyLoad={false}

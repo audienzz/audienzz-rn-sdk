@@ -15,55 +15,92 @@
 
 */
 
-import React from 'react';
-import { requireNativeComponent, UIManager } from 'react-native';
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import {
+  requireNativeComponent,
+  UIManager,
+  findNodeHandle,
+} from 'react-native';
 import type {
-  IOriginalRewardedProps,
-  TAdError,
-  TRewardEarnedEvent,
+  OriginalRewardedProps,
+  AdError,
+  RewardEarnedEvent,
 } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTOriginalRewardedView';
-const NativeComponent =
-  requireNativeComponent<IOriginalRewardedProps>(ComponentName);
+const NativeComponent = requireNativeComponent<any>(ComponentName);
 
-export const OriginalRewarded = (props: IOriginalRewardedProps) => {
+export interface OriginalRewardedHandle {
+  /** Displays the loaded rewarded ad. Call this after `onAdLoaded` fires. */
+  show(): void;
+}
+
+export const OriginalRewarded = forwardRef<
+  OriginalRewardedHandle,
+  OriginalRewardedProps
+>((props, ref) => {
   const {
+    adUnitId,
+    auConfigId,
+    gpId,
     playbackMethod = ['AutoPlaySoundOn'],
     isLazyLoad = true,
     apiParameters = ['MRAID_2'],
     videoProtocols = ['VAST_2_0'],
     videoBitrate = [300, 1500],
     videoDuration = [5, 30],
+    onUserEarnedReward,
     onAdClosed,
     onAdFailedToLoad,
     ...restProps
   } = props;
 
+  const nativeRef = useRef<any>(null);
+
   if (UIManager.getViewManagerConfig(ComponentName) == null) {
     throw new Error(LINKING_ERROR);
   }
 
+  useImperativeHandle(ref, () => ({
+    show() {
+      const node = findNodeHandle(nativeRef.current);
+      if (node != null) {
+        UIManager.dispatchViewManagerCommand(
+          node,
+          UIManager.getViewManagerConfig(ComponentName).Commands.show ?? 'show',
+          []
+        );
+      }
+    },
+  }));
+
+  // Native fires a single onAdClosed event carrying the reward payload.
+  // We split it here: reward data → onUserEarnedReward, close signal → onAdClosed.
   const handleAdClosed = (
     event:
-      | TRewardEarnedEvent
+      | RewardEarnedEvent
       | { nativeEvent: { type: string; amount: number } }
   ) => {
     const rewardEvent = 'nativeEvent' in event ? event.nativeEvent : event;
-    onAdClosed?.(rewardEvent);
+    onUserEarnedReward?.(rewardEvent);
+    onAdClosed?.();
   };
 
   const handleAdFailedToLoad = (
-    event: TAdError | { nativeEvent: { code: number; message: string } }
+    event: AdError | { nativeEvent: { code: number; message: string } }
   ) => {
-    const error: TAdError = 'nativeEvent' in event ? event.nativeEvent : event;
+    const error: AdError = 'nativeEvent' in event ? event.nativeEvent : event;
     onAdFailedToLoad?.(error);
   };
 
   return (
     <NativeComponent
+      ref={nativeRef}
       {...restProps}
+      adUnitID={adUnitId}
+      auConfigID={auConfigId}
+      gpID={gpId}
       playbackMethod={playbackMethod}
       isLazyLoad={isLazyLoad}
       apiParameters={apiParameters}
@@ -74,4 +111,4 @@ export const OriginalRewarded = (props: IOriginalRewardedProps) => {
       onAdFailedToLoad={handleAdFailedToLoad}
     />
   );
-};
+});
