@@ -79,8 +79,8 @@ export class OriginalBanner extends Component<
       gpId,
       refreshTimeMillis,
       smartRefresh = false,
-      playbackMethod = ['AutoPlaySoundOn'],
       isLazyLoad = true,
+      prefetchMargin = 200,
       isAdaptive = false,
       adFormats = ['banner', 'video'],
       apiParameters = ['MRAID_1', 'MRAID_2', 'MRAID_3', 'OMID_1'],
@@ -131,6 +131,7 @@ export class OriginalBanner extends Component<
           playbackMethod={playbackMethod}
           isLazyLoad={isLazyLoad}
           smartRefresh={smartRefresh}
+          prefetchMargin={prefetchMargin}
           isAdaptive={isAdaptive}
           adFormats={adFormats}
           apiParameters={apiParameters}
