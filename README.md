@@ -489,7 +489,7 @@ The SDK supports a simplified integration using remote configuration. This allow
 Before using remote configuration ads, ensure the SDK is properly initialized:
 
 ```js
-import { RNAudienzz, RNTargeting } from 'audienzz';
+import { RNAudienzz, Targeting } from 'audienzz';
 
 RNAudienzz()
   .initializeRemote(
@@ -500,7 +500,7 @@ RNAudienzz()
   .then((value) => {
     console.log('SDK initialized with remote config:', JSON.stringify(value, null, 2));
     // Optional: Add global targeting
-    RNTargeting().addGlobalTargeting('TEST', '1');
+    Targeting.addGlobalTargeting('TEST', '1');
   })
   .catch((error) => {
     console.error('Initialization error:', error);
@@ -621,21 +621,30 @@ function MyComponent() {
 
 ## Targeting
 
-The `RNTargeting()` module provides extensive methods for user and application targeting, GDPR/COPPA compliance, and ORTB configuration.
+The `Targeting` module provides extensive methods for user and application targeting, GDPR/COPPA compliance, and ORTB configuration.
 
 ### Usage Example
 ```js
-import { RNTargeting } from 'audienzz';
+import { Targeting } from 'audienzz';
 
-// Set global targeting
-RNTargeting().addGlobalTargeting('section', 'news');
+// Set a single global targeting key-value
+await Targeting.addGlobalTargeting('section', 'news');
+
+// Set multiple values for a key
+await Targeting.addGlobalTargetingSet('interests', ['tech', 'finance']);
+
+// Remove a specific key
+await Targeting.removeGlobalTargeting('section');
+
+// Clear all global targeting
+await Targeting.clearGlobalTargeting();
 
 // Set GDPR compliance
-RNTargeting().setSubjectToGDPR(true);
-RNTargeting().setGDPRConsentString('your-consent-string');
+await Targeting.setSubjectToGdpr(true);
+await Targeting.setGdprConsentString('your-consent-string');
 
 // Set user location
-RNTargeting().setUserLatLng(47.3769, 8.5417);
+await Targeting.setUserLatLng(47.3769, 8.5417);
 ```
 
 ### Available Methods
@@ -656,7 +665,8 @@ RNTargeting().setUserLatLng(47.3769, 8.5417);
 - `setExternalUserIds(userIds: AudienzzExternalUserId[])`: Sets the external user IDs for cross-device targeting.
 
 #### Global Targeting
-- `addGlobalTargeting(key: string, value: string)`: Adds a global targeting parameter.
+- `addGlobalTargeting(key: string, value: string)`: Adds a single global targeting key-value pair.
+- `addGlobalTargetingSet(key: string, values: string[])`: Adds multiple values for a global targeting key.
 - `removeGlobalTargeting(key: string)`: Removes a specific global targeting parameter.
 - `clearGlobalTargeting()`: Clears all global targeting.
 
