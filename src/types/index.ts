@@ -40,7 +40,7 @@ import type {
   RemoteConfigBannerProps,
   RemoteConfigInterstitialProps,
 } from './RemoteConfig';
-import { DEFAULT_REFRESH_TIME_SECONDS } from './RemoteConfigTypes';
+import { DEFAULT_REFRESH_TIME_SECONDS, DEFAULT_PREFETCH_DISTANCE_DP } from './RemoteConfigTypes';
 import type {
   RemoteAdConfiguration,
   RemotePublisherConfiguration,
@@ -56,7 +56,7 @@ import type {
   WidthStrategy,
 } from './RemoteConfigTypes';
 
-export { DEFAULT_REFRESH_TIME_SECONDS };
+export { DEFAULT_REFRESH_TIME_SECONDS, DEFAULT_PREFETCH_DISTANCE_DP };
 
 export type {
   AdEvents,
