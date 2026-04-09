@@ -44,13 +44,13 @@
     _propsChanged = YES;
 }
 
-- (void)setIsLazyLoad:(NSNumber *)value {
-    _isLazyLoad = [value boolValue];
+- (void)setIsLazyLoad:(BOOL)value {
+    _isLazyLoad = value;
     _propsChanged = YES;
 }
 
-- (void)setIsAdaptive:(NSNumber *)value {
-    _isAdaptive = [value boolValue];
+- (void)setIsAdaptive:(BOOL)value {
+    _isAdaptive = value;
     _propsChanged = YES;
 }
 

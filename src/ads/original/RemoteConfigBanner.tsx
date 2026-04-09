@@ -20,13 +20,22 @@ import {
     requireNativeComponent,
     UIManager,
     findNodeHandle,
+    View,
+    StyleSheet,
+    StyleSheet as RNStyleSheet,
 } from 'react-native';
+import type { ViewStyle } from 'react-native';
 import type { RemoteConfigBannerProps } from '../../types';
 
 const COMPONENT_NAME = 'RNRemoteConfigBanner';
 
+type NativeRemoteConfigBannerProps = RemoteConfigBannerProps & {
+    adWidth?: number;
+    adHeight?: number;
+};
+
 const RNRemoteConfigBannerView =
-    requireNativeComponent<RemoteConfigBannerProps>(COMPONENT_NAME);
+    requireNativeComponent<NativeRemoteConfigBannerProps>(COMPONENT_NAME);
 
 /**
  * RemoteConfigBanner component for displaying banner ads configured via backend API.
@@ -80,24 +89,47 @@ export class RemoteConfigBanner extends Component<RemoteConfigBannerProps, { hei
         if (height && height !== this.state.height) {
             this.setState({ height });
         }
+
         if (this.props.onAdLoaded) {
             this.props.onAdLoaded(event.nativeEvent);
         }
     };
 
     render() {
-        const { style, onAdLoaded, ...otherProps } = this.props;
+        const { style, onAdLoaded, onAdFailedToLoad, ...otherProps } = this.props;
         const dynamicStyle = this.state.height ? { height: this.state.height } : {};
+        const flattenedStyle = RNStyleSheet.flatten(style) as ViewStyle | undefined;
+        const adWidth = typeof flattenedStyle?.width === 'number' ? flattenedStyle.width : undefined;
+        const adHeight = typeof flattenedStyle?.height === 'number' ? flattenedStyle.height : undefined;
+        const nativeStyle = adHeight
+            ? styles.fixedNativeComponent
+            : styles.adaptiveNativeComponent;
 
         return (
-            <RNRemoteConfigBannerView
-                {...otherProps}
-                style={[style, dynamicStyle]}
-                onAdLoaded={this._onAdLoaded}
-                ref={(ref) => {
-                    this.nativeRef = ref;
-                }}
-            />
+            <View style={[style, dynamicStyle]}>
+                <RNRemoteConfigBannerView
+                    {...otherProps}
+                    adWidth={adWidth}
+                    adHeight={adHeight}
+                    style={nativeStyle}
+                    onAdLoaded={this._onAdLoaded}
+                    onAdFailedToLoad={onAdFailedToLoad}
+                    ref={(ref) => {
+                        this.nativeRef = ref;
+                    }}
+                />
+            </View>
         );
     }
 }
+
+const styles = StyleSheet.create({
+    fixedNativeComponent: {
+        width: '100%',
+        height: '100%',
+    },
+    adaptiveNativeComponent: {
+        width: '100%',
+        minHeight: 1,
+    },
+});

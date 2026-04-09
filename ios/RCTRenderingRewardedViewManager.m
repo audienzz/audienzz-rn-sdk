@@ -27,7 +27,7 @@ RCT_EXPORT_MODULE(RCTRenderingRewardedView)
     return [[RCTRenderingRewardedView alloc] init];
 }
 
-RCT_EXPORT_VIEW_PROPERTY(isLazyLoad, NSNumber)
+RCT_EXPORT_VIEW_PROPERTY(isLazyLoad, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(pbAdSlot, NSString)
 RCT_EXPORT_VIEW_PROPERTY(gpID, NSString)
 RCT_EXPORT_VIEW_PROPERTY(adUnitID, NSString)
