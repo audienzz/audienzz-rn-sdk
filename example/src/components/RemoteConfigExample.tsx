@@ -11,10 +11,10 @@ export default function RemoteConfigExample() {
             <Text style={styles.title}>Remote Config Test</Text>
 
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Fixed Size Banner (ID: 192)</Text>
+                <Text style={styles.sectionTitle}>Fixed Size Banner (ID: 46)</Text>
                 <View style={styles.bannerContainer}>
                     <RemoteConfigBanner
-                        adConfigId="192"
+                        adConfigId="46"
                         style={styles.fixedBanner}
                         onAdLoaded={(size) => {
                             console.log('[RemoteConfig] Fixed banner loaded:', size);
@@ -45,11 +45,11 @@ export default function RemoteConfigExample() {
                 </Text>
             </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Adaptive Banner (ID: 118)</Text>
-                <View style={styles.bannerContainer}>
+            <View style={styles.adaptiveSection}>
+                <Text style={[styles.sectionTitle, styles.adaptiveSectionTitle]}>Adaptive Banner (ID: 48)</Text>
+                <View style={styles.adaptiveBannerContainer}>
                     <RemoteConfigBanner
-                        adConfigId="118"
+                        adConfigId="48"
                         style={styles.adaptiveBanner}
                         onAdLoaded={(size) => {
                             console.log('[RemoteConfig] Adaptive banner loaded:', size);
@@ -65,13 +65,13 @@ export default function RemoteConfigExample() {
             </View>
 
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Interstitial (ID: 267)</Text>
+                <Text style={styles.sectionTitle}>Interstitial (ID: 47)</Text>
                 <ActionButton labelButton="Show Interstitial" onPress={() => setShowInterstitial(true)} />
             </View>
 
             {showInterstitial && (
                 <RemoteConfigInterstitial
-                    adConfigId="267"
+                    adConfigId="47"
                     onAdLoaded={() => {
                         console.log('[RemoteConfig] Interstitial loaded successfully');
                     }}
@@ -115,11 +115,18 @@ const styles = StyleSheet.create({
         marginBottom: 30,
         paddingHorizontal: 16,
     },
+    adaptiveSection: {
+        width: '100%',
+        marginBottom: 30,
+    },
     sectionTitle: {
         fontSize: 18,
         fontWeight: '600',
         color: '#333',
         marginBottom: 12,
+    },
+    adaptiveSectionTitle: {
+        marginHorizontal: 16,
     },
     bannerContainer: {
         width: '100%',
@@ -127,6 +134,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
         borderRadius: 8,
         padding: 8,
+        minHeight: 100,
+    },
+    adaptiveBannerContainer: {
+        width: '100%',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+        borderRadius: 8,
         minHeight: 100,
     },
     fixedBanner: {

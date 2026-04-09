@@ -27,7 +27,7 @@ RCT_EXPORT_MODULE(RCTOriginalRewardedView)
     return [[RCTOriginalRewardedView alloc] init];
 }
 
-RCT_EXPORT_VIEW_PROPERTY(isLazyLoad, NSNumber)
+RCT_EXPORT_VIEW_PROPERTY(isLazyLoad, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(playbackMethod, NSArray)
 RCT_EXPORT_VIEW_PROPERTY(apiParameters, NSArray)
 RCT_EXPORT_VIEW_PROPERTY(videoProtocols, NSArray)

@@ -19,6 +19,16 @@ class RCTRemoteConfigBannerViewManager : SimpleViewManager<RCTRemoteConfigBanner
     view.updateConfigId(value)
   }
 
+  @ReactProp(name = "adWidth", defaultInt = 0)
+  fun setAdWidth(view: RCTRemoteConfigBannerView, value: Int) {
+    view.updateAdWidth(value)
+  }
+
+  @ReactProp(name = "adHeight", defaultInt = 0)
+  fun setAdHeight(view: RCTRemoteConfigBannerView, value: Int) {
+    view.updateAdHeight(value)
+  }
+
   override fun onAfterUpdateTransaction(view: RCTRemoteConfigBannerView) {
     super.onAfterUpdateTransaction(view)
     view.loadAd()
@@ -40,5 +50,3 @@ class RCTRemoteConfigBannerViewManager : SimpleViewManager<RCTRemoteConfigBanner
     )
   }
 }
-
-

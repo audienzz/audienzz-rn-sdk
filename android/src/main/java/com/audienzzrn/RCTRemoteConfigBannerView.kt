@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import android.view.Gravity
 import android.widget.FrameLayout
-import androidx.core.view.doOnNextLayout
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
@@ -18,10 +17,39 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
 
   private var configId: String? = null
   private var loadedConfigId: String? = null
+  private var adWidth: Int? = null
+  private var adHeight: Int? = null
+  private var receivedSize: AdSize = AdSize(1, 1)
   private var remoteConfigBannerView: AudienzzRemoteBannerView? = null
+
+  override fun requestLayout() {
+    super.requestLayout()
+    post(measureAndLayout)
+  }
+
+  private val measureAndLayout = Runnable {
+    val heightPx = (receivedSize.height * resources.displayMetrics.density).toInt()
+    val widthPx = (receivedSize.width * resources.displayMetrics.density).toInt()
+
+    if (widthPx <= 0 || heightPx <= 0) {
+      return@Runnable
+    }
+
+    val heightMeasureSpec = MeasureSpec.makeMeasureSpec(heightPx, MeasureSpec.EXACTLY)
+    measure(MeasureSpec.makeMeasureSpec(widthPx, MeasureSpec.EXACTLY), heightMeasureSpec)
+    layout(left, top, left + widthPx, top + heightPx)
+  }
 
   fun updateConfigId(value: String) {
     configId = value
+  }
+
+  fun updateAdWidth(value: Int) {
+    adWidth = value.takeIf { it > 0 }
+  }
+
+  fun updateAdHeight(value: Int) {
+    adHeight = value.takeIf { it > 0 }
   }
 
   fun getConfigId(): String? = configId
@@ -79,35 +107,28 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
       }
     })
 
-    val loadBannerWithSize = {
-      val containerWidth = width
-      val containerHeight = height
-      Log.d(TAG, "loadBannerWithSize called, container: ${containerWidth}x${containerHeight}")
-
-      if (containerWidth > 0 && containerHeight > 0) {
-        Log.d(TAG, "Setting explicit size: ${containerWidth}x${containerHeight}")
-        bannerView.layoutParams = LayoutParams(containerWidth, containerHeight, Gravity.CENTER)
-        bannerView.loadAd()
-      } else {
-        Log.d(TAG, "Using MATCH_PARENT/WRAP_CONTENT (adaptive)")
-        bannerView.layoutParams = LayoutParams(
-          LayoutParams.MATCH_PARENT,
-          LayoutParams.WRAP_CONTENT,
-          Gravity.CENTER
-        )
-        bannerView.loadAd()
-      }
-    }
-
-    if (width > 0 && height > 0) {
-      Log.d(TAG, "Container has dimensions, loading immediately")
-      loadBannerWithSize()
+    if (adWidth != null && adHeight != null) {
+      // Fixed size: use explicit dp dimensions converted to pixels
+      val widthPx = (adWidth!! * resources.displayMetrics.density).toInt()
+      val heightPx = (adHeight!! * resources.displayMetrics.density).toInt()
+      Log.d(TAG, "Fixed size: ${adWidth}dp x ${adHeight}dp → ${widthPx}px x ${heightPx}px")
+      bannerView.layoutParams = LayoutParams(widthPx, heightPx, Gravity.CENTER)
+      bannerView.loadAd()
     } else {
-      Log.d(TAG, "Waiting for container layout")
-      doOnNextLayout {
-        Log.d(TAG, "doOnNextLayout triggered")
-        loadBannerWithSize()
-      }
+      // Adaptive: AudienzzRemoteBannerView.createAdFromConfig reads `this.width` to compute
+      // the adaptive AdSize. In the RN bridge the view hierarchy has 0×0 dimensions until
+      // onAdLoaded fires, so `this.width` would be 0 → AdSize width 0 → GAM HTTP 400.
+      // Pre-measure with the real screen width so the value is available synchronously,
+      // before the config-fetch coroutine resumes on the Main dispatcher.
+      val screenWidthPx = resources.displayMetrics.widthPixels
+      Log.d(TAG, "Adaptive mode, pre-measuring with screen width: ${screenWidthPx}px")
+      bannerView.layoutParams = LayoutParams(screenWidthPx, LayoutParams.WRAP_CONTENT, Gravity.CENTER)
+      bannerView.measure(
+        MeasureSpec.makeMeasureSpec(screenWidthPx, MeasureSpec.EXACTLY),
+        MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
+      )
+      bannerView.layout(0, 0, bannerView.measuredWidth, bannerView.measuredHeight)
+      bannerView.loadAd()
     }
   }
 
@@ -119,6 +140,11 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
   }
 
   private fun handleAdLoaded(adSize: AdSize?) {
+    if (adSize != null) {
+      receivedSize = adSize
+      requestLayout()
+    }
+
     val size: WritableMap = Arguments.createMap()
     if (adSize != null) {
         size.putInt("width", adSize.width)
@@ -164,5 +190,3 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
     private const val TAG = "RCTRemoteConfigBanner"
   }
 }
-
-

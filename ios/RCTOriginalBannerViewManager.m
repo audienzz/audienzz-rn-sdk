@@ -28,7 +28,7 @@ RCT_EXPORT_MODULE(RCTOriginalBannerView)
     return [[RCTOriginalBannerView alloc] init];
 }
 
-RCT_EXPORT_VIEW_PROPERTY(isLazyLoad, NSNumber)
+RCT_EXPORT_VIEW_PROPERTY(isLazyLoad, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(adFormats, NSArray)
 RCT_EXPORT_VIEW_PROPERTY(playbackMethod, NSArray)
 RCT_EXPORT_VIEW_PROPERTY(apiParameters, NSArray)
@@ -48,7 +48,7 @@ RCT_EXPORT_VIEW_PROPERTY(onAdClicked, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdOpened, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdClosed, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdFailedToLoad, RCTBubblingEventBlock)
-RCT_EXPORT_VIEW_PROPERTY(isAdaptive, NSNumber)
+RCT_EXPORT_VIEW_PROPERTY(isAdaptive, BOOL)
 
 RCT_EXPORT_METHOD(stopAutoRefresh:(nonnull NSNumber *)reactTag) {
     dispatch_async(dispatch_get_main_queue(), ^{

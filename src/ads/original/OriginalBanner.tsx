@@ -79,7 +79,7 @@ export class OriginalBanner extends Component<
       gpId,
       refreshTimeMillis,
       playbackMethod = ['AutoPlaySoundOn'],
-      isLazyLoad = true,
+      isLazyLoad = false,
       isAdaptive = false,
       adFormats = ['banner', 'video'],
       apiParameters = ['MRAID_1', 'MRAID_2', 'MRAID_3', 'OMID_1'],
