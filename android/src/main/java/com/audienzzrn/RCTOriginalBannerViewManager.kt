@@ -269,13 +269,10 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
         // Do NOT defer to doOnNextLayout — that fires after load() is called, causing
         // Prebid to bid for the wrong size and the creative to never render.
         if (isAdaptive) {
-          val adaptiveAdSize =
-            AdSize.getInlineAdaptiveBannerAdSize(sizes.first().width, sizes.first().height)
-          setAdSizes(adaptiveAdSize)
-          // Align Prebid bid dimensions with the actual GAM ad view size so the
-          // winning creative dimensions match what GAM expects to render.
-          bannerParameters.adSizes =
-            setOf(AudienzzAdSize(adaptiveAdSize.width, adaptiveAdSize.height))
+          // GAM uses the inline adaptive size for rendering.
+          // Prebid keeps the original sizes from props (e.g. 371x250) — inline adaptive
+          // AdSize has height=0 which bidders reject, causing NO_BIDS.
+          setAdSizes(AdSize.getInlineAdaptiveBannerAdSize(sizes.first().width, sizes.first().height))
         } else {
           val adSizes = sizes.map { size -> AdSize(size.width, size.height) }.toTypedArray()
           setAdSizes(*adSizes)
