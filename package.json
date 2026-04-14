@@ -1,6 +1,6 @@
 {
   "name": "audienzz",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "description": "React Native implementation of the Audienzz SDK",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -31,7 +31,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
-    "prepare": "bob build",
+    "prepack": "bob build",
     "release": "release-it"
   },
   "keywords": [
