@@ -280,11 +280,18 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
         adUnitId = adUnitID
       }
 
-      AudienzzAdViewHandler(
+      val handler = AudienzzAdViewHandler(
         adView = adView,
         adUnit = auBannerView,
       )
-        .load(callback = { request, _ -> adView.loadAd(request) }, withLazyLoading = isLazyLoad)
+      handler.load(
+        withLazyLoading = isLazyLoad,
+        prefetchMarginDp = reactViewGroup.getPrefetchMarginDp(),
+        callback = { request, _ -> adView.loadAd(request) },
+      )
+      if (reactViewGroup.getSmartRefresh()) {
+        handler.enableSmartRefresh()
+      }
     }
   }
 
@@ -312,6 +319,18 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
   @ReactProp(name = "isAdaptive")
   fun setIsAdaptive(view: RCTOriginalBannerView, value: Boolean) {
     view.updateIsAdaptive(value)
+    view.updatePropsChanged(true)
+  }
+
+  @ReactProp(name = "smartRefresh")
+  fun setSmartRefresh(view: RCTOriginalBannerView, value: Boolean) {
+    view.updateSmartRefresh(value)
+    view.updatePropsChanged(true)
+  }
+
+  @ReactProp(name = "prefetchMargin")
+  fun setPrefetchMargin(view: RCTOriginalBannerView, value: Int) {
+    view.updatePrefetchMarginDp(value)
     view.updatePropsChanged(true)
   }
 

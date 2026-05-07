@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import {
   Animated,
+  Dimensions,
   Platform,
   StyleSheet,
   Text,
@@ -14,6 +15,11 @@ const AD_UNIT_ID = '/96628199/testapp_publisher/banner_test_ad_unit';
 const AU_CONFIG_ID = '15624474';
 const AD_SIZE = { width: 300, height: 250 };
 const MAX_HEIGHT = 450;
+const REFRESH_MILLIS = 30_000;
+const VISIBILITY_THRESHOLD = 0.2;
+
+// Rows at which an ad slot is inserted (1-based paragraph index).
+const AD_SLOT_ROWS = [6, 12, 18, 24, 30];
 
 const LOREM =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod ' +
@@ -35,23 +41,59 @@ function Paragraph({ index }: { index: number }) {
 /**
  * Demonstrates `AudienzzStickyAdWrapper` in a static `ScrollView`.
  *
- * Mirrors the iOS `StickyAdExampleViewController`:
- *   - 5 content paragraphs before the ad
- *   - A 300×250 banner wrapped in `AudienzzStickyAdWrapper` (maxHeight 450)
- *   - 9 content paragraphs after the ad
- *
- * Scroll down — the banner stays pinned within its 450 pt reserved area as
- * you scroll past it, then exits at the bottom exactly like the iOS wrapper.
+ * Each banner has smartRefresh enabled: the native layer pauses Prebid
+ * auto-refresh when < 20 % of the ad is visible, and resumes (stale-aware)
+ * when it comes back into view.  The green/red indicator mirrors the native
+ * state using JS-side measureInWindow checks on every scroll event.
  */
 export default function StickyAdExample() {
   const scrollY = useRef(new Animated.Value(0)).current;
-  const adSlots = new Set([6, 12, 18, 24, 30]);
-  const rows: React.JSX.Element[] = [];
 
+  // One View ref per ad slot for visibility measurement.
+  const bannerRefs = useRef<(View | null)[]>(
+    Array(AD_SLOT_ROWS.length).fill(null),
+  );
+  const [loaded, setLoaded] = useState<boolean[]>(
+    Array(AD_SLOT_ROWS.length).fill(false),
+  );
+  const [active, setActive] = useState<boolean[]>(
+    Array(AD_SLOT_ROWS.length).fill(false),
+  );
+
+  // -------------------------------------------------------------------------
+  // Visibility helpers
+  // -------------------------------------------------------------------------
+
+  const checkVisibility = useCallback(() => {
+    const windowHeight = Dimensions.get('window').height;
+    bannerRefs.current.forEach((ref, idx) => {
+      if (!ref) return;
+      ref.measureInWindow((_x, y, _w, height) => {
+        if (height === 0) return;
+        const visibleTop = Math.max(0, y);
+        const visibleBottom = Math.min(windowHeight, y + height);
+        const fraction = Math.max(0, visibleBottom - visibleTop) / height;
+        const isActive = fraction >= VISIBILITY_THRESHOLD;
+        setActive(prev => {
+          if (prev[idx] === isActive) return prev;
+          const next = [...prev];
+          next[idx] = isActive;
+          return next;
+        });
+      });
+    });
+  }, []);
+
+  // -------------------------------------------------------------------------
+  // Build row list
+  // -------------------------------------------------------------------------
+
+  const rows: React.JSX.Element[] = [];
   for (let i = 1; i <= 35; i += 1) {
     rows.push(<Paragraph key={`p-${i}`} index={i} />);
 
-    if (adSlots.has(i)) {
+    const slotIdx = AD_SLOT_ROWS.indexOf(i);
+    if (slotIdx !== -1) {
       rows.push(
         <AudienzzStickyAdWrapper
           key={`ad-${i}`}
@@ -59,23 +101,68 @@ export default function StickyAdExample() {
           maxHeight={MAX_HEIGHT}
           stickyTopOffset={0}
         >
-          <View style={styles.bannerHost}>
+          <View
+            ref={el => {
+              bannerRefs.current[slotIdx] = el;
+            }}
+            collapsable={false}
+            style={styles.bannerHost}
+          >
+            {/* Active / inactive indicator — shown once the ad has loaded */}
+            {loaded[slotIdx] && (
+              <View
+                style={[
+                  styles.indicator,
+                  active[slotIdx]
+                    ? styles.indicatorActive
+                    : styles.indicatorInactive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.indicatorText,
+                    active[slotIdx]
+                      ? styles.indicatorTextActive
+                      : styles.indicatorTextInactive,
+                  ]}
+                >
+                  {active[slotIdx]
+                    ? `● Ad ${slotIdx + 1} — Active (refreshing)`
+                    : `○ Ad ${slotIdx + 1} — Inactive (paused)`}
+                </Text>
+              </View>
+            )}
+
             <OriginalBanner
               adUnitId={AD_UNIT_ID}
               auConfigId={AU_CONFIG_ID}
               sizes={[AD_SIZE]}
               adFormats={['banner']}
               isLazyLoad={false}
-              onAdLoaded={() => console.log(`[StickyAdExample] Ad ${i} loaded`)}
-              onAdFailedToLoad={(error) =>
+              smartRefresh={true}
+              refreshTimeMillis={REFRESH_MILLIS}
+              onAdLoaded={() => {
+                console.log(`[StickyAdExample] Ad ${i} loaded`);
+                setLoaded(prev => {
+                  const next = [...prev];
+                  next[slotIdx] = true;
+                  return next;
+                });
+                setTimeout(checkVisibility, 150);
+              }}
+              onAdFailedToLoad={error =>
                 console.log(`[StickyAdExample] Ad ${i} failed:`, error)
               }
             />
           </View>
-        </AudienzzStickyAdWrapper>
+        </AudienzzStickyAdWrapper>,
       );
     }
   }
+
+  // -------------------------------------------------------------------------
+  // Render
+  // -------------------------------------------------------------------------
 
   return (
     <Animated.ScrollView
@@ -83,15 +170,21 @@ export default function StickyAdExample() {
       contentContainerStyle={styles.contentContainer}
       onScroll={Animated.event(
         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: true },
+        {
+          useNativeDriver: true,
+          // listener runs on the JS thread alongside the native animation,
+          // so we can measure visibility without giving up native-driver smoothness.
+          listener: (_e: any) => checkVisibility(),
+        },
       )}
-      scrollEventThrottle={16}
+      scrollEventThrottle={100}
     >
       {/* Header */}
       <Text style={styles.title}>Sticky Ad Example</Text>
       <Text style={styles.subtitle}>
         Scroll down — each banner stays pinned within its reserved area as you
-        scroll past it, then exits at the bottom.
+        scroll past it, then exits at the bottom. Smart refresh pauses when
+        {'<'} 20 % is visible and resumes stale-aware on return.
       </Text>
 
       {rows}
@@ -140,5 +233,28 @@ const styles = StyleSheet.create({
   },
   bannerHost: {
     alignItems: 'center',
+  },
+  indicator: {
+    alignSelf: 'stretch',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginBottom: 6,
+  },
+  indicatorActive: {
+    backgroundColor: '#B9F6CA',
+  },
+  indicatorInactive: {
+    backgroundColor: '#FFCDD2',
+  },
+  indicatorText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  indicatorTextActive: {
+    color: '#1B5E20',
+  },
+  indicatorTextInactive: {
+    color: '#B71C1C',
   },
 });
