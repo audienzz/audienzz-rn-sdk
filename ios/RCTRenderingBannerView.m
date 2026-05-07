@@ -20,6 +20,17 @@
 #import <GoogleMobileAds/GoogleMobileAds.h>
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 
+// width and height are intentionally NOT @property in the header.
+// A synthesized CGFloat getter returns via xmm0 (float ABI), but React Native
+// Fabric's createPropBlock: casts the getter to id (*)(id, SEL) and reads from
+// rax, capturing garbage → objc_retain crash.  Manual NSNumber* setters with
+// explicit ivars here avoid the synthesised CGFloat getters entirely.
+@interface RCTRenderingBannerView () {
+  CGFloat _width;
+  CGFloat _height;
+}
+@end
+
 @implementation RCTRenderingBannerView
 
 - (void)setWidth:(NSNumber *)value {
@@ -83,7 +94,7 @@
     _auBannerView.delegate = self;
     [_auBannerView createAd];
     
-    _auBannerView.frame = CGRectMake(0, 0, self.width, self.height);
+    _auBannerView.frame = CGRectMake(0, 0, _width, _height);
     [self addSubview:_auBannerView];
     [super layoutSubviews];
 }

@@ -128,7 +128,6 @@ export class OriginalBanner extends Component<
           autoRefreshPeriodMillis={refreshTimeMillis}
           style={styles.nativeComponent}
           ref={this.nativeComponentRef}
-          playbackMethod={playbackMethod}
           isLazyLoad={isLazyLoad}
           smartRefresh={smartRefresh}
           prefetchMargin={prefetchMargin}

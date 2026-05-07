@@ -11,14 +11,18 @@ import LazyLoadingExample from './components/LazyLoadingExample';
 import RenderingInterstitialAPIExample from './components/RenderingInterstitialAPIExample';
 import RemoteConfigExample from './components/RemoteConfigExample';
 import StickyAdExample from './components/StickyAdExample';
+import SmartRefreshBannerExample from './components/SmartRefreshBannerExample';
 
-const REMOTE_CONFIG_ENABLED = true;
+// Remote config ad units (IDs 118, 192, 267) are only provisioned for iOS on
+// the dev backend — Android returns HTTP 404 for publisher 81.  Use the direct
+// OriginalBanner flow on Android so the initial screen always shows live ads.
+const REMOTE_CONFIG_ENABLED = Platform.OS === 'ios';
 const REMOTE_CONFIG_URL = 'https://dev-api.adnz.co/api/ws-sdk-config/public/v1';
 const PUBLISHER_ID = '81';
 
 export default function App() {
   const [initialized, setInitialized] = React.useState(false);
-  const [screen, setScreen] = React.useState<'main' | 'sticky'>('main');
+  const [screen, setScreen] = React.useState<'main' | 'sticky' | 'smartRefresh'>('main');
 
   React.useEffect(() => {
     if (REMOTE_CONFIG_ENABLED) {
@@ -81,36 +85,64 @@ export default function App() {
     );
   }
 
-  return REMOTE_CONFIG_ENABLED ? RemoteView(() => setScreen('sticky')) : OriginalView(() => setScreen('sticky'));
+  if (screen === 'smartRefresh') {
+    return (
+      <View style={styles.mainContainer}>
+        <TouchableOpacity style={styles.backButton} onPress={() => setScreen('main')}>
+          <Text style={styles.backButtonText}>← Back</Text>
+        </TouchableOpacity>
+        <SmartRefreshBannerExample />
+      </View>
+    );
+  }
+
+  return REMOTE_CONFIG_ENABLED
+    ? RemoteView(() => setScreen('sticky'), () => setScreen('smartRefresh'))
+    : OriginalView(() => setScreen('sticky'), () => setScreen('smartRefresh'));
 }
 
-function RemoteView(onOpenSticky: () => void) {
+function RemoteView(onOpenSticky: () => void, onOpenSmartRefresh: () => void) {
   return (
     <View style={styles.mainContainer}>
       <ScrollView
         style={styles.mainContainer}
         contentContainerStyle={styles.scrollviewcontentContainerStyle}
       >
-        <Text style={styles.bigText}>REMOTE CONFIG</Text>
-        <RemoteConfigExample />
-        <View style={styles.height30} />
         <Text style={styles.bigText}>STICKY AD</Text>
         <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
           <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
         </TouchableOpacity>
+        <View style={styles.height30} />
+        <Text style={styles.bigText}>SMART REFRESH</Text>
+        <TouchableOpacity style={styles.navButton} onPress={onOpenSmartRefresh}>
+          <Text style={styles.navButtonText}>Open Smart Refresh Example →</Text>
+        </TouchableOpacity>
+        <View style={styles.height30} />
+        <Text style={styles.bigText}>REMOTE CONFIG</Text>
+        <RemoteConfigExample />
         <View style={styles.height30} />
       </ScrollView>
     </View>
   );
 }
 
-function OriginalView(onOpenSticky: () => void) {
+function OriginalView(onOpenSticky: () => void, onOpenSmartRefresh: () => void) {
   return (
     <View style={styles.mainContainer}>
       <ScrollView
         style={styles.mainContainer}
         contentContainerStyle={styles.scrollviewcontentContainerStyle}
       >
+        <Text style={styles.bigText}>STICKY AD</Text>
+        <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
+          <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
+        </TouchableOpacity>
+        <View style={styles.height30} />
+        <Text style={styles.bigText}>SMART REFRESH</Text>
+        <TouchableOpacity style={styles.navButton} onPress={onOpenSmartRefresh}>
+          <Text style={styles.navButtonText}>Open Smart Refresh Example →</Text>
+        </TouchableOpacity>
+        <View style={styles.height30} />
         <Text style={styles.bigText}>ORIGINAL</Text>
         <ErrorHandlingExample />
         <View style={styles.height30} />
@@ -130,11 +162,6 @@ function OriginalView(onOpenSticky: () => void) {
         <Text style={styles.lorem}>{LOREM}</Text>
         <Text style={styles.bigText}>LAZY LOADING</Text>
         <LazyLoadingExample />
-        <View style={styles.height30} />
-        <Text style={styles.bigText}>STICKY AD</Text>
-        <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
-          <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
-        </TouchableOpacity>
         <View style={styles.height30} />
       </ScrollView>
     </View>

@@ -48,7 +48,8 @@ RCT_EXPORT_METHOD(setSchainObject: (NSString *)schain
                        rejecter:(RCTPromiseRejectBlock)reject {
   [[Audienzz shared]
       configureSDK_RNWithCompanyId:companyId
-                        enablePPID:enablePPID:^{
+                        enablePPID:enablePPID
+                        completion:^{
                           NSDictionary *result = @{
                             @"status" : @"SUCCEEDED",
                             @"description" : @"SDK initialized successfully!"

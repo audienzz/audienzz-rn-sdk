@@ -333,7 +333,7 @@ import {
       sizes={[AdSizes.MEDIUM_RECTANGLE]}
       adFormats={['banner']}
       isLazyLoad={false}
-      autoRefreshPeriodMillis={30000}
+      refreshTimeMillis={30000}
       smartRefresh={true}
       onAdLoaded={(size) => console.log('success', size)}
       onAdClicked={() => console.log('clicked')}
@@ -392,8 +392,9 @@ import {
 | `videoPlacement`          | OpenRTB 2.5 Placement Type for the auction. **Default:** `’inBanner’`.                                                                                                                                                                                                                                                                        |    No    | ‘inBanner’ &#124; ‘inArticle’ &#124; ‘inFeed’ &#124; ‘interstitial’                                                                                                                                                           | `OriginalBanner`                                             |
 | `isReserved`              | The property that can be used to determine how the banner will appear. With or without reserved space. _Note: May be useful if the ad will be used where there is a lot of static content._ **Default:** `false`.                                                                                                                             |    No    | boolean                                                                                                                                                                                                                       | `OriginalBanner`                                             |
 | `isAdaptive`              | The property that can be used to work with multiply size banner. **Default:** `false`.                                                                                                                             |    No    | boolean                                                                                                                                                                                                                       | `OriginalBanner`                                             |
-| `autoRefreshPeriodMillis` | Number defining the refresh time in milliseconds. The value cannot be less than 30000ms. To stop or renew auto refresh, use the `stopAutoRefresh` and `resumeAutoRefresh` methods.                                                                                                                                                            |    No    | number                                                                                                                                                                                                                        | `OriginalBanner`                                             |
-| `smartRefresh`            | When `true`, pauses auto-refresh while the ad is off-screen. On return: if the refresh interval has elapsed the ad is refreshed immediately; otherwise it waits the remaining time. Requires `autoRefreshPeriodMillis` to be set. **Default:** `false`.                                                                                       |    No    | boolean                                                                                                                                                                                                                       | `OriginalBanner`                                             |
+| `refreshTimeMillis`       | Auto-refresh interval in milliseconds. Cannot be less than 30 000 ms. To manually stop or resume refresh call `stopAutoRefresh()` / `resumeAutoRefresh()` on the component ref. (Replaces deprecated `autoRefreshPeriodMillis`.)                                                                                                              |    No    | number                                                                                                                                                                                                                        | `OriginalBanner`                                             |
+| `smartRefresh`            | When `true`, pauses auto-refresh while less than 20 % of the ad height is visible, and resumes it when the ad scrolls back into view. On resume the timer is stale-aware: if the refresh interval already elapsed while off-screen the ad is refreshed immediately; otherwise it waits only the remaining time. Requires `refreshTimeMillis`. **Default:** `false`. |    No    | boolean                                                                                                                                                                                                                       | `OriginalBanner`                                             |
+| `prefetchMargin`          | Distance in logical pixels (pt on iOS, dp on Android) ahead of the viewport at which the Prebid demand fetch is triggered. Only effective when `isLazyLoad={true}`. Has no practical effect inside `FlatList`/recycled lists — use `isLazyLoad={false}` there instead. **Default:** `200`.                                                   |    No    | number                                                                                                                                                                                                                        | `OriginalBanner`                                             |
 | `minSizesPercentage`      | Optional parameter to specify the minimum width/height percent an ad may occupy of a device’s screen. **Default:** `[80, 60]` // [width, height].                                                                                                                                                                                             |    No    | [number, number]                                                                                                                                                                                                              | `OriginalInterstitial`                                       |
 | `onAdLoaded`              | A callback triggered when an ad is received.                                                                                                                                                                                                                                                                                                  |    No    | onAdLoaded?(size: AdSize): void                                                                                                                                                                                                           | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
 | `onAdFailedToLoad`        | A callback triggered when an ad request failed.                                                                                                                                                                                                                                                                                               |    No    | onAdFailedToLoad?(error: AdError): void                                                                                                                                                               | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
@@ -523,7 +524,7 @@ import { RemoteConfigBanner } from 'audienzz';
 function MyComponent() {
   return (
     <RemoteConfigBanner
-      configId="YOUR_CONFIG_ID"
+      adConfigId="YOUR_CONFIG_ID"
       onAdLoaded={(size) => {
         console.log('Remote banner loaded successfully');
         console.log('Ad size:', size);
@@ -546,7 +547,7 @@ To enforce a specific fixed size, pass the `width` and `height` props to the `Re
 
 ```jsx
 <RemoteConfigBanner
-  configId="YOUR_CONFIG_ID"
+  adConfigId="YOUR_CONFIG_ID"
   width={320}
   height={50}
 />
@@ -557,7 +558,7 @@ If adaptive banners are enabled in the remote configuration, and you don't provi
 
 ```jsx
 <RemoteConfigBanner
-  configId="YOUR_CONFIG_ID"
+  adConfigId="YOUR_CONFIG_ID"
   // size calculated automatically if enabled in backend
 />
 ```
@@ -567,7 +568,7 @@ If adaptive banners are enabled in the remote configuration, and you don't provi
 
 | Name               | Description                                                | Required | Type                                                    |
 | ------------------ | ---------------------------------------------------------- | :------: | ------------------------------------------------------- |
-| `configId`         | Remote configuration ID for the ad unit.                   | **YES**  | string                                                  |
+| `adConfigId`       | Remote configuration ID for the ad unit.                   | **YES**  | string                                                  |
 | `onAdLoaded`       | Callback when ad is loaded. Returns ad size.               |    No    | onAdLoaded?(size: AdSize): void |
 | `onAdFailedToLoad` | Callback when ad fails to load.                            |    No    | onAdFailedToLoad?(error: {message: string}): void       |
 | `onAdClicked`      | Callback when ad is clicked.                               |    No    | onAdClicked?(): void                                    |
@@ -590,7 +591,7 @@ import { RemoteConfigInterstitial } from 'audienzz';
 function MyComponent() {
   return (
     <RemoteConfigInterstitial
-      configId="YOUR_CONFIG_ID"
+      adConfigId="YOUR_CONFIG_ID"
       onAdLoaded={() => {
         console.log('Remote interstitial loaded successfully');
       }}
@@ -612,7 +613,7 @@ function MyComponent() {
 
 | Name               | Description                                                | Required | Type                                                    |
 | ------------------ | ---------------------------------------------------------- | :------: | ------------------------------------------------------- |
-| `configId`         | Remote configuration ID for the ad unit.                   | **YES**  | string                                                  |
+| `adConfigId`       | Remote configuration ID for the ad unit.                   | **YES**  | string                                                  |
 | `onAdLoaded`       | Callback when ad is loaded.                                |    No    | onAdLoaded?(): void                                     |
 | `onAdFailedToLoad` | Callback when ad fails to load.                            |    No    | onAdFailedToLoad?(error: {message: string}): void       |
 | `onAdClicked`      | Callback when ad is clicked.                               |    No    | onAdClicked?(): void                                    |
@@ -620,6 +621,62 @@ function MyComponent() {
 | `onAdClosed`       | Callback when user returns to the app.                     |    No    | onAdClosed?(): void                                     |
 
 </details>
+
+## Sticky Ad Wrapper
+
+`AudienzzStickyAdWrapper` keeps a banner pinned within a reserved area of the scroll view as the user scrolls past it. The ad slides up inside the reserved space, staying visible for as long as possible before exiting at the bottom — mirroring the behaviour of the native iOS and Flutter sticky wrappers.
+
+### Usage
+
+```tsx
+import { useRef } from 'react';
+import { Animated, ScrollView } from 'react-native';
+import { OriginalBanner, AudienzzStickyAdWrapper } from 'audienzz';
+
+function MyScreen() {
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  return (
+    <Animated.ScrollView
+      onScroll={Animated.event(
+        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+        { useNativeDriver: true }
+      )}
+      scrollEventThrottle={16}
+    >
+      {/* … content above the ad … */}
+
+      <AudienzzStickyAdWrapper scrollY={scrollY} maxHeight={450}>
+        <OriginalBanner
+          adUnitId="adUnitID"
+          auConfigId="auConfigID"
+          sizes={[{ width: 300, height: 250 }]}
+          adFormats={['banner']}
+          isLazyLoad={false}
+          smartRefresh={true}
+          refreshTimeMillis={30000}
+          onAdLoaded={() => console.log('sticky ad loaded')}
+          onAdFailedToLoad={(error) => console.log('failed', error)}
+        />
+      </AudienzzStickyAdWrapper>
+
+      {/* … content below the ad … */}
+    </Animated.ScrollView>
+  );
+}
+```
+
+### Props
+
+| Name              | Description                                                                                                                     | Required | Type              | Default |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------- | :------: | ----------------- | ------- |
+| `children`        | The ad component to wrap (typically `OriginalBanner`).                                                                          | **YES**  | ReactNode         | —       |
+| `scrollY`         | Animated scroll-Y value from the parent `ScrollView` or `FlatList`. Must be created with `useRef(new Animated.Value(0)).current`. | **YES**  | Animated.Value    | —       |
+| `maxHeight`       | Height in logical pixels reserved in the layout for the sticky zone.                                                            |    No    | number            | `600`   |
+| `stickyTopOffset` | Y offset from the viewport top at which the ad should stick.                                                                    |    No    | number            | `0`     |
+| `enabled`         | Set to `false` to disable sticky behaviour (ad renders in its normal flow position).                                            |    No    | boolean           | `true`  |
+
+> **Tip:** Combine with `smartRefresh={true}` on the inner `OriginalBanner` so that auto-refresh pauses automatically while the ad is scrolled out of the sticky zone.
 
 ## Targeting
 

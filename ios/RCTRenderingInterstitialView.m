@@ -20,6 +20,13 @@
 #import <GoogleMobileAds/GoogleMobileAds.h>
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 
+// skipDelay is intentionally NOT a @property in the header — same CGFloat/xmm0
+// ABI crash as autoRefreshPeriodMillis.  Manual NSNumber* setter + explicit ivar.
+@interface RCTRenderingInterstitialView () {
+  CGFloat _skipDelay;
+}
+@end
+
 @implementation RCTRenderingInterstitialView
 
 - (void)setAdFormat:(NSString *)value{

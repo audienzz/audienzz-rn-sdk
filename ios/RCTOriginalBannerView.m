@@ -20,6 +20,18 @@
 #import <GoogleMobileAds/GoogleMobileAds.h>
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 
+// autoRefreshPeriodMillis is intentionally NOT a @property in the header.
+// Declaring it as `@property CGFloat` causes the auto-synthesized getter to
+// return via xmm0 (floating-point ABI).  React Native Fabric's createPropBlock:
+// casts the getter to `id (*)(id, SEL)` and reads from rax instead, picking up
+// a garbage pointer that is later passed to objc_retain → SIGSEGV at 0x20.
+// Keeping it as a plain ivar and providing only an NSNumber* setter avoids the
+// synthesised CGFloat getter entirely.
+@interface RCTOriginalBannerView () {
+  CGFloat _autoRefreshPeriodMillis;
+}
+@end
+
 @implementation RCTOriginalBannerView
 
 - (void)setAutoRefreshPeriodMillis:(NSNumber *)value {
@@ -49,11 +61,11 @@
 }
 
 - (void)stopAutoRefresh {
-  [_auBannerView.adUnitConfiguration stopAutoRefresh];
+  [_auBannerView pauseSmartRefresh];
 }
 
 - (void)resumeAutoRefresh {
-  [_auBannerView.adUnitConfiguration resumeAutoRefresh];
+  [_auBannerView resumeSmartRefresh];
 }
 
 - (NSArray<NSValue *> *)convertSizesToGADAdSizes:(NSArray *)sizes {
