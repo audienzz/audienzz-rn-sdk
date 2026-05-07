@@ -17,6 +17,13 @@ export interface OriginalBannerProps
    *  On return, fires immediately if the creative is stale (off-screen
    *  longer than the refresh interval), otherwise fires after the remaining time. */
   smartRefresh?: boolean;
+  /** Distance in logical pixels (pt on iOS, dp on Android) before the view
+   *  enters the viewport that starts the Prebid demand fetch. Defaults to `200`.
+   *  Only effective when `isLazyLoad` is `true`.
+   *
+   *  Has no practical effect inside a `FlatList` / `ScrollView`-recycled list —
+   *  use `isLazyLoad={false}` there instead. */
+  prefetchMargin?: number;
 }
 
 export interface OriginalInterstitialProps

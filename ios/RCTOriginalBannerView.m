@@ -38,6 +38,11 @@
   self.propsChanged = YES;
 }
 
+- (void)setPrefetchMargin:(NSInteger)value {
+  _prefetchMargin = value;
+  self.propsChanged = YES;
+}
+
 - (void)setVideoPlacement:(NSString *)value {
   _videoPlacement = value;
   self.propsChanged = YES;
@@ -162,6 +167,7 @@
   _auBannerView.bannerParameters = self.bannerParameters;
   _auBannerView.videoParameters = self.videoParameters;
   _auBannerView.smartRefresh = _smartRefresh;
+  _auBannerView.prefetchMarginPoints = (CGFloat)(_prefetchMargin > 0 ? _prefetchMargin : 200);
 
   _bannerView.rootViewController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
   _bannerView.delegate = self;

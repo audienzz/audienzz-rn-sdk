@@ -30,6 +30,7 @@
 @property(nonatomic, assign) CGFloat height;
 @property(nonatomic, assign) CGFloat autoRefreshPeriodMillis;
 @property(nonatomic, assign) BOOL smartRefresh;
+@property(nonatomic, assign) NSInteger prefetchMargin;
 @property(nonatomic, copy) NSString *videoPlacement;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdLoaded;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdFailedToLoad;

@@ -16,7 +16,7 @@ import {
   RenderingRewarded,
 } from './ads/rendering';
 
-import { DEFAULT_REFRESH_TIME_SECONDS } from './types';
+import { DEFAULT_REFRESH_TIME_SECONDS, DEFAULT_PREFETCH_DISTANCE_DP } from './types';
 import type {
   RNAudienzzModule,
   RNAudienzzTargetingModule,
@@ -63,7 +63,7 @@ export {
   RenderingRewarded,
 };
 
-export { DEFAULT_REFRESH_TIME_SECONDS };
+export { DEFAULT_REFRESH_TIME_SECONDS, DEFAULT_PREFETCH_DISTANCE_DP };
 export { default, Audienzz, RNAudienzz } from './RNAudienzz';
 export { Targeting, RNTargeting } from './RNTargeting';
 export { AdSizes } from './constants';
