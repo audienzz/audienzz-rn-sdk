@@ -9,6 +9,8 @@ min_ios_version_supported = '16.0'
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
+ENV['RCT_NEW_ARCH_ENABLED'] = '0'
+
 use_frameworks!
 
 target 'AudienzzrnExample' do

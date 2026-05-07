@@ -179,8 +179,13 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     val apiParameters: List<String> = reactViewGroup.apiParameters
     val videoProtocols: List<String> = reactViewGroup.videoProtocols
     val playbackMethods: List<String> = reactViewGroup.playbackMethods
-    val videoBitrate: List<Int> = reactViewGroup.videoBitrate!!
-    val videoDuration: List<Int> = reactViewGroup.videoDuration!!
+    val videoBitrate: List<Int> = reactViewGroup.videoBitrate ?: listOf(300, 1500)
+    val videoDuration: List<Int> = reactViewGroup.videoDuration ?: listOf(5, 30)
+
+    if (sizes.isEmpty() || adUnitID.isEmpty() || auConfigID.isEmpty()) {
+      Log.w("RCTOriginalBannerView", "requestAd skipped — sizes/adUnitID/auConfigID not ready")
+      return
+    }
     val videoPlacement: String = reactViewGroup.getVideoPlacement()
     val autoRefreshPeriodMillis: Int? = reactViewGroup.getAutoRefreshPeriodMillis()?.div(1000)
     val pbAdSlot: String? = reactViewGroup.pbAdSlot
@@ -258,17 +263,21 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
 
     if (adView != null) {
       adView.apply {
-        val adSizes = sizes.map { size -> AdSize(size.width, size.height) }.toTypedArray()
-        setAdSizes(*adSizes)
-        adUnitId = adUnitID
-      }
-
-      if (isAdaptive) {
-        adView.doOnNextLayout {
-          adView.setAdSizes(
-            AdSize.getInlineAdaptiveBannerAdSize(sizes.first().width, sizes.first().height)
-          )
+        // When isAdaptive, compute the adaptive size immediately using the first size's
+        // width/height as the target width and max-height. The bridge already reads sizes
+        // via getInt() so fractional JS values are safely truncated before reaching here.
+        // Do NOT defer to doOnNextLayout — that fires after load() is called, causing
+        // Prebid to bid for the wrong size and the creative to never render.
+        if (isAdaptive) {
+          // GAM uses the inline adaptive size for rendering.
+          // Prebid keeps the original sizes from props (e.g. 371x250) — inline adaptive
+          // AdSize has height=0 which bidders reject, causing NO_BIDS.
+          setAdSizes(AdSize.getInlineAdaptiveBannerAdSize(sizes.first().width, sizes.first().height))
+        } else {
+          val adSizes = sizes.map { size -> AdSize(size.width, size.height) }.toTypedArray()
+          setAdSizes(*adSizes)
         }
+        adUnitId = adUnitID
       }
 
       val handler = AudienzzAdViewHandler(

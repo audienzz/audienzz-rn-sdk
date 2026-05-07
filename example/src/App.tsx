@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ScrollView, Text, TouchableOpacity, View, Platform, StyleSheet } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, Platform, StyleSheet, SafeAreaView } from 'react-native';
 import RNAudienzz from 'audienzz';
 import { RNTargeting } from 'audienzz';
 import { LOREM } from './constants';
@@ -68,20 +68,24 @@ export default function App() {
 
   if (!initialized) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text>Initializing SDK...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.loadingContainer}>
+          <Text>Initializing SDK...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (screen === 'sticky') {
     return (
-      <View style={styles.mainContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => setScreen('main')}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <StickyAdExample />
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.mainContainer}>
+          <TouchableOpacity style={styles.backButton} onPress={() => setScreen('main')}>
+            <Text style={styles.backButtonText}>← Back</Text>
+          </TouchableOpacity>
+          <StickyAdExample />
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -103,72 +107,80 @@ export default function App() {
 
 function RemoteView(onOpenSticky: () => void, onOpenSmartRefresh: () => void) {
   return (
-    <View style={styles.mainContainer}>
-      <ScrollView
-        style={styles.mainContainer}
-        contentContainerStyle={styles.scrollviewcontentContainerStyle}
-      >
-        <Text style={styles.bigText}>STICKY AD</Text>
-        <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
-          <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
-        </TouchableOpacity>
-        <View style={styles.height30} />
-        <Text style={styles.bigText}>SMART REFRESH</Text>
-        <TouchableOpacity style={styles.navButton} onPress={onOpenSmartRefresh}>
-          <Text style={styles.navButtonText}>Open Smart Refresh Example →</Text>
-        </TouchableOpacity>
-        <View style={styles.height30} />
-        <Text style={styles.bigText}>REMOTE CONFIG</Text>
-        <RemoteConfigExample />
-        <View style={styles.height30} />
-      </ScrollView>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.mainContainer}>
+        <ScrollView
+          style={styles.mainContainer}
+          contentContainerStyle={styles.scrollviewcontentContainerStyle}
+        >
+          <Text style={styles.bigText}>STICKY AD</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
+            <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
+          </TouchableOpacity>
+          <View style={styles.height30} />
+          <Text style={styles.bigText}>SMART REFRESH</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenSmartRefresh}>
+            <Text style={styles.navButtonText}>Open Smart Refresh Example →</Text>
+          </TouchableOpacity>
+          <View style={styles.height30} />
+          <Text style={styles.bigText}>REMOTE CONFIG</Text>
+          <RemoteConfigExample />
+          <View style={styles.height30} />
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 
 function OriginalView(onOpenSticky: () => void, onOpenSmartRefresh: () => void) {
   return (
-    <View style={styles.mainContainer}>
-      <ScrollView
-        style={styles.mainContainer}
-        contentContainerStyle={styles.scrollviewcontentContainerStyle}
-      >
-        <Text style={styles.bigText}>STICKY AD</Text>
-        <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
-          <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
-        </TouchableOpacity>
-        <View style={styles.height30} />
-        <Text style={styles.bigText}>SMART REFRESH</Text>
-        <TouchableOpacity style={styles.navButton} onPress={onOpenSmartRefresh}>
-          <Text style={styles.navButtonText}>Open Smart Refresh Example →</Text>
-        </TouchableOpacity>
-        <View style={styles.height30} />
-        <Text style={styles.bigText}>ORIGINAL</Text>
-        <ErrorHandlingExample />
-        <View style={styles.height30} />
-        <OriginalBannerAPIExample />
-        <View style={styles.height30} />
-        <OriginalInterstitialAPIExample />
-        <View style={styles.height30} />
-        <OriginalRewardedAPIExample />
-        <View style={styles.height30} />
-        <View style={styles.height30} />
-        <Text style={styles.bigText}>RENDERING</Text>
-        {/* <RenderingBannerAPIExample /> */}
-        <View style={styles.height30} />
-        <RenderingInterstitialAPIExample />
-        <View style={styles.height30} />
-        {/* <RenderingRewardedAPIExample /> */}
-        <Text style={styles.lorem}>{LOREM}</Text>
-        <Text style={styles.bigText}>LAZY LOADING</Text>
-        <LazyLoadingExample />
-        <View style={styles.height30} />
-      </ScrollView>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.mainContainer}>
+        <ScrollView
+          style={styles.mainContainer}
+          contentContainerStyle={styles.scrollviewcontentContainerStyle}
+        >
+          <Text style={styles.bigText}>STICKY AD</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
+            <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
+          </TouchableOpacity>
+          <View style={styles.height30} />
+          <Text style={styles.bigText}>SMART REFRESH</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenSmartRefresh}>
+            <Text style={styles.navButtonText}>Open Smart Refresh Example →</Text>
+          </TouchableOpacity>
+          <View style={styles.height30} />
+          <Text style={styles.bigText}>ORIGINAL</Text>
+          <ErrorHandlingExample />
+          <View style={styles.height30} />
+          <OriginalBannerAPIExample />
+          <View style={styles.height30} />
+          <OriginalInterstitialAPIExample />
+          <View style={styles.height30} />
+          <OriginalRewardedAPIExample />
+          <View style={styles.height30} />
+          <View style={styles.height30} />
+          <Text style={styles.bigText}>RENDERING</Text>
+          {/* <RenderingBannerAPIExample /> */}
+          <View style={styles.height30} />
+          <RenderingInterstitialAPIExample />
+          <View style={styles.height30} />
+          {/* <RenderingRewardedAPIExample /> */}
+          <Text style={styles.lorem}>{LOREM}</Text>
+          <Text style={styles.bigText}>LAZY LOADING</Text>
+          <LazyLoadingExample />
+          <View style={styles.height30} />
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
   mainContainer: {
     flex: 1,
     backgroundColor: 'white',
