@@ -20,6 +20,18 @@
 #import <GoogleMobileAds/GoogleMobileAds.h>
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 
+// autoRefreshPeriodMillis is intentionally NOT a @property in the header.
+// Declaring it as `@property CGFloat` causes the auto-synthesized getter to
+// return via xmm0 (floating-point ABI).  React Native Fabric's createPropBlock:
+// casts the getter to `id (*)(id, SEL)` and reads from rax instead, picking up
+// a garbage pointer that is later passed to objc_retain → SIGSEGV at 0x20.
+// Keeping it as a plain ivar and providing only an NSNumber* setter avoids the
+// synthesised CGFloat getter entirely.
+@interface RCTOriginalBannerView () {
+  CGFloat _autoRefreshPeriodMillis;
+}
+@end
+
 @implementation RCTOriginalBannerView
 
 - (void)setAutoRefreshPeriodMillis:(NSNumber *)value {
@@ -33,17 +45,27 @@
   self.propsChanged = YES;
 }
 
+- (void)setSmartRefresh:(BOOL)value {
+  _smartRefresh = value;
+  self.propsChanged = YES;
+}
+
+- (void)setPrefetchMargin:(NSInteger)value {
+  _prefetchMargin = value;
+  self.propsChanged = YES;
+}
+
 - (void)setVideoPlacement:(NSString *)value {
   _videoPlacement = value;
   self.propsChanged = YES;
 }
 
 - (void)stopAutoRefresh {
-  [_auBannerView.adUnitConfiguration stopAutoRefresh];
+  [_auBannerView pauseSmartRefresh];
 }
 
 - (void)resumeAutoRefresh {
-  [_auBannerView.adUnitConfiguration resumeAutoRefresh];
+  [_auBannerView resumeSmartRefresh];
 }
 
 - (NSArray<NSValue *> *)convertSizesToGADAdSizes:(NSArray *)sizes {
@@ -156,7 +178,9 @@
   [_auBannerView addAdditionalSizeWithSizes: cgSizeArray];
   _auBannerView.bannerParameters = self.bannerParameters;
   _auBannerView.videoParameters = self.videoParameters;
-  
+  _auBannerView.smartRefresh = _smartRefresh;
+  _auBannerView.prefetchMarginPoints = (CGFloat)(_prefetchMargin > 0 ? _prefetchMargin : 200);
+
   _bannerView.rootViewController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
   _bannerView.delegate = self;
   _bannerView.adUnitID = self.adUnitID;

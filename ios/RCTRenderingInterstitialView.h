@@ -24,7 +24,6 @@
 @property(nonatomic, strong) AUInterstitialRenderingView *auInterstitialView;
 @property(nonatomic, copy) NSString *adFormat;
 @property(nonatomic, copy) NSArray<NSNumber *> *minSizesPercentage;
-@property(nonatomic, assign) CGFloat skipDelay;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdLoaded;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdFailedToLoad;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdClicked;
