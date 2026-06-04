@@ -1,6 +1,7 @@
 import React, {
   useCallback,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { Animated, View } from 'react-native';
@@ -75,8 +76,10 @@ export function AudienzzStickyAdWrapper({
   stickyTopOffset = 0,
   enabled = true,
 }: AudienzzStickyAdWrapperProps): React.JSX.Element {
-  // y offset of this wrapper within the scroll content (measured via onLayout)
-  const [wrapperYInContent, setWrapperYInContent] = useState(0);
+  // Animated.Value instead of state: setValue() updates the value without
+  // triggering a re-render or recreating the interpolation chain, so there
+  // are no bridge roundtrips during scroll when the wrapper re-lays out.
+  const wrapperYAnim = useRef(new Animated.Value(0)).current;
 
   // Measured height of the child ad content
   const [childHeight, setChildHeight] = useState(0);
@@ -87,30 +90,31 @@ export function AudienzzStickyAdWrapper({
   // top = clamp(scrollY - (wrapperY - stickyTopOffset), 0, maxTop)
   // Use stateless interpolation instead of diffClamp to avoid fling catch-up
   // artifacts after finger release.
+  // wrapperYAnim is a stable ref — its value changes but the chain is never
+  // recreated during scroll, only once when childHeight first resolves.
   const animatedTop = useMemo(() => {
     if (!enabled) {
       return new Animated.Value(0);
     }
-    const shifted = Animated.subtract(
-      scrollY,
-      wrapperYInContent - stickyTopOffset,
-    );
     if (maxTop <= 0) {
       return new Animated.Value(0);
     }
+    const shifted = Animated.add(
+      Animated.subtract(scrollY, wrapperYAnim),
+      stickyTopOffset,
+    );
     return shifted.interpolate({
       inputRange: [0, maxTop],
       outputRange: [0, maxTop],
       extrapolate: 'clamp',
     });
-  }, [enabled, maxTop, scrollY, stickyTopOffset, wrapperYInContent]);
+  }, [enabled, maxTop, scrollY, stickyTopOffset, wrapperYAnim]);
 
   const onWrapperLayout = useCallback(
     (e: LayoutChangeEvent) => {
-      const y = e.nativeEvent.layout.y;
-      setWrapperYInContent((prev) => (Math.abs(prev - y) > 0.5 ? y : prev));
+      wrapperYAnim.setValue(e.nativeEvent.layout.y);
     },
-    [],
+    [wrapperYAnim],
   );
 
   const onChildLayout = useCallback((e: LayoutChangeEvent) => {

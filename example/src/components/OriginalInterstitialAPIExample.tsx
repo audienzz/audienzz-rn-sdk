@@ -19,8 +19,8 @@ const OriginalInterstitialAPIExample = () => {
     setIsInterstitialMulti(true);
   };
 
-  const interstitialAdUnitTestID = "/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1";
-  const interstitialTestConfigID = "34400101";
+  const interstitialAdUnitTestID = "/96628199/de_audienzz.ch_v2/multi-size";
+  const interstitialTestConfigID = "37116627";
   const interstitialMultiformatAuConfigID = getRandomConfigIdInterstitial();
 
   return (

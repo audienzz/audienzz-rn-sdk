@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import {
   Animated,
   Dimensions,
@@ -83,6 +83,14 @@ export default function StickyAdExample() {
       });
     });
   }, []);
+
+  // Poll visibility on a timer instead of the scroll listener.
+  // Running measureInWindow + setState on every scroll event causes
+  // 5 bridge calls + full-tree re-renders at 10 fps, which jankifies scroll.
+  useEffect(() => {
+    const id = setInterval(checkVisibility, 500);
+    return () => clearInterval(id);
+  }, [checkVisibility]);
 
   // -------------------------------------------------------------------------
   // Build row list
@@ -170,14 +178,9 @@ export default function StickyAdExample() {
       contentContainerStyle={styles.contentContainer}
       onScroll={Animated.event(
         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        {
-          useNativeDriver: true,
-          // listener runs on the JS thread alongside the native animation,
-          // so we can measure visibility without giving up native-driver smoothness.
-          listener: (_e: any) => checkVisibility(),
-        },
+        { useNativeDriver: true },
       )}
-      scrollEventThrottle={100}
+      scrollEventThrottle={16}
     >
       {/* Header */}
       <Text style={styles.title}>Sticky Ad Example</Text>

@@ -23,8 +23,8 @@ export const ADS = {
     auConfigId: "prebid-demo-video-rewarded-320-480-original-api",
   },
   REWARDED_ORIGINAL_API: {
-    adUnitId: 'ca-app-pub-3940256099942544/1712485313',
-    auConfigId: 'prebid-demo-video-rewarded-320-480-original-api',
+    adUnitId: '/96628199/de_audienzz.ch_v2/multi-size',
+    auConfigId: '37116627',
   },
   RENDERING_BANNER_RESERVED: {
     adUnitId:
@@ -50,13 +50,13 @@ export const ADS = {
     auConfigId: "prebid-demo-video-interstitial-320-480",
   },
   ORIGINAL_BANNER_HTML_300_250: {
-    adUnitId: "/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1",
-    auConfigId: "33994718",
-    sizes: [{width: 300, height: 250}, {width: 220, height: 80}],
+    adUnitId: "/96628199/de_audienzz.ch_v2/multi-size",
+    auConfigId: "wuobgeuc",
+    sizes: [{width: 300, height: 250}, {width: 320, height: 50}],
   },
   ORIGINAL_BANNER_HTML_320_50: {
-    adUnitId: "ca-app-pub-3940256099942544/2934735716",
-    auConfigId: "prebid-demo-banner-320-50",
+    adUnitId: "/96628199/de_audienzz.ch_v2/multi-size",
+    auConfigId: "wuobgeuc",
     sizes: [{width: 320, height: 50}],
   },
   ORIGINAL_BANNER_VIDEO_300_250: {

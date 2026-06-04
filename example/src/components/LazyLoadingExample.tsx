@@ -8,144 +8,138 @@ import {
 import {
   getRandomConfigIdInterstitial,
 } from '../utils';
+import ActionButton from './ActionButton';
 
 const LazyLoadingExample = () => {
   const interstitialMultiformatAuConfigID = getRandomConfigIdInterstitial();
+
+  const [showInterstitialHtml, setShowInterstitialHtml] = React.useState(false);
+  const [showInterstitialVideo, setShowInterstitialVideo] = React.useState(false);
+  const [showInterstitialMulti, setShowInterstitialMulti] = React.useState(false);
+  const [showRewarded, setShowRewarded] = React.useState(false);
 
   return (
     <>
       <Text style={styles.text}>Original Banner API HTML 300x250</Text>
       <OriginalBanner
-        adUnitId="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
-        auConfigId="33994718"
+        adUnitId="/96628199/de_audienzz.ch_v2/multi-size"
+        auConfigId="wuobgeuc"
         sizes={[{width: 300, height: 250}]}
         adFormats={['banner']}
       />
       <View style={styles.height30} />
       <Text style={styles.text}>Original Banner API HTML 320x50</Text>
       <OriginalBanner
-        adUnitId="ca-app-pub-3940256099942544/2934735716"
-        auConfigId="prebid-demo-banner-320-50"
+        adUnitId="/96628199/de_audienzz.ch_v2/multi-size"
+        auConfigId="wuobgeuc"
         sizes={[{width: 320, height: 50}]}
         adFormats={['banner']}
       />
       <View style={styles.height30} />
       <Text style={styles.text}>Original Banner API Multiformat</Text>
       <Text style={styles.text}>Will be implemented in next version</Text>
-      {/* <OriginalBanner
-        adUnitId="/21808260008/prebid-demo-original-banner-multiformat"
-        auConfigId={bannerMultiformatAuConfigID}
-        width={300}
-        height={250}
-      /> */}
       <View style={styles.height30} />
       <Text style={styles.text}>Original Banner API Video</Text>
       <Text style={styles.text}>Will be implemented in next version</Text>
-      {/* <OriginalBanner
-        adUnitId="/21808260008/prebid-demo-original-api-video-banner"
-        auConfigId="prebid-demo-video-outstream-original-api"
-        width={300}
-        height={250}
-        adFormats={['video']}
-      /> */}
       <View style={styles.height30} />
       <Text style={styles.text}>Rendering Banner API HTML 320x50</Text>
       <Text style={styles.text}>Will be implemented in next version</Text>
-      {/* <RenderingBanner
-        adUnitId={
-          Platform.OS === 'android'
-            ? 'ca-app-pub-3940256099942544/2934735716'
-            : '/21808260008/prebid_oxb_320x50_banner'
-        }
-        auConfigId="prebid-demo-banner-320-50"
-        width={320}
-        height={50}
-        adFormat="banner"
-        onAdFailedToLoad={(error) =>
-          console.log(`ERROR -> ${JSON.stringify(error, null, 2)}`)
-        }
-        isReserved
-      /> */}
       <View style={styles.height30} />
       <Text style={styles.text}>Rendering Banner API Video</Text>
       <Text style={styles.text}>Will be implemented in next version</Text>
-      {/* <RenderingBanner
-        adUnitId="/21808260008/prebid_oxb_300x250_banner"
-        auConfigId="prebid-demo-video-outstream"
-        width={300}
-        height={250}
-        adFormat="video"
-      /> */}
 
       <View style={styles.height30} />
       <View style={styles.height300} />
       <View style={styles.height30} />
+
       <Text style={styles.text}>Original Interstitial HTML</Text>
-      <OriginalInterstitial
-        adUnitId="ca-app-pub-3940256099942544/4411468910"
-        auConfigId="prebid-demo-display-interstitial-320-480"
-        adFormats={['banner']}
+      <ActionButton
+        labelButton="Show Interstitial HTML"
+        onPress={() => setShowInterstitialHtml(true)}
       />
+      {showInterstitialHtml && (
+        <OriginalInterstitial
+          adUnitId="/96628199/de_audienzz.ch_v2/multi-size"
+          auConfigId="37116627"
+          adFormats={['banner']}
+          onAdClosed={() => setShowInterstitialHtml(false)}
+          onAdFailedToLoad={() => setShowInterstitialHtml(false)}
+        />
+      )}
+
       <View style={styles.height30} />
       <View style={styles.height300} />
       <View style={styles.height30} />
+
       <Text style={styles.text}>Original Interstitial Video</Text>
-      <OriginalInterstitial
-        adUnitId="ca-app-pub-3940256099942544/5135589807"
-        auConfigId="prebid-demo-video-interstitial-320-480-original-api"
-        adFormats={['video']}
+      <ActionButton
+        labelButton="Show Interstitial Video"
+        onPress={() => setShowInterstitialVideo(true)}
       />
+      {showInterstitialVideo && (
+        <OriginalInterstitial
+          adUnitId="/96628199/de_audienzz.ch_v2/multi-size"
+          auConfigId="37116627"
+          adFormats={['video']}
+          onAdClosed={() => setShowInterstitialVideo(false)}
+          onAdFailedToLoad={() => setShowInterstitialVideo(false)}
+        />
+      )}
+
       <View style={styles.height30} />
       <View style={styles.height300} />
       <View style={styles.height30} />
+
       <Text style={styles.text}>Original Interstitial Multiformat</Text>
-      <OriginalInterstitial
-        adUnitId="/96628199/de_audienzz.ch_v2/de_audienzz.ch_320_adnz_wideboard_1"
-        auConfigId={interstitialMultiformatAuConfigID}
+      <ActionButton
+        labelButton="Show Interstitial Multiformat"
+        onPress={() => setShowInterstitialMulti(true)}
       />
+      {showInterstitialMulti && (
+        <OriginalInterstitial
+          adUnitId="/96628199/de_audienzz.ch_v2/multi-size"
+          auConfigId={interstitialMultiformatAuConfigID}
+          onAdClosed={() => setShowInterstitialMulti(false)}
+          onAdFailedToLoad={() => setShowInterstitialMulti(false)}
+        />
+      )}
+
       <View style={styles.height30} />
       <View style={styles.height300} />
       <View style={styles.height30} />
+
       <Text style={styles.text}>Original Rewarded</Text>
-      <OriginalRewarded
-        adUnitId="ca-app-pub-3940256099942544/1712485313"
-        auConfigId="prebid-demo-video-rewarded-320-480-original-api"
-        onUserEarnedReward={(reward) => {
-          console.log(`The user received -> ${JSON.stringify(reward, null, 2)}`);
-        }}
+      <ActionButton
+        labelButton="Show Rewarded"
+        onPress={() => setShowRewarded(true)}
       />
+      {showRewarded && (
+        <OriginalRewarded
+          adUnitId="/96628199/de_audienzz.ch_v2/multi-size"
+          auConfigId="37116627"
+          onUserEarnedReward={(reward) => {
+            console.log(`The user received -> ${JSON.stringify(reward, null, 2)}`);
+          }}
+          onAdClosed={() => setShowRewarded(false)}
+          onAdFailedToLoad={() => setShowRewarded(false)}
+        />
+      )}
+
       <View style={styles.height30} />
       <View style={styles.height300} />
       <View style={styles.height30} />
       <Text style={styles.text}>Rendering Interstitial Banner</Text>
       <Text style={styles.text}>Will be implemented in next version</Text>
-      {/* <RenderingInterstitial
-        adUnitId="/21808260008/prebid_oxb_html_interstitial"
-        auConfigId="prebid-demo-display-interstitial-320-480"
-        adFormat="banner"
-      /> */}
       <View style={styles.height30} />
       <View style={styles.height300} />
       <View style={styles.height30} />
       <Text style={styles.text}>Rendering Interstitial Video</Text>
       <Text style={styles.text}>Will be implemented in next version</Text>
-      {/* <RenderingInterstitial
-        adUnitId="/21808260008/prebid_oxb_interstitial_video"
-        auConfigId="prebid-demo-video-interstitial-320-480"
-        adFormat="video"
-      /> */}
       <View style={styles.height30} />
       <View style={styles.height300} />
       <View style={styles.height30} />
       <Text style={styles.text}>Rendering Rewarded</Text>
       <Text style={styles.text}>Will be implemented in next version</Text>
-      {/* <RenderingRewarded
-        adUnitId="/21808260008/prebid-demo-app-original-api-video-interstitial"
-        auConfigId="prebid-demo-video-rewarded-320-480"
-        onAdClosed={() => {
-          console.log('The user can receive reward (own implementation) -> 💰');
-        }}
-      /> */}
     </>
   );
 };

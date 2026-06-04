@@ -11,10 +11,10 @@ export default function RemoteConfigExample() {
             <Text style={styles.title}>Remote Config Test</Text>
 
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Fixed Size Banner (ID: 46)</Text>
+                <Text style={styles.sectionTitle}>Fixed Size Banner (ID: 118)</Text>
                 <View style={styles.bannerContainer}>
                     <RemoteConfigBanner
-                        adConfigId="46"
+                        adConfigId="118"
                         style={styles.fixedBanner}
                         onAdLoaded={(size) => {
                             console.log('[RemoteConfig] Fixed banner loaded:', size);
@@ -46,10 +46,10 @@ export default function RemoteConfigExample() {
             </View>
 
             <View style={styles.adaptiveSection}>
-                <Text style={[styles.sectionTitle, styles.adaptiveSectionTitle]}>Adaptive Banner (ID: 48)</Text>
+                <Text style={[styles.sectionTitle, styles.adaptiveSectionTitle]}>Adaptive Banner (ID: 192)</Text>
                 <View style={styles.adaptiveBannerContainer}>
                     <RemoteConfigBanner
-                        adConfigId="48"
+                        adConfigId="192"
                         style={styles.adaptiveBanner}
                         onAdLoaded={(size) => {
                             console.log('[RemoteConfig] Adaptive banner loaded:', size);
@@ -65,13 +65,13 @@ export default function RemoteConfigExample() {
             </View>
 
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Interstitial (ID: 47)</Text>
+                <Text style={styles.sectionTitle}>Interstitial (ID: 267)</Text>
                 <ActionButton labelButton="Show Interstitial" onPress={() => setShowInterstitial(true)} />
             </View>
 
             {showInterstitial && (
                 <RemoteConfigInterstitial
-                    adConfigId="47"
+                    adConfigId="267"
                     onAdLoaded={() => {
                         console.log('[RemoteConfig] Interstitial loaded successfully');
                     }}

@@ -1,5 +1,5 @@
 PODS:
-  - audienzz (0.3.6):
+  - audienzz (0.4.0):
     - AudienzziOSSDK (~> 0.2.1)
     - DoubleConversion
     - glog
@@ -1941,7 +1941,7 @@ CHECKOUT OPTIONS:
     :tag: 0.2.1
 
 SPEC CHECKSUMS:
-  audienzz: 8a1cafa3c4590e21dc08e0152951a2bfea1c4217
+  audienzz: 473fdc2a34834520d3f6d6c8a938dd62b5ab5d19
   AudienzziOSSDK: cf17c7714fab03926df7ec5171d2a0c75bac8681
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
@@ -2021,6 +2021,6 @@ SPEC CHECKSUMS:
   SQLite.swift: c914f905e13b6318cdc07fd66661db14c6cdd330
   Yoga: b2eaabf17044cd4273a661b14eb83f9fd2c90491
 
-PODFILE CHECKSUM: 93ced31da7685069ad5a26e8a4943d82547540d4
+PODFILE CHECKSUM: ec0027a09efcff84eced7554836586750538356f
 
 COCOAPODS: 1.16.2

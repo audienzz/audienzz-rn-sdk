@@ -23,9 +23,13 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.WritableMap
+import com.google.android.gms.ads.MobileAds
 import org.audienzz.mobile.AudienzzPrebidMobile
+import org.audienzz.mobile.AudienzzTargetingParams
 import org.audienzz.mobile.api.data.AudienzzInitializationStatus
 import org.audienzz.mobile.util.remote.RemoteConfigManager
+
+private const val RN_SDK_VERSION = "0.4.1"
 
 class RNAudienzzModule(reactContext: ReactApplicationContext) :
   ReactNativeModule(reactContext, SERVICE) {
@@ -34,6 +38,8 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
     AudienzzPrebidMobile.initializeSdk(applicationContext, companyID, enablePpid = enablePpid) { status ->
       when (status) {
         AudienzzInitializationStatus.SUCCEEDED -> {
+          setupOmid()
+          setupRnSdkIdentity()
           val result: WritableMap =
             Arguments.createMap().apply {
               putString("status", "SUCCEEDED")
@@ -48,6 +54,16 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
         }
       }
     }
+  }
+
+  private fun setupOmid() {
+    val v = MobileAds.getVersion()
+    AudienzzTargetingParams.omidPartnerName = "Google"
+    AudienzzTargetingParams.omidPartnerVersion = "${v.majorVersion}.${v.minorVersion}.${v.microVersion}"
+  }
+
+  private fun setupRnSdkIdentity() {
+    AudienzzTargetingParams.addGlobalTargeting("au_rn_v", RN_SDK_VERSION)
   }
 
   @ReactMethod
@@ -91,6 +107,8 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
       enablePpid = enablePpid
     ) { status ->
       if (status == AudienzzInitializationStatus.SUCCEEDED) {
+        setupOmid()
+        setupRnSdkIdentity()
         promise.resolve(null)
       } else {
         val description = status.description ?: "Remote configuration fetch failed"

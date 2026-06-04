@@ -12,6 +12,7 @@ import RenderingInterstitialAPIExample from './components/RenderingInterstitialA
 import RemoteConfigExample from './components/RemoteConfigExample';
 import StickyAdExample from './components/StickyAdExample';
 import SmartRefreshBannerExample from './components/SmartRefreshBannerExample';
+import LegacyOriginalView_v0_3_8 from './components/LegacyOriginalView_v0_3_8';
 
 // Remote config ad units (IDs 118, 192, 267) are only provisioned for iOS on
 // the dev backend — Android returns HTTP 404 for publisher 81.  Use the direct
@@ -22,7 +23,7 @@ const PUBLISHER_ID = '81';
 
 export default function App() {
   const [initialized, setInitialized] = React.useState(false);
-  const [screen, setScreen] = React.useState<'main' | 'sticky' | 'smartRefresh'>('main');
+  const [screen, setScreen] = React.useState<'main' | 'sticky' | 'smartRefresh' | 'legacy'>('main');
 
   React.useEffect(() => {
     if (REMOTE_CONFIG_ENABLED) {
@@ -100,12 +101,16 @@ export default function App() {
     );
   }
 
+  if (screen === 'legacy') {
+    return <LegacyOriginalView_v0_3_8 onBack={() => setScreen('main')} />;
+  }
+
   return REMOTE_CONFIG_ENABLED
-    ? RemoteView(() => setScreen('sticky'), () => setScreen('smartRefresh'))
-    : OriginalView(() => setScreen('sticky'), () => setScreen('smartRefresh'));
+    ? RemoteView(() => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'))
+    : OriginalView(() => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'));
 }
 
-function RemoteView(onOpenSticky: () => void, onOpenSmartRefresh: () => void) {
+function RemoteView(onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
@@ -126,13 +131,18 @@ function RemoteView(onOpenSticky: () => void, onOpenSmartRefresh: () => void) {
           <Text style={styles.bigText}>REMOTE CONFIG</Text>
           <RemoteConfigExample />
           <View style={styles.height30} />
+          <Text style={styles.bigText}>LEGACY (v0.3.8)</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenLegacy}>
+            <Text style={styles.navButtonText}>Open Legacy Example →</Text>
+          </TouchableOpacity>
+          <View style={styles.height30} />
         </ScrollView>
       </View>
     </SafeAreaView>
   );
 }
 
-function OriginalView(onOpenSticky: () => void, onOpenSmartRefresh: () => void) {
+function OriginalView(onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
@@ -169,6 +179,11 @@ function OriginalView(onOpenSticky: () => void, onOpenSmartRefresh: () => void) 
           <Text style={styles.lorem}>{LOREM}</Text>
           <Text style={styles.bigText}>LAZY LOADING</Text>
           <LazyLoadingExample />
+          <View style={styles.height30} />
+          <Text style={styles.bigText}>LEGACY (v0.3.8)</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenLegacy}>
+            <Text style={styles.navButtonText}>Open Legacy Example →</Text>
+          </TouchableOpacity>
           <View style={styles.height30} />
         </ScrollView>
       </View>

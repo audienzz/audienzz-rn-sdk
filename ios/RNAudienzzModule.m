@@ -17,6 +17,9 @@
 
 #import "RNAudienzzModule.h"
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
+#import <GoogleMobileAds/GoogleMobileAds.h>
+
+static NSString * const kRNSdkVersion = @"0.4.1";
 
 @implementation RNAudienzzModule
 
@@ -58,6 +61,7 @@ RCT_EXPORT_METHOD(setSchainObject: (NSString *)schain
                           resolve(result);
                         }];
   [[AudienzzGAMUtils shared] initializeGAM];
+  [[AUTargeting shared] addGlobalTargetingWithKey:@"au_rn_v" value:kRNSdkVersion];
 }
 
 - (void)setSchainObjectWithSchain:(NSString *)schain
@@ -104,14 +108,17 @@ RCT_EXPORT_METHOD(fetchPublisherConfig: (NSString *)publisherId
                             enablePPID: (BOOL)enablePPID
                               resolver: (RCTPromiseResolveBlock)resolve
                               rejecter: (RCTPromiseRejectBlock)reject) {
+  NSString *gamVersion = [GADMobileAds sharedInstance].sdkVersion;
   [[Audienzz shared]
-      configureWithRemoteSDKWithGadMobileAdsVersion:nil
+      configureWithRemoteSDKWithGadMobileAdsVersion:gamVersion
                                enablePPID:enablePPID
                         completionHandler:^(NSError *_Nullable error) {
                           if (error != nil) {
                             reject(@"FETCH_FAILED",
                                    [error localizedDescription], error);
                           } else {
+                            [[AudienzzGAMUtils shared] initializeGAM];
+                            [[AUTargeting shared] addGlobalTargetingWithKey:@"au_rn_v" value:kRNSdkVersion];
                             resolve(nil);
                           }
                         }];
