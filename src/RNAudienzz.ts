@@ -40,6 +40,10 @@ class RNAudienzzClass implements RNAudienzzModule {
         description: `Remote SDK initialized successfully`,
       }));
   }
+
+  getStickyConfig(adConfigId: string): Promise<{ maxHeight: number; stickyTopOffset: number }> {
+    return NativeModulesCombined.AudienzzModule.getStickyConfig(adConfigId);
+  }
 }
 
 

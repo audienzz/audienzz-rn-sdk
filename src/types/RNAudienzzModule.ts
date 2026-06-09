@@ -23,4 +23,11 @@ export interface RNAudienzzModule {
    * @param enablePpid - Whether to enable automatic PPID (default: false)
    */
   initializeRemote(remoteUrl: string, publisherId: string, enablePpid?: boolean): Promise<AudienzzInitStatus>;
+
+  /**
+   * Returns the backend-configured sticky wrapper dimensions for a given ad config ID.
+   * Values are resolved as: backend value → SDK default (maxHeight: 600, stickyTopOffset: 0).
+   * Used internally by `AudienzzStickyAdWrapper` when `adConfigId` is provided.
+   */
+  getStickyConfig(adConfigId: string): Promise<{ maxHeight: number; stickyTopOffset: number }>;
 }

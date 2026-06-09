@@ -117,6 +117,17 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
     }
   }
 
+  @ReactMethod
+  fun getStickyConfig(adConfigId: String, promise: Promise) {
+    AudienzzPrebidMobile.getAdUnitConfig(adConfigId) { config ->
+      val result = Arguments.createMap().apply {
+        putInt("maxHeight", config?.config?.stickyMaxHeight ?: 600)
+        putInt("stickyTopOffset", config?.config?.stickyTopOffset ?: 0)
+      }
+      promise.resolve(result)
+    }
+  }
+
   companion object {
     private const val SERVICE = "RNAudienzzModule"
     private const val TAG = "AudienzzSDKInitializer"

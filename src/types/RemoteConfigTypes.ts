@@ -49,6 +49,12 @@ export interface AdConfig {
      *  cell that is created just before it scrolls into view — use `isLazyLoad: false`
      *  on `OriginalBanner` in those cases instead. */
     prefetchDistanceDp?: number;
+    /** Reserved height (pt/dp) for `AudienzzStickyAdWrapper`.
+     *  `undefined` falls back to the SDK default (600). */
+    stickyMaxHeight?: number;
+    /** Y offset (pt/dp) from the scroll viewport top where the sticky ad pins.
+     *  `undefined` falls back to 0 (or the scroll view's safe-area inset on iOS). */
+    stickyTopOffset?: number;
 }
 
 export interface RemoteAdConfiguration {
