@@ -61,7 +61,7 @@ RCT_EXPORT_METHOD(setSchainObject: (NSString *)schain
                           resolve(result);
                         }];
   [[AudienzzGAMUtils shared] initializeGAM];
-  [[AUTargeting shared] addGlobalTargetingWithKey:@"au_rn_v" value:kRNSdkVersion];
+  [[AUTargeting shared] setBridgeTargetingWithKey:@"au_rn_v" value:kRNSdkVersion];
 }
 
 - (void)setSchainObjectWithSchain:(NSString *)schain
@@ -118,7 +118,7 @@ RCT_EXPORT_METHOD(fetchPublisherConfig: (NSString *)publisherId
                                    [error localizedDescription], error);
                           } else {
                             [[AudienzzGAMUtils shared] initializeGAM];
-                            [[AUTargeting shared] addGlobalTargetingWithKey:@"au_rn_v" value:kRNSdkVersion];
+                            [[AUTargeting shared] setBridgeTargetingWithKey:@"au_rn_v" value:kRNSdkVersion];
                             resolve(nil);
                           }
                         }];

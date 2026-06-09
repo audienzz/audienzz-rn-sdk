@@ -63,7 +63,7 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
   }
 
   private fun setupRnSdkIdentity() {
-    AudienzzTargetingParams.addGlobalTargeting("au_rn_v", RN_SDK_VERSION)
+    AudienzzTargetingParams.setBridgeTargeting("au_rn_v", RN_SDK_VERSION)
   }
 
   @ReactMethod
