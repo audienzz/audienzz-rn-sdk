@@ -34,7 +34,7 @@ private const val RN_SDK_VERSION = "0.4.1"
 class RNAudienzzModule(reactContext: ReactApplicationContext) :
   ReactNativeModule(reactContext, SERVICE) {
   @ReactMethod
-  fun initialize(companyID: String, enablePpid: Boolean = false, promise: Promise) {
+  fun initialize(companyID: String, enablePpid: Boolean?, promise: Promise) {
     AudienzzPrebidMobile.initializeSdk(applicationContext, companyID, enablePpid = enablePpid) { status ->
       when (status) {
         AudienzzInitializationStatus.SUCCEEDED -> {
@@ -64,6 +64,11 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
 
   private fun setupRnSdkIdentity() {
     AudienzzTargetingParams.addGlobalTargeting("au_rn_v", RN_SDK_VERSION)
+  }
+
+  @ReactMethod
+  fun setPpid(ppid: String?) {
+    AudienzzPrebidMobile.ppidManager?.setCustomPpid(ppid)
   }
 
   @ReactMethod
@@ -100,7 +105,7 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
-  fun fetchPublisherConfig(publisherId: String, enablePpid: Boolean, promise: Promise) {
+  fun fetchPublisherConfig(publisherId: String, enablePpid: Boolean?, promise: Promise) {
     AudienzzPrebidMobile.initializeRemoteSdk(
       applicationContext,
       publisherId,

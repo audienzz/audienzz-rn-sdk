@@ -2,7 +2,7 @@ import NativeModulesCombined from './NativeRNAudienzzModule';
 import type { RNAudienzzModule, AudienzzInitStatus } from './types';
 
 class RNAudienzzClass implements RNAudienzzModule {
-  initialize(companyId: string, enablePpid: boolean = false) {
+  initialize(companyId: string, enablePpid?: boolean) {
     return NativeModulesCombined.AudienzzModule.initialize(companyId, enablePpid);
   }
 
@@ -26,11 +26,15 @@ class RNAudienzzClass implements RNAudienzzModule {
     return NativeModulesCombined.AudienzzModule.configureRemote(remoteUrl, publisherId);
   }
 
-  fetchPublisherConfig(publisherId: string, enablePpid: boolean = false): Promise<void> {
+  fetchPublisherConfig(publisherId: string, enablePpid?: boolean): Promise<void> {
     return NativeModulesCombined.AudienzzModule.fetchPublisherConfig(publisherId, enablePpid);
   }
 
-  initializeRemote(remoteUrl: string, publisherId: string, enablePpid: boolean = false): Promise<AudienzzInitStatus> {
+  setPpid(ppid: string | null): Promise<void> {
+    return NativeModulesCombined.AudienzzModule.setPpid(ppid);
+  }
+
+  initializeRemote(remoteUrl: string, publisherId: string, enablePpid?: boolean): Promise<AudienzzInitStatus> {
     return this.configureRemote(remoteUrl, publisherId)
       .then(() => {
         return this.fetchPublisherConfig(publisherId, enablePpid);

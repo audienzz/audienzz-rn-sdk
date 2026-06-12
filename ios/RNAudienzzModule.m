@@ -30,7 +30,7 @@ RCT_EXPORT_MODULE();
 }
 
 RCT_EXPORT_METHOD(initialize: (NSString *)companyId
-                  enablePPID: (BOOL)enablePPID
+                  enablePPID: (NSNumber * _Nullable)enablePPID
                     resolver: (RCTPromiseResolveBlock)resolve
                     rejecter: (RCTPromiseRejectBlock)reject) {
   [self initializeWithCompanyId:companyId
@@ -46,7 +46,7 @@ RCT_EXPORT_METHOD(setSchainObject: (NSString *)schain
 }
 
 - (void)initializeWithCompanyId:(NSString *)companyId
-                     enablePPID:(BOOL)enablePPID
+                     enablePPID:(NSNumber * _Nullable)enablePPID
                        resolver:(RCTPromiseResolveBlock)resolve
                        rejecter:(RCTPromiseRejectBlock)reject {
   [[Audienzz shared]
@@ -61,7 +61,11 @@ RCT_EXPORT_METHOD(setSchainObject: (NSString *)schain
                           resolve(result);
                         }];
   [[AudienzzGAMUtils shared] initializeGAM];
-  [[AUTargeting shared] addGlobalTargetingWithKey:@"au_rn_v" value:kRNSdkVersion];
+  [[AUTargeting shared] setBridgeTargetingWithKey:@"au_rn_v" value:kRNSdkVersion];
+}
+
+RCT_EXPORT_METHOD(setPpid: (NSString * _Nullable)ppid) {
+  [[PPIDManager shared] setCustomPpid:ppid];
 }
 
 - (void)setSchainObjectWithSchain:(NSString *)schain
@@ -105,7 +109,7 @@ RCT_EXPORT_METHOD(configureRemote : (NSString *)remoteUrl publisherId : (
 }
 
 RCT_EXPORT_METHOD(fetchPublisherConfig: (NSString *)publisherId
-                            enablePPID: (BOOL)enablePPID
+                            enablePPID: (NSNumber * _Nullable)enablePPID
                               resolver: (RCTPromiseResolveBlock)resolve
                               rejecter: (RCTPromiseRejectBlock)reject) {
   NSString *gamVersion = [GADMobileAds sharedInstance].sdkVersion;

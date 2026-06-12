@@ -4,16 +4,17 @@ export type AudienzzInitStatus = {
 };
 
 export interface RNAudienzzModule {
-  initialize(companyId: string, enablePpid: boolean): Promise<AudienzzInitStatus>;
+  initialize(companyId: string, enablePpid?: boolean): Promise<AudienzzInitStatus>;
 
   isAutomaticPpidEnabled(): Promise<boolean>;
   setAutomaticPpidEnabled(enablePpid: boolean): Promise<void>;
   getPpid(): Promise<string | null>;
+  setPpid(ppid: string | null): Promise<void>;
 
   setSchainObject(schain: string): Promise<void>;
 
   configureRemote(remoteUrl: string, publisherId: string): Promise<void>;
-  fetchPublisherConfig(publisherId: string, enablePpid: boolean): Promise<void>;
+  fetchPublisherConfig(publisherId: string, enablePpid?: boolean): Promise<void>;
 
   /**
    * Initialize SDK with remote configuration
