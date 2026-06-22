@@ -141,6 +141,12 @@ class RNTargetingClass {
       values
     );
   }
+  updateGlobalTargeting(key: string, values: string[]): Promise<void> {
+    return NativeModulesCombined.AudienzzTargetingModule.updateGlobalTargeting(
+      key,
+      values
+    );
+  }
   removeGlobalTargeting(key: string): Promise<void> {
     return NativeModulesCombined.AudienzzTargetingModule.removeGlobalTargeting(key);
   }
