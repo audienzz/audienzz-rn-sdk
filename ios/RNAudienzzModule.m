@@ -124,4 +124,12 @@ RCT_EXPORT_METHOD(fetchPublisherConfig: (NSString *)publisherId
                         }];
 }
 
+RCT_EXPORT_METHOD(getStickyConfig: (NSString *)adConfigId
+                  resolver: (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject) {
+  CGFloat maxH = [[AudienzzRemoteConfig shared] stickyMaxHeightForAdConfigId:adConfigId];
+  CGFloat topOff = [[AudienzzRemoteConfig shared] stickyTopOffsetForAdConfigId:adConfigId];
+  resolve(@{@"maxHeight": @(maxH), @"stickyTopOffset": @(topOff)});
+}
+
 @end
