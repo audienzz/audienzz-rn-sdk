@@ -18,7 +18,7 @@ import LegacyOriginalView_v0_3_8 from './components/LegacyOriginalView_v0_3_8';
 // the dev backend — Android returns HTTP 404 for publisher 81.  Use the direct
 // OriginalBanner flow on Android so the initial screen always shows live ads.
 const REMOTE_CONFIG_ENABLED = Platform.OS === 'ios';
-const REMOTE_CONFIG_URL = 'https://dev-api.adnz.co/api/ws-sdk-config/public/v1';
+const REMOTE_CONFIG_URL = 'https://api.adnz.co/api/ws-sdk-config/public/v1';
 const PUBLISHER_ID = '81';
 
 export default function App() {

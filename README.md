@@ -496,7 +496,7 @@ import { RNAudienzz, Targeting } from 'audienzz';
 
 RNAudienzz()
   .initializeRemote(
-    'https://dev-api.adnz.co/api/ws-sdk-config/public/v1/', // Audienzz remove config URL
+    'https://api.adnz.co/api/ws-sdk-config/public/v1/', // Audienzz remove config URL
     'YOUR_PUBLISHER_ID', // Will be provided for you
     false // enablePPID
   )
