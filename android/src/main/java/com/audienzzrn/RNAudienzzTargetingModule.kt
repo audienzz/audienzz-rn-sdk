@@ -313,6 +313,15 @@ class RNAudienzzTargetingModule(reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun updateGlobalTargeting(key: String, values: ReadableArray) {
+      val valueSet = mutableSetOf<String>()
+      for (i in 0 until values.size()) {
+        values.getString(i)?.let { valueSet.add(it) }
+      }
+      AudienzzTargetingParams.updateGlobalTargeting(key, valueSet)
+    }
+
+    @ReactMethod
     fun removeGlobalTargeting(key: String) {
       AudienzzTargetingParams.removeGlobalTargeting(key)
     }

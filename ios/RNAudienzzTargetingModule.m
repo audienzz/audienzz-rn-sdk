@@ -280,6 +280,11 @@ RCT_EXPORT_METHOD(addGlobalTargetingSet:(NSString *)key values:(NSArray *)values
     [[AUTargeting shared] addGlobalTargetingWithKey:key values:valueSet];
 }
 
+RCT_EXPORT_METHOD(updateGlobalTargeting:(NSString *)key values:(NSArray *)values) {
+    NSSet *valueSet = [NSSet setWithArray:values];
+    [[AUTargeting shared] updateGlobalTargetingWithKey:key values:valueSet];
+}
+
 RCT_EXPORT_METHOD(removeGlobalTargeting:(NSString *)key) {
     [[AUTargeting shared] removeGlobalTargetingWithKey:key];
 }

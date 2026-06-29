@@ -74,6 +74,7 @@ export interface RNAudienzzTargetingModule {
   // Global Targeting
   addGlobalTargeting(key: string, value: string): Promise<void>;
   addGlobalTargetingSet(key: string, values: string[]): Promise<void>;
+  updateGlobalTargeting(key: string, values: string[]): Promise<void>;
   removeGlobalTargeting(key: string): Promise<void>;
   clearGlobalTargeting(): Promise<void>;
 
