@@ -626,7 +626,13 @@ function MyComponent() {
 
 `AudienzzStickyAdWrapper` keeps a banner pinned within a reserved area of the scroll view as the user scrolls past it. The ad slides up inside the reserved space, staying visible for as long as possible before exiting at the bottom — mirroring the behaviour of the native iOS and Flutter sticky wrappers.
 
-### Usage
+### How it works
+
+- The wrapper reserves `maxHeight` logical pixels in your layout — other content flows around it normally.
+- It observes the `scrollY` animated value and repositions the child ad via `translateY`, keeping it visible as the user scrolls past the reserved area.
+- When the wrapper is fully above or below the visible viewport, the ad snaps to its natural position. When partially in view, it slides to stay on screen.
+
+### Usage with Original API banner
 
 ```tsx
 import { useRef } from 'react';
@@ -666,14 +672,50 @@ function MyScreen() {
 }
 ```
 
+### Usage with Remote Config banner
+
+`RemoteConfigBanner` works as the child view without any changes — wrap it directly:
+
+```tsx
+import { useRef } from 'react';
+import { Animated, ScrollView } from 'react-native';
+import { RemoteConfigBanner, AudienzzStickyAdWrapper } from 'audienzz';
+
+function MyScreen() {
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  return (
+    <Animated.ScrollView
+      onScroll={Animated.event(
+        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+        { useNativeDriver: true }
+      )}
+      scrollEventThrottle={16}
+    >
+      {/* … content above the ad … */}
+
+      <AudienzzStickyAdWrapper scrollY={scrollY} maxHeight={600}>
+        <RemoteConfigBanner
+          adConfigId="YOUR_CONFIG_ID"
+          onAdLoaded={(size) => console.log('sticky remote banner loaded', size)}
+          onAdFailedToLoad={(error) => console.log('failed', error)}
+        />
+      </AudienzzStickyAdWrapper>
+
+      {/* … content below the ad … */}
+    </Animated.ScrollView>
+  );
+}
+```
+
 ### Props
 
 | Name              | Description                                                                                                                     | Required | Type              | Default |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- | :------: | ----------------- | ------- |
-| `children`        | The ad component to wrap (typically `OriginalBanner`).                                                                          | **YES**  | ReactNode         | —       |
+| `children`        | The ad component to wrap (typically `OriginalBanner` or `RemoteConfigBanner`).                                                  | **YES**  | ReactNode         | —       |
 | `scrollY`         | Animated scroll-Y value from the parent `ScrollView` or `FlatList`. Must be created with `useRef(new Animated.Value(0)).current`. | **YES**  | Animated.Value    | —       |
 | `maxHeight`       | Height in logical pixels reserved in the layout for the sticky zone.                                                            |    No    | number            | `600`   |
-| `stickyTopOffset` | Y offset from the viewport top at which the ad should stick.                                                                    |    No    | number            | `0`     |
+| `stickyTopOffset` | Y offset from the viewport top at which the ad should stick. Use `statusBarHeight + navigationBarHeight` when a fixed header is present. |    No    | number            | `0`     |
 | `enabled`         | Set to `false` to disable sticky behaviour (ad renders in its normal flow position).                                            |    No    | boolean           | `true`  |
 
 > **Tip:** Combine with `smartRefresh={true}` on the inner `OriginalBanner` so that auto-refresh pauses automatically while the ad is scrolled out of the sticky zone.
@@ -726,6 +768,7 @@ await Targeting.setUserLatLng(47.3769, 8.5417);
 #### Global Targeting
 - `addGlobalTargeting(key: string, value: string)`: Adds a single global targeting key-value pair.
 - `addGlobalTargetingSet(key: string, values: string[])`: Adds multiple values for a global targeting key.
+- `updateGlobalTargeting(key: string, values: string[])`: Replaces the value set for an existing key in one call (shorthand for remove + add).
 - `removeGlobalTargeting(key: string)`: Removes a specific global targeting parameter.
 - `clearGlobalTargeting()`: Clears all global targeting.
 
