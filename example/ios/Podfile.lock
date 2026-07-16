@@ -1,6 +1,6 @@
 PODS:
-  - audienzz (0.4.0):
-    - AudienzziOSSDK (~> 0.2.1)
+  - audienzz (0.4.2):
+    - AudienzziOSSDK (~> 0.2.5)
     - DoubleConversion
     - glog
     - hermes-engine
@@ -24,8 +24,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - AudienzziOSSDK (0.2.1):
-    - Google-Mobile-Ads-SDK (~> 12.0)
+  - AudienzziOSSDK (0.2.5):
+    - Google-Mobile-Ads-SDK (~> 13.0)
     - GoogleAds-IMA-iOS-SDK (~> 3.26)
     - PrebidMobile (~> 3.0)
     - PrebidMobileGAMEventHandlers (~> 3.0)
@@ -36,19 +36,19 @@ PODS:
   - FBLazyVector (0.79.3)
   - fmt (11.0.2)
   - glog (0.3.5)
-  - Google-Mobile-Ads-SDK (12.14.0):
+  - Google-Mobile-Ads-SDK (13.6.0):
     - GoogleUserMessagingPlatform (>= 1.1)
-  - GoogleAds-IMA-iOS-SDK (3.31.0)
+  - GoogleAds-IMA-iOS-SDK (3.32.0)
   - GoogleUserMessagingPlatform (3.1.0)
   - hermes-engine (0.79.3):
     - hermes-engine/Pre-built (= 0.79.3)
   - hermes-engine/Pre-built (0.79.3)
-  - PrebidMobile (3.2.1):
-    - PrebidMobile/core (= 3.2.1)
-  - PrebidMobile/core (3.2.1)
-  - PrebidMobileGAMEventHandlers (3.2.1):
-    - Google-Mobile-Ads-SDK (>= 12.0.0)
-    - PrebidMobile (= 3.2.1)
+  - PrebidMobile (3.3.1):
+    - PrebidMobile/core (= 3.3.1)
+  - PrebidMobile/core (3.3.1)
+  - PrebidMobileGAMEventHandlers (3.3.1):
+    - Google-Mobile-Ads-SDK (>= 13.0.0)
+    - PrebidMobile (= 3.3.1)
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -1703,7 +1703,7 @@ PODS:
 
 DEPENDENCIES:
   - audienzz (from `../..`)
-  - AudienzziOSSDK (from `https://github.com/audienzz/audienzz-ios-sdk.git`, tag `0.2.1`)
+  - AudienzziOSSDK (from `https://github.com/audienzz/audienzz-ios-sdk.git`, tag `0.2.5`)
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
@@ -1711,6 +1711,8 @@ DEPENDENCIES:
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - PrebidMobile (from `https://github.com/audienzz/audienzz-ios-prebid-sdk-fork.git`, tag `3.3.1-audienzz.1`)
+  - PrebidMobileGAMEventHandlers (from `https://github.com/audienzz/audienzz-ios-prebid-sdk-fork.git`, tag `3.3.1-audienzz.1`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
@@ -1782,8 +1784,6 @@ SPEC REPOS:
     - Google-Mobile-Ads-SDK
     - GoogleAds-IMA-iOS-SDK
     - GoogleUserMessagingPlatform
-    - PrebidMobile
-    - PrebidMobileGAMEventHandlers
     - SocketRocket
     - SQLite.swift
 
@@ -1792,7 +1792,7 @@ EXTERNAL SOURCES:
     :path: "../.."
   AudienzziOSSDK:
     :git: https://github.com/audienzz/audienzz-ios-sdk.git
-    :tag: 0.2.1
+    :tag: 0.2.5
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   DoubleConversion:
@@ -1808,6 +1808,12 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-2025-06-04-RNv0.79.3-7f9a871eefeb2c3852365ee80f0b6733ec12ac3b
+  PrebidMobile:
+    :git: https://github.com/audienzz/audienzz-ios-prebid-sdk-fork.git
+    :tag: 3.3.1-audienzz.1
+  PrebidMobileGAMEventHandlers:
+    :git: https://github.com/audienzz/audienzz-ios-prebid-sdk-fork.git
+    :tag: 3.3.1-audienzz.1
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -1938,23 +1944,29 @@ EXTERNAL SOURCES:
 CHECKOUT OPTIONS:
   AudienzziOSSDK:
     :git: https://github.com/audienzz/audienzz-ios-sdk.git
-    :tag: 0.2.1
+    :tag: 0.2.5
+  PrebidMobile:
+    :git: https://github.com/audienzz/audienzz-ios-prebid-sdk-fork.git
+    :tag: 3.3.1-audienzz.1
+  PrebidMobileGAMEventHandlers:
+    :git: https://github.com/audienzz/audienzz-ios-prebid-sdk-fork.git
+    :tag: 3.3.1-audienzz.1
 
 SPEC CHECKSUMS:
-  audienzz: 473fdc2a34834520d3f6d6c8a938dd62b5ab5d19
-  AudienzziOSSDK: cf17c7714fab03926df7ec5171d2a0c75bac8681
+  audienzz: c118917c45e0c5e8a427818279eece0e452daf6e
+  AudienzziOSSDK: 01af98fe6e036bf97d7bbfd366027925e5bf6920
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: a62a7a5760929b6265e27bc01ab7598dde93ebd3
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
-  Google-Mobile-Ads-SDK: 4534fd2dfcd3f705c5485a6633c5188d03d4eed2
-  GoogleAds-IMA-iOS-SDK: 5d0df4a9213f7f40431cd1779fd1b0cc7788d4ae
+  Google-Mobile-Ads-SDK: 6e501ace4af8d63e967bd45497c8b2b05821163d
+  GoogleAds-IMA-iOS-SDK: b1b1e3b8f486cfb7c7a669a58a5380421f3bcaab
   GoogleUserMessagingPlatform: befe603da6501006420c206222acd449bba45a9c
   hermes-engine: 94ed01537bdeccaab1adbf94b040d115d6fa1a7f
-  PrebidMobile: 8b9cab1df33115d2797dffa8689c9f0828358870
-  PrebidMobileGAMEventHandlers: a9bd47d48567a5cffd701f67c3e7f5601fbfc3d1
+  PrebidMobile: ee7a59963c71e08baae66d8934df228ccf3648c7
+  PrebidMobileGAMEventHandlers: a86bf01bb48821a89fc5d8d0b08d7a8ed58171db
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: c3e3f5b4ea83e7ff3bc86ce09e2a54b7affd687d
   RCTRequired: ee438439880dffc9425930d1dd1a3c883ee6879c
@@ -2021,6 +2033,6 @@ SPEC CHECKSUMS:
   SQLite.swift: c914f905e13b6318cdc07fd66661db14c6cdd330
   Yoga: b2eaabf17044cd4273a661b14eb83f9fd2c90491
 
-PODFILE CHECKSUM: ec0027a09efcff84eced7554836586750538356f
+PODFILE CHECKSUM: 19d4dd8b3f0680c531421d47afee977c6235c375
 
 COCOAPODS: 1.16.2

@@ -19,7 +19,7 @@
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 #import <GoogleMobileAds/GoogleMobileAds.h>
 
-static NSString * const kRNSdkVersion = @"0.4.2";
+static NSString * const kRNSdkVersion = @"0.4.3";
 
 @implementation RNAudienzzModule
 
@@ -108,7 +108,12 @@ RCT_EXPORT_METHOD(fetchPublisherConfig: (NSString *)publisherId
                             enablePPID: (BOOL)enablePPID
                               resolver: (RCTPromiseResolveBlock)resolve
                               rejecter: (RCTPromiseRejectBlock)reject) {
-  NSString *gamVersion = [GADMobileAds sharedInstance].sdkVersion;
+  // GMAS removed the `sdkVersion` string; build it from `versionNumber`.
+  GADVersionNumber gamVersionNumber = [GADMobileAds sharedInstance].versionNumber;
+  NSString *gamVersion = [NSString stringWithFormat:@"%ld.%ld.%ld",
+                          (long)gamVersionNumber.majorVersion,
+                          (long)gamVersionNumber.minorVersion,
+                          (long)gamVersionNumber.patchVersion];
   [[Audienzz shared]
       configureWithRemoteSDKWithGadMobileAdsVersion:gamVersion
                                enablePPID:enablePPID

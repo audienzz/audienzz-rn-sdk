@@ -10,7 +10,8 @@ Pod::Spec.new do |s|
   s.license      = package["license"]
   s.authors      = package["author"]
 
-  s.platforms    = { :ios => 13.0 }
+  # AudienzziOSSDK 0.2.5 pulls Google-Mobile-Ads-SDK 13, whose min iOS is 15.
+  s.platforms    = { :ios => 15.0 }
   s.source       = { :git => "https://q.com.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm}"
