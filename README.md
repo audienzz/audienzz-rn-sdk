@@ -273,6 +273,20 @@ In a real app, replace the sample app ID with your **_actual AdMob app ID_**. Yo
 
 ## Usage
 
+### Consent
+
+The SDK does **not** gate itself on user consent — that's the app's responsibility.
+Run your CMP (consent) flow and forward the result **before** you initialize the
+SDK or load any ads:
+
+1. Show your CMP and obtain the user's choice.
+2. Forward the consent signals (GDPR subject, TCF consent string, purpose
+   consents) via `RNTargeting()`.
+3. **Then** call `RNAudienzz().initialize(...)` and load ads.
+
+Initializing or loading ads before consent will request ads without the consent
+signals.
+
 ### Initialize the Audienzz React Native SDK
 
 Before loading and displaying ads, initialize the Audienzz React Native SDK. This needs to be done only once, ideally at app launch. Automatic Ppid could be enabled or disabled.
