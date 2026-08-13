@@ -51,6 +51,12 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
 
         else -> {
           Log.e(TAG, "SDK initialization error: $status\n${status.description}")
+          // H1: settle the promise on failure — previously the non-SUCCEEDED branch only logged,
+          // leaving any `await initialize()` hanging forever with no error to handle.
+          promise.reject(
+            "INIT_FAILED",
+            status.description ?: "SDK initialization failed with status: $status"
+          )
         }
       }
     }
@@ -89,6 +95,10 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
   @ReactMethod
   fun configureRemote(remoteUrl: String, publisherId: String, promise: Promise) {
     try {
+      // M2 / cross-repo coupling: this is the sole consumer of
+      // org.audienzz.mobile.util.remote.RemoteConfigManager. The native Android audit flagged
+      // that class as dead code — it is NOT dead, it is RN's remote-config entry point. Do not
+      // remove it natively without migrating this bridge to the supported API first.
       RemoteConfigManager.initialize(
         publisherId = publisherId,
         remoteUrl = remoteUrl
