@@ -16,6 +16,7 @@
  */
 
 #import "RCTRemoteConfigInterstitialView.h"
+#import "RCTAudienzzViewUtils.h"
 #import <React/RCTLog.h>
 
 @implementation RCTRemoteConfigInterstitialView {
@@ -100,8 +101,7 @@
   }
 
   UIViewController *rootViewController =
-      [[[[UIApplication sharedApplication] delegate] window]
-          rootViewController];
+      [RCTAudienzzViewUtils currentRootViewController];
   [self.auRemoteConfigInterstitial showFrom:rootViewController];
 }
 
