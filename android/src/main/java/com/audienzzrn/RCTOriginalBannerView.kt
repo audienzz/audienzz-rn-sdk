@@ -26,6 +26,7 @@ import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.LoadAdError
 import org.audienzz.mobile.AudienzzAdSize
 import org.audienzz.mobile.AudienzzBannerAdUnit
+import org.audienzz.mobile.original.AudienzzAdViewHandler
 
 class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
   private var sizes: Array<AudienzzAdSize> = arrayOf()
@@ -36,6 +37,7 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
   private var prefetchMarginDp: Int = 200
 
   private var auBannerView: AudienzzBannerAdUnit? = null
+  private var adViewHandler: AudienzzAdViewHandler? = null
 
   override fun requestLayout() {
     super.requestLayout()
@@ -93,6 +95,22 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
 
   fun updateAuBannerView(value: AudienzzBannerAdUnit) {
     auBannerView = value
+  }
+
+  fun updateHandler(value: AudienzzAdViewHandler) {
+    adViewHandler = value
+  }
+
+  /**
+   * Tears down the current Prebid ad unit: stops smart refresh, stops Prebid auto-refresh and
+   * destroys the underlying ad unit (and its BidLoader) so no further auctions fire. Safe to call
+   * repeatedly. Used both on unmount (C4) and before re-creating on a prop change (H2) so an
+   * unmounted or re-rendered banner never keeps auctioning invisibly.
+   */
+  fun destroyAd() {
+    adViewHandler?.destroy()
+    adViewHandler = null
+    auBannerView = null
   }
 
   fun updateAutoRefreshPeriodMillis(value: Int) {

@@ -25,6 +25,7 @@
 @property(nonatomic, strong) NSArray *sizes;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdLoaded;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdFailedToLoad;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdFailedToShow;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdClicked;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdOpened;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdClosed;

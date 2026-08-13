@@ -35,7 +35,7 @@ import org.audienzz.mobile.util.lazyAdLoader
 class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
   private var auRewardedView: AudienzzRewardedVideoAdUnit? = null
   private var rewardedAd: RewardedAd? = null
-  private lateinit var reward: RewardItem
+  private var reward: RewardItem? = null
 
   fun handleAdLoaded() {
     (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
@@ -69,8 +69,32 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
       .receiveEvent(id, "onAdOpened", null)
   }
 
+  private fun handleAdFailedToShow(adError: AdError) {
+    val error: WritableMap = Arguments.createMap()
+    error.putInt("code", adError.code)
+    error.putString("message", adError.message)
+    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdFailedToShow", error)
+  }
+
+  private fun emitFailedToLoad(code: Int, message: String) {
+    val error: WritableMap = Arguments.createMap()
+    error.putInt("code", code)
+    error.putString("message", message)
+    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdFailedToLoad", error)
+  }
+
   override fun createAd() {
     super.createAd()
+
+    // H6: resolve the Activity once, up front. If it is gone (app backgrounded during load),
+    // report a load failure instead of force-unwrapping it later and crashing.
+    val activity = (context as? ReactContext)?.currentActivity
+    if (activity == null) {
+      emitFailedToLoad(-1, "No foreground Activity available to load the rewarded ad")
+      return
+    }
 
     auRewardedView = AudienzzRewardedVideoAdUnit(auConfigID)
     val handler = AudienzzRewardedVideoAdHandler(
@@ -88,8 +112,6 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
     auRewardedView?.impOrtbConfig = impOrtbConfig
     auRewardedView?.videoParameters = videoParameters
 
-    val activity = (context as? ReactContext)?.currentActivity
-
     this.lazyAdLoader(
       adHandler = handler,
       adLoadCallback = object : AudienzzRewardedAdLoadCallback() {
@@ -98,10 +120,8 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
 
           handleAdLoaded()
 
-          if (activity != null) {
-            rewardedAd?.show(activity) { rewardItem ->
-              reward = rewardItem
-            }
+          rewardedAd?.show(activity) { rewardItem ->
+            reward = rewardItem
           }
         }
 
@@ -115,15 +135,18 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
         }
 
         override fun onAdDismissedFullScreenContent() {
-          val rewardAmount = reward.amount
-          val rewardType = reward.type
+          // H6: the user can dismiss without earning a reward, in which case `reward` was never
+          // set. Fall back to a zero reward instead of crashing on an uninitialized property.
+          val earned = reward
+          handleAdClosed(earned?.type ?: "", earned?.amount ?: 0)
 
-          handleAdClosed(rewardType, rewardAmount)
-
+          reward = null
           rewardedAd = null
         }
 
-        override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+        override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+          // H8: surface show failures to JS instead of silently nulling the ad.
+          handleAdFailedToShow(adError)
           rewardedAd = null
         }
 
@@ -133,7 +156,7 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
       },
       resultCallback = { resultCode, request, listener ->
         RewardedAd.load(
-          activity!!,
+          activity,
           adUnitID,
           request,
           listener,

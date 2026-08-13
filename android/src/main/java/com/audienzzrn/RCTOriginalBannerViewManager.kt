@@ -61,6 +61,10 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
   override fun onDropViewInstance(reactViewGroup: RCTOriginalBannerView) {
     super.onDropViewInstance(reactViewGroup)
 
+    // C4: stop the Prebid ad unit (smart refresh + auto-refresh + BidLoader) before tearing down
+    // the GAM view, otherwise the auction loop keeps running invisibly after unmount.
+    reactViewGroup.destroyAd()
+
     val adView = getAdView(reactViewGroup)
 
     if (adView != null) {
@@ -169,6 +173,10 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
   }
 
   private fun requestAd(reactViewGroup: RCTOriginalBannerView) {
+    // H2: destroy the previous Prebid ad unit before re-creating on a prop change, otherwise the
+    // old unit keeps auto-refreshing/auctioning while a second one is created on top of it.
+    reactViewGroup.destroyAd()
+
     val adView = initAdView(reactViewGroup)
     val isLazyLoad = reactViewGroup.isLazyLoad
     val isAdaptive = reactViewGroup.isAdaptive
@@ -284,6 +292,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
         adView = adView,
         adUnit = auBannerView,
       )
+      reactViewGroup.updateHandler(handler)
       handler.load(
         withLazyLoading = isLazyLoad,
         prefetchMarginDp = reactViewGroup.getPrefetchMarginDp(),

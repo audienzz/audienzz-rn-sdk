@@ -32,33 +32,58 @@
     self.propsChanged = YES;
 }
 
-- (NSString *)createInterstitialORTBConfigWithSizes:(NSArray *)sizes {
-    if (!sizes || sizes.count == 0) {
-        return nil;
-    }
-    
-    NSMutableArray *formatStrings = [[NSMutableArray alloc] init];
-    
+// H4: merge the generated banner.format into the publisher's existing impOrtbConfig instead of
+// replacing it, so customer deals/floors/first-party data set via impOrtbConfig survive the
+// #1135 workaround. Returns nil when there are no valid sizes (caller then leaves the customer
+// config untouched).
+- (NSString *)mergeBannerFormatIntoOrtbConfig:(NSString *)existingConfig sizes:(NSArray *)sizes {
+    NSMutableArray *formatArray = [[NSMutableArray alloc] init];
+
     for (NSDictionary *sizeDict in sizes) {
         if ([sizeDict isKindOfClass:[NSDictionary class]]) {
             NSNumber *width = sizeDict[@"width"];
             NSNumber *height = sizeDict[@"height"];
-            
+
             if (width && height) {
-                NSString *formatString = [NSString stringWithFormat:@"{ \"w\": %d, \"h\": %d }",
-                                        [width intValue], [height intValue]];
-                [formatStrings addObject:formatString];
+                [formatArray addObject:@{@"w": width, @"h": height}];
             }
         }
     }
-    
-    if (formatStrings.count == 0) {
+
+    if (formatArray.count == 0) {
         return nil;
     }
-    
-    NSString *formatArrayString = [formatStrings componentsJoinedByString:@", "];
-    
-    return [NSString stringWithFormat:@"{\n  \"banner\": {\n    \"format\": [ %@ ]\n  }\n}", formatArrayString];
+
+    NSMutableDictionary *root = nil;
+    if (existingConfig.length > 0) {
+        NSData *data = [existingConfig dataUsingEncoding:NSUTF8StringEncoding];
+        id parsed = [NSJSONSerialization JSONObjectWithData:data
+                                                    options:NSJSONReadingMutableContainers
+                                                      error:nil];
+        if ([parsed isKindOfClass:[NSDictionary class]]) {
+            root = [parsed mutableCopy];
+        }
+    }
+    if (root == nil) {
+        root = [NSMutableDictionary dictionary];
+    }
+
+    NSMutableDictionary *banner = nil;
+    id existingBanner = root[@"banner"];
+    if ([existingBanner isKindOfClass:[NSDictionary class]]) {
+        banner = [existingBanner mutableCopy];
+    } else {
+        banner = [NSMutableDictionary dictionary];
+    }
+    banner[@"format"] = formatArray;
+    root[@"banner"] = banner;
+
+    NSData *outData = [NSJSONSerialization dataWithJSONObject:root options:0 error:nil];
+    if (outData == nil) {
+        return existingConfig;
+    }
+
+    return [[NSString alloc] initWithData:outData encoding:NSUTF8StringEncoding];
 }
 
 - (NSArray<NSValue *> *)convertSizesToCGSizeArray:(NSArray *)sizes {
@@ -89,7 +114,14 @@
 
 - (void)internalCreateAd {
   [super internalCreateAd];
-  
+
+  // H3: bail if required identifiers haven't landed yet (props arrive incrementally on a
+  // debounce) instead of building an ad with empty defaults.
+  if (self.adUnitID.length == 0 || self.auConfigID.length == 0) {
+    NSLog(@"[Audienzz] Interstitial ad creation skipped — adUnitID/auConfigID not ready");
+    return;
+  }
+
   GAMRequest *request = [GAMRequest request];
   
   _auInterstitialView = [[AUInterstitialView alloc] initWithConfigId:self.auConfigID adFormats:[AUConverter convertToAUAdFormats:self.adFormats] isLazyLoad:self.isLazyLoad minWidthPerc:[_minSizesPercentage[0] integerValue] minHeightPerc:[_minSizesPercentage[1] integerValue]];
@@ -106,14 +138,19 @@
   
   //TODO: remove hack when fixed - https://github.com/prebid/prebid-mobile-ios/issues/1135
       if (_sizes && _sizes.count > 0) {
-          NSString *ortbConfig = [self createInterstitialORTBConfigWithSizes:_sizes];
           NSArray<NSValue *> *cgSizeArray = [self convertSizesToCGSizeArray:_sizes];
           [self.bannerParameters setAdSizes: cgSizeArray];
+          // H4: merge, don't overwrite — preserves the publisher's impOrtbConfig set above.
+          NSString *ortbConfig = [self mergeBannerFormatIntoOrtbConfig:self.impOrtbConfig sizes:_sizes];
           if (ortbConfig) {
               [_auInterstitialView setImpOrtbConfigWithOrtbConfig:ortbConfig];
           }
       }
-  
+
+  // H5: fullscreen interstitial video must be classified as interstitial placement, otherwise
+  // the native default clobbers it to in-banner and video bid density drops.
+  [self.videoParameters setPlacement:AUPlacementInterstitial];
+
   _auInterstitialView.bannerParameters = self.bannerParameters;
   _auInterstitialView.videoParameters = self.videoParameters;
   _auInterstitialView.frame = CGRectMake(0, 0, 10, 10);
@@ -157,11 +194,19 @@
 
 - (void)ad:(nonnull id<GADFullScreenPresentingAd>)ad
 didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
-  NSLog(@"Failed to present interstitial ad with error: %@", error.localizedDescription);
+  // H8: surface show failures to JS instead of only logging, and clean up the ad view so a
+  // failed present doesn't leave a dangling 10x10 subview.
+  [self.auInterstitialView removeFromSuperview];
+  self.auInterstitialView = nil;
+
+  if (self.onAdFailedToShow) {
+    self.onAdFailedToShow(@{@"code": @(error.code), @"message": [error localizedDescription]});
+  }
 }
 
 - (void)adWillPresentFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
-  [UIApplication.sharedApplication setStatusBarHidden:YES];
+  // M5: dropped the deprecated -setStatusBarHidden: call. It is a no-op on scene-based apps and
+  // triggers an App Store deprecation warning; GAM's own full-screen VC manages the status bar.
   if (self.onAdOpened) {
     self.onAdOpened(@{});
   }
@@ -176,8 +221,8 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 - (void)adWillDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
   [self.auInterstitialView removeFromSuperview];
   self.auInterstitialView = nil;
-  
-  [UIApplication.sharedApplication setStatusBarHidden:NO];
+
+  // M5: dropped the deprecated -setStatusBarHidden: call (see adWillPresentFullScreenContent).
   if (self.onAdClosed) {
     self.onAdClosed(@{});
   }
