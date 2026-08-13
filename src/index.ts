@@ -5,11 +5,7 @@ import {
   RemoteConfigBanner,
   RemoteConfigInterstitial,
 } from './ads/original';
-import type {
-  OriginalInterstitialHandle,
-  OriginalRewardedHandle,
-  RemoteConfigInterstitialHandle,
-} from './ads/original';
+import type { RemoteConfigInterstitialHandle } from './ads/original';
 import {
   RenderingBanner,
   RenderingInterstitial,
@@ -77,9 +73,7 @@ export type {
   RNAudienzzTargetingModule,
   OriginalBannerProps,
   OriginalInterstitialProps,
-  OriginalInterstitialHandle,
   OriginalRewardedProps,
-  OriginalRewardedHandle,
   RemoteConfigBannerProps,
   RemoteConfigInterstitialProps,
   RemoteConfigInterstitialHandle,

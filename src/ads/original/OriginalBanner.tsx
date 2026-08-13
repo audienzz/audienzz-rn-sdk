@@ -43,8 +43,12 @@ export class OriginalBanner extends Component<
   constructor(props: OriginalBannerProps) {
     super(props);
     this.nativeComponentRef = createRef();
+    // H7: when lazy loading, the container must reserve space up front. The native visibility
+    // check that triggers the deferred fetch bails on a 0x0 frame — so a banner hidden until
+    // onAdLoaded (which never fires because it's never visible) is a permanently dead slot.
+    // Reserve the first requested size for lazy or explicitly-reserved banners.
     this.state = {
-      isBannerVisible: props.isReserved ?? false,
+      isBannerVisible: props.isReserved || props.isLazyLoad || false,
     };
   }
 
@@ -89,6 +93,9 @@ export class OriginalBanner extends Component<
       videoPlacement = 'inBanner',
       videoBitrate = [300, 1500],
       videoDuration = [5, 30],
+      onAdClicked,
+      onAdOpened,
+      onAdClosed,
       ...restProps
     } = this.props;
 
@@ -96,11 +103,16 @@ export class OriginalBanner extends Component<
       throw new Error(LINKING_ERROR);
     }
 
+    // M7: native fires these with an empty `{ nativeEvent: {} }` payload. Unwrap them so the
+    // public callbacks match their no-arg AdEvents signature, consistent with onAdLoaded/
+    // onAdFailedToLoad below (which are already unwrapped).
+    const handleAdClicked = () => onAdClicked?.();
+    const handleAdOpened = () => onAdOpened?.();
+    const handleAdClosed = () => onAdClosed?.();
+
     const handleAdLoaded = (event: AdSize | { nativeEvent: { width: number; height: number } }) => {
       const adSize: AdSize =
         'nativeEvent' in event ? event.nativeEvent : event;
-
-      console.log("Adsize", adSize);
 
       this.setState({ isBannerVisible: true, adSize: adSize });
       this.props.onAdLoaded?.(adSize);
@@ -115,9 +127,15 @@ export class OriginalBanner extends Component<
       this.props.onAdFailedToLoad?.(error);
     };
 
-    const bannerStyle = this.state.isBannerVisible && this.state.adSize != null
-      ? { width: this.state.adSize.width, height: this.state.adSize.height }
-      : styles.hiddenBanner;
+    // Before the ad loads, fall back to the first requested size as a placeholder so a reserved/
+    // lazy banner has a non-zero frame for the native visibility check (H7). After load, use the
+    // real returned ad size.
+    const placeholderSize = restProps.sizes?.[0];
+    const reservedSize = this.state.adSize ?? placeholderSize;
+    const bannerStyle =
+      this.state.isBannerVisible && reservedSize != null
+        ? { width: reservedSize.width, height: reservedSize.height }
+        : styles.hiddenBanner;
 
     return (
       <View style={[bannerStyle]}>
@@ -133,6 +151,7 @@ export class OriginalBanner extends Component<
           smartRefresh={smartRefresh}
           prefetchMargin={prefetchMargin}
           isAdaptive={isAdaptive}
+          playbackMethod={playbackMethod}
           adFormats={adFormats}
           apiParameters={apiParameters}
           videoProtocols={videoProtocols}
@@ -141,6 +160,9 @@ export class OriginalBanner extends Component<
           videoDuration={videoDuration}
           onAdLoaded={handleAdLoaded}
           onAdFailedToLoad={handleAdFailedToLoad}
+          onAdClicked={handleAdClicked}
+          onAdOpened={handleAdOpened}
+          onAdClosed={handleAdClosed}
         />
       </View>
     );
