@@ -26,6 +26,9 @@ export default function App() {
   const [screen, setScreen] = React.useState<'main' | 'sticky' | 'smartRefresh' | 'legacy'>('main');
 
   React.useEffect(() => {
+    // Single-host RN app: turn off native auto screen tracking (it would collapse every JS screen
+    // into one) and report routes explicitly below. Must run before initialize.
+    RNAudienzz().setAutoScreenTracking(false);
     if (REMOTE_CONFIG_ENABLED) {
       RNAudienzz()
         .initializeRemote(
@@ -66,6 +69,13 @@ export default function App() {
         });
     }
   }, []);
+
+  // Report the active screen by route key for per-route page-impression analytics.
+  React.useEffect(() => {
+    if (initialized) {
+      RNAudienzz().onScreenResumed(screen);
+    }
+  }, [screen, initialized]);
 
   if (!initialized) {
     return (
