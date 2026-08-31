@@ -22,6 +22,14 @@ class RNAudienzzClass implements RNAudienzzModule {
     return NativeModulesCombined.AudienzzModule.setSchainObject(schain);
   }
 
+  setAutoScreenTracking(enabled: boolean): void {
+    NativeModulesCombined.AudienzzModule.setAutoScreenTracking(enabled);
+  }
+
+  onScreenResumed(routeKey: string): void {
+    NativeModulesCombined.AudienzzModule.onScreenResumed(routeKey);
+  }
+
   configureRemote(remoteUrl: string, publisherId: string): Promise<void> {
     return NativeModulesCombined.AudienzzModule.configureRemote(remoteUrl, publisherId);
   }

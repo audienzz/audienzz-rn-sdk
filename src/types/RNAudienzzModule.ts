@@ -12,6 +12,21 @@ export interface RNAudienzzModule {
 
   setSchainObject(schain: string): Promise<void>;
 
+  /**
+   * Enable/disable native automatic screen tracking. It is ON in the native SDK, but a React Native
+   * app has a single host screen, so auto-tracking collapses every JS route into one coarse page
+   * impression. Call `setAutoScreenTracking(false)` before `initialize()`/`initializeRemote()` and
+   * report screens explicitly with `onScreenResumed()` for per-route analytics.
+   */
+  setAutoScreenTracking(enabled: boolean): void;
+
+  /**
+   * Report the active screen by an opaque route key (your navigation route id/name). Fires a
+   * `pageImpression` and starts a fresh page-impression id that ties all ad events on this screen
+   * visit together. Call on each navigation to an ad-bearing screen.
+   */
+  onScreenResumed(routeKey: string): void;
+
   configureRemote(remoteUrl: string, publisherId: string): Promise<void>;
   fetchPublisherConfig(publisherId: string, enablePpid: boolean): Promise<void>;
 

@@ -83,6 +83,20 @@ RCT_EXPORT_METHOD(setAutomaticPpidEnabled: (BOOL)isPpidEnabled) {
   [[PPIDManager shared] setAutomaticPpidEnabled:isPpidEnabled];
 }
 
+// Enable/disable native automatic screen tracking. It is ON in the native SDK, but a React Native
+// app has a single host UIViewController, so auto-tracking would collapse every JS screen into one
+// coarse page impression. Call setAutoScreenTracking(false) before initialize() and report screens
+// explicitly with onScreenResumed(routeKey) for per-route analytics.
+RCT_EXPORT_METHOD(setAutoScreenTracking: (BOOL)enabled) {
+  [Audienzz shared].autoScreenTracking = enabled;
+}
+
+// Report the active screen by an opaque route key (your JS navigation route). Fires a
+// pageImpression and starts a fresh page-impression id tying all ad events on this visit together.
+RCT_EXPORT_METHOD(onScreenResumed: (NSString *)routeKey) {
+  [[Audienzz shared] onScreenResumedWithKey:routeKey];
+}
+
 RCT_EXPORT_METHOD(getPpid: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject) {
   NSString *ppid = [[PPIDManager shared] getPPID];

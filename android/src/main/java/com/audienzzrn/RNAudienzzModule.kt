@@ -86,6 +86,27 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
     AudienzzPrebidMobile.setSchainObject(schain)
   }
 
+  /**
+   * Enable/disable native automatic screen tracking. It is ON in the native SDK, but a React Native
+   * app has a single host Activity, so auto-tracking would collapse every JS screen into one coarse
+   * page impression. Call `setAutoScreenTracking(false)` **before** [initialize] and report screens
+   * explicitly with [onScreenResumed] for per-route analytics.
+   */
+  @ReactMethod
+  fun setAutoScreenTracking(enabled: Boolean) {
+    AudienzzPrebidMobile.autoScreenTracking = enabled
+  }
+
+  /**
+   * Report the active screen by an opaque route key (your JS navigation route). Fires a
+   * `pageImpression` and starts a fresh page-impression id that ties all ad events on this screen
+   * visit together. Call on each navigation to an ad-bearing screen.
+   */
+  @ReactMethod
+  fun onScreenResumed(routeKey: String) {
+    AudienzzPrebidMobile.onScreenResumed(routeKey)
+  }
+
   @ReactMethod
   fun configureRemote(remoteUrl: String, publisherId: String, promise: Promise) {
     try {
