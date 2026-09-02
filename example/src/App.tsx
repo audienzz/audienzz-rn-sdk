@@ -13,6 +13,7 @@ import RemoteConfigExample from './components/RemoteConfigExample';
 import StickyAdExample from './components/StickyAdExample';
 import SmartRefreshBannerExample from './components/SmartRefreshBannerExample';
 import LegacyOriginalView_v0_3_8 from './components/LegacyOriginalView_v0_3_8';
+import TestScreenExample from './components/TestScreenExample';
 
 // Remote config ad units (IDs 118, 192, 267) are only provisioned for iOS on
 // the dev backend — Android returns HTTP 404 for publisher 81.  Use the direct
@@ -23,7 +24,7 @@ const PUBLISHER_ID = '81';
 
 export default function App() {
   const [initialized, setInitialized] = React.useState(false);
-  const [screen, setScreen] = React.useState<'main' | 'sticky' | 'smartRefresh' | 'legacy'>('main');
+  const [screen, setScreen] = React.useState<'main' | 'test' | 'sticky' | 'smartRefresh' | 'legacy'>('main');
 
   React.useEffect(() => {
     // Single-host RN app: turn off native auto screen tracking (it would collapse every JS screen
@@ -87,6 +88,10 @@ export default function App() {
     );
   }
 
+  if (screen === 'test') {
+    return <TestScreenExample onBack={() => setScreen('main')} />;
+  }
+
   if (screen === 'sticky') {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -116,11 +121,11 @@ export default function App() {
   }
 
   return REMOTE_CONFIG_ENABLED
-    ? RemoteView(() => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'))
-    : OriginalView(() => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'));
+    ? RemoteView(() => setScreen('test'), () => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'))
+    : OriginalView(() => setScreen('test'), () => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'));
 }
 
-function RemoteView(onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void) {
+function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
@@ -128,6 +133,11 @@ function RemoteView(onOpenSticky: () => void, onOpenSmartRefresh: () => void, on
           style={styles.mainContainer}
           contentContainerStyle={styles.scrollviewcontentContainerStyle}
         >
+          <Text style={styles.bigText}>TEST SCREEN</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenTest}>
+            <Text style={styles.navButtonText}>Open Test Screen →</Text>
+          </TouchableOpacity>
+          <View style={styles.height30} />
           <Text style={styles.bigText}>STICKY AD</Text>
           <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
             <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
@@ -152,7 +162,7 @@ function RemoteView(onOpenSticky: () => void, onOpenSmartRefresh: () => void, on
   );
 }
 
-function OriginalView(onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void) {
+function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
@@ -160,6 +170,11 @@ function OriginalView(onOpenSticky: () => void, onOpenSmartRefresh: () => void, 
           style={styles.mainContainer}
           contentContainerStyle={styles.scrollviewcontentContainerStyle}
         >
+          <Text style={styles.bigText}>TEST SCREEN</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenTest}>
+            <Text style={styles.navButtonText}>Open Test Screen →</Text>
+          </TouchableOpacity>
+          <View style={styles.height30} />
           <Text style={styles.bigText}>STICKY AD</Text>
           <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
             <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
