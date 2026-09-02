@@ -72,4 +72,14 @@ RCT_EXPORT_METHOD(resumeAutoRefresh:(nonnull NSNumber *)reactTag) {
     });
 }
 
+RCT_EXPORT_METHOD(reload:(nonnull NSNumber *)reactTag) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        RCTUIManager *uiManager = self.bridge.uiManager;
+        UIView *view = [uiManager viewForReactTag:reactTag];
+        if ([view isKindOfClass:[RCTOriginalBannerView class]]) {
+            [(RCTOriginalBannerView *)view reloadIfVisible];
+        }
+    });
+}
+
 @end

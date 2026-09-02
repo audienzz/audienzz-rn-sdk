@@ -68,6 +68,20 @@
   [_auBannerView resumeSmartRefresh];
 }
 
+- (void)reloadIfVisible {
+  // Force a fresh auction now — but only when the banner is actually on screen.
+  // The onScreenResumed broadcast reaches every mounted banner, including those
+  // on inactive (kept-mounted) screens; skip those so we don't burn an auction.
+  if (self.window == nil || self.isHidden || self.alpha < 0.01) {
+    return;
+  }
+  CGRect frameInWindow = [self convertRect:self.bounds toView:nil];
+  if (!CGRectIntersectsRect(frameInWindow, self.window.bounds)) {
+    return;
+  }
+  [_auBannerView reloadAd];
+}
+
 - (NSArray<NSValue *> *)convertSizesToGADAdSizes:(NSArray *)sizes {
     NSMutableArray<NSValue *> *gadAdSizes = [[NSMutableArray alloc] init];
     

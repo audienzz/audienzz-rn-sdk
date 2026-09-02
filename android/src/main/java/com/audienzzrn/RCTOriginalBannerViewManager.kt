@@ -78,11 +78,12 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     when (commandId) {
       0 -> view.stopAutoRefresh()
       1 -> view.resumeAutoRefresh()
+      2 -> view.reloadIfVisible()
     }
   }
 
   override fun getCommandsMap(): Map<String, Int> {
-    return mapOf(STOP_AUTO_REFRESH to 0, RESUME_AUTO_REFRESH to 1)
+    return mapOf(STOP_AUTO_REFRESH to 0, RESUME_AUTO_REFRESH to 1, RELOAD to 2)
   }
 
   override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
@@ -284,6 +285,9 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
         adView = adView,
         adUnit = auBannerView,
       )
+      // Retain the handler on the view so the reload command (onScreenResumed
+      // broadcast) can force a fresh auction via handler.reloadAd().
+      reactViewGroup.updateAdViewHandler(handler)
       handler.load(
         withLazyLoading = isLazyLoad,
         prefetchMarginDp = reactViewGroup.getPrefetchMarginDp(),
@@ -468,5 +472,6 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     const val REACT_CLASS = "RCTOriginalBannerView"
     const val STOP_AUTO_REFRESH = "stopAutoRefresh"
     const val RESUME_AUTO_REFRESH = "resumeAutoRefresh"
+    const val RELOAD = "reload"
   }
 }

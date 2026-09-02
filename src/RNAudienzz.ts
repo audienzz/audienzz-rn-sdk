@@ -1,5 +1,6 @@
 import NativeModulesCombined from './NativeRNAudienzzModule';
 import type { RNAudienzzModule, AudienzzInitStatus } from './types';
+import { notifyScreenResumedReload } from './screenReloadRegistry';
 
 class RNAudienzzClass implements RNAudienzzModule {
   initialize(companyId: string, enablePpid: boolean = false) {
@@ -28,6 +29,10 @@ class RNAudienzzClass implements RNAudienzzModule {
 
   onScreenResumed(routeKey: string): void {
     NativeModulesCombined.AudienzzModule.onScreenResumed(routeKey);
+    // Parity with native: a resumed screen reloads its on-screen smart-refresh
+    // banners, so a returning route/tab shows a fresh creative under the new
+    // page impression. The native reload command self-filters by visibility.
+    notifyScreenResumedReload();
   }
 
   configureRemote(remoteUrl: string, publisherId: string): Promise<void> {

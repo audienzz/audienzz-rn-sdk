@@ -26,6 +26,7 @@ import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.LoadAdError
 import org.audienzz.mobile.AudienzzAdSize
 import org.audienzz.mobile.AudienzzBannerAdUnit
+import org.audienzz.mobile.original.AudienzzAdViewHandler
 
 class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
   private var sizes: Array<AudienzzAdSize> = arrayOf()
@@ -36,6 +37,7 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
   private var prefetchMarginDp: Int = 200
 
   private var auBannerView: AudienzzBannerAdUnit? = null
+  private var adViewHandler: AudienzzAdViewHandler? = null
 
   override fun requestLayout() {
     super.requestLayout()
@@ -89,6 +91,22 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
 
   fun resumeAutoRefresh() {
     auBannerView?.resumeAutoRefresh()
+  }
+
+  /** Retains the handler created in the manager so [reloadIfVisible] can reload. */
+  fun updateAdViewHandler(value: AudienzzAdViewHandler) {
+    adViewHandler = value
+  }
+
+  /**
+   * Force a fresh auction now, but only when the banner is actually on screen.
+   * The onScreenResumed broadcast reaches every mounted banner, including those
+   * on inactive (kept-mounted) screens; skip those so we don't burn an auction.
+   */
+  fun reloadIfVisible() {
+    if (!isShown) return
+    if (!getGlobalVisibleRect(android.graphics.Rect())) return
+    adViewHandler?.reloadAd()
   }
 
   fun updateAuBannerView(value: AudienzzBannerAdUnit) {

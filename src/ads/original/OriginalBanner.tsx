@@ -25,6 +25,10 @@ import {
 } from 'react-native';
 import type { OriginalBannerProps, AdError, AdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
+import {
+  addBannerReloader,
+  removeBannerReloader,
+} from '../../screenReloadRegistry';
 
 const ComponentName = 'RCTOriginalBannerView';
 const NativeComponent = requireNativeComponent<any>(ComponentName);
@@ -47,6 +51,29 @@ export class OriginalBanner extends Component<
       isBannerVisible: props.isReserved ?? false,
     };
   }
+
+  componentDidMount() {
+    // Reload this banner when a screen/route/tab becomes active again
+    // (Audienzz.onScreenResumed broadcast). The native command self-filters by
+    // visibility, so a kept-mounted off-screen banner is left alone.
+    addBannerReloader(this.reload);
+  }
+
+  componentWillUnmount() {
+    removeBannerReloader(this.reload);
+  }
+
+  reload = () => {
+    const handle = findNodeHandle(this.nativeComponentRef.current);
+    if (handle) {
+      UIManager.dispatchViewManagerCommand(
+        handle,
+        UIManager.getViewManagerConfig(ComponentName).Commands
+          .reload as number,
+        []
+      );
+    }
+  };
 
   stopAutoRefresh = () => {
     const handle = findNodeHandle(this.nativeComponentRef.current);
