@@ -43,7 +43,12 @@ export const OriginalInterstitial = forwardRef<
     minSizePercentage = [80, 60],
     playbackMethod = ['AutoPlaySoundOn'],
     isLazyLoad = true,
-    adFormats = ['banner', 'video'],
+    // Default to display-only. Including 'video' makes the imp advertise a video
+    // mediatype, so exchanges may answer a plain interstitial with a VAST creative
+    // that the fullscreen interstitial renderer can't display cleanly (observed as
+    // blank/broken interstitials that had to be booked directly in GAM). Video is
+    // now opt-in: pass adFormats={['banner', 'video']} or {['video']} explicitly.
+    adFormats = ['banner'],
     apiParameters = ['MRAID_1', 'MRAID_2', 'MRAID_3', 'OMID_1'],
     videoProtocols = ['VAST_2_0'],
     videoBitrate = [300, 1500],
