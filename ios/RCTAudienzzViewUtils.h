@@ -15,18 +15,14 @@
 
 */
 
-#import <React/RCTComponent.h>
-#import "RCTOriginalView.h"
+#import <UIKit/UIKit.h>
 
-@interface RCTOriginalRewardedView : RCTOriginalView
+@interface RCTAudienzzViewUtils : NSObject
 
-@property(nonatomic, strong) AURewardedView *auRewardedView;
-@property(nonatomic, copy) RCTBubblingEventBlock onAdLoaded;
-@property(nonatomic, copy) RCTBubblingEventBlock onAdFailedToLoad;
-@property(nonatomic, copy) RCTBubblingEventBlock onAdFailedToShow;
-@property(nonatomic, copy) RCTBubblingEventBlock onAdClicked;
-@property(nonatomic, copy) RCTBubblingEventBlock onAdOpened;
-@property(nonatomic, copy) RCTBubblingEventBlock onAdClosed;
-@property(nonatomic, strong) GADAdReward *reward;
+/// M9: returns the root view controller of the app's key window using the scene API (iOS 13+),
+/// falling back to the app delegate's window. Replaces the fragile
+/// `[[[[UIApplication sharedApplication] delegate] window] rootViewController]` pattern, which
+/// returns nil on scene-based apps whose delegate has no `window`.
++ (UIViewController *_Nullable)currentRootViewController;
 
 @end

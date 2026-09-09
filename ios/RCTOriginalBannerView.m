@@ -17,6 +17,7 @@
 
 #import "RCTOriginalBannerView.h"
 #import "AUConverter.h"
+#import "RCTAudienzzViewUtils.h"
 #import <GoogleMobileAds/GoogleMobileAds.h>
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 
@@ -60,12 +61,24 @@
   self.propsChanged = YES;
 }
 
+// M3: match Android's semantics. For a smart-refresh banner, pause/resume the stale-aware smart
+// refresh (which also stops/resumes Prebid's timer). For a plain banner, stop/resume the ordinary
+// auto-refresh directly — previously both routed through the smart-refresh path, so a non-smart
+// banner's resume behaved differently (stale-aware) than Android's plain resumeAutoRefresh().
 - (void)stopAutoRefresh {
-  [_auBannerView pauseSmartRefresh];
+  if (_smartRefresh) {
+    [_auBannerView pauseSmartRefresh];
+  } else {
+    [_auBannerView.adUnitConfiguration stopAutoRefresh];
+  }
 }
 
 - (void)resumeAutoRefresh {
-  [_auBannerView resumeSmartRefresh];
+  if (_smartRefresh) {
+    [_auBannerView resumeSmartRefresh];
+  } else {
+    [_auBannerView.adUnitConfiguration resumeAutoRefresh];
+  }
 }
 
 - (NSArray<NSValue *> *)convertSizesToGADAdSizes:(NSArray *)sizes {
@@ -113,8 +126,36 @@
   });
 }
 
+// Stops the current banner's auction loop and detaches it from the view tree. Called before
+// re-creating on a prop change (H2) and on dealloc (C3) so an unmounted or re-rendered banner
+// never keeps running Prebid auctions invisibly.
+- (void)teardownAd {
+  [_auBannerView pauseSmartRefresh];
+  [_auBannerView.adUnitConfiguration stopAutoRefresh];
+  [_auBannerView removeFromSuperview];
+  _auBannerView = nil;
+  _bannerView = nil;
+}
+
+- (void)dealloc {
+  [self teardownAd];
+}
+
 - (void)internalCreateAd {
   [super internalCreateAd];
+
+  // H2: tear down any previous banner before building a new one, otherwise each prop change
+  // stacks another AUBannerView subview while the old one keeps auctioning.
+  [self teardownAd];
+
+  // H3: the props arrive incrementally and creation is triggered on a debounce. Bail if the
+  // required identifiers haven't landed yet instead of building an ad with empty defaults —
+  // the next prop transaction reschedules creation.
+  if (self.adUnitID.length == 0 || self.auConfigID.length == 0) {
+    NSLog(@"[Audienzz] Banner ad creation skipped — adUnitID/auConfigID not ready");
+    return;
+  }
+
   GAMRequest *request = [GAMRequest request];
   
   if (self.isAdaptive && _sizes && _sizes.count > 0) {
@@ -181,19 +222,27 @@
   _auBannerView.smartRefresh = _smartRefresh;
   _auBannerView.prefetchMarginPoints = (CGFloat)(_prefetchMargin > 0 ? _prefetchMargin : 200);
 
-  _bannerView.rootViewController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+  _bannerView.rootViewController = [RCTAudienzzViewUtils currentRootViewController];
   _bannerView.delegate = self;
   _bannerView.adUnitID = self.adUnitID;
   
   AUBannerEventHandler *eventHandler = [[AUBannerEventHandler alloc] initWithAdUnitId:self.adUnitID gamView:_bannerView];
   [_auBannerView createAdWith:request gamBanner:_bannerView eventHandler:eventHandler];
 
+  // C3: capture self weakly. The interstitial closure already does this; the banner's strong
+  // capture created a RCT view -> AUBannerView -> onLoadRequest -> RCT view retain cycle that
+  // kept the view (and its auction loop) alive forever after unmount.
+  __weak typeof(self) weakSelf = self;
   void (^onLoadRequest)(id) = ^(id gamRequest) {
+    __strong typeof(weakSelf) strongSelf = weakSelf;
+    if (strongSelf == nil) {
+      return;
+    }
     if (![request isKindOfClass:[GAMRequest class]]) {
       NSLog(@"Failed request unwrap");
       return;
     }
-    [self.bannerView loadRequest:request];
+    [strongSelf.bannerView loadRequest:request];
   };
 
   _auBannerView.onLoadRequest = onLoadRequest;

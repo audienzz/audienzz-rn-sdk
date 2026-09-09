@@ -32,7 +32,14 @@
 
 - (void)internalCreateAd {
   [super internalCreateAd];
-  
+
+  // H3: bail if required identifiers haven't landed yet (props arrive incrementally on a
+  // debounce) instead of building an ad with empty defaults.
+  if (self.adUnitID.length == 0 || self.auConfigID.length == 0) {
+    NSLog(@"[Audienzz] Rewarded ad creation skipped — adUnitID/auConfigID not ready");
+    return;
+  }
+
   GADRequest *request = [GADRequest request];
   
   _auRewardedView = [[AURewardedView alloc] initWithConfigId: self.auConfigID isLazyLoad:self.isLazyLoad];
@@ -47,6 +54,10 @@
     [_auRewardedView setImpOrtbConfigWithOrtbConfig:self.impOrtbConfig];
   }
   
+  // H5: fullscreen rewarded video must be classified as interstitial placement, otherwise the
+  // native default clobbers it to in-banner and video bid density drops.
+  [self.videoParameters setPlacement:AUPlacementInterstitial];
+
   _auRewardedView.videoParameters = self.videoParameters;
   _auRewardedView.frame = CGRectMake(0, 0, 10, 10);
   
@@ -93,7 +104,13 @@
 
 - (void)ad:(nonnull id<GADFullScreenPresentingAd>)ad
 didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
-  NSLog(@"Ad did fail to present full screen content. %@", error.localizedDescription);
+  // H8: surface show failures to JS instead of only logging, and clean up the ad view.
+  [self.auRewardedView removeFromSuperview];
+  self.auRewardedView = nil;
+
+  if (self.onAdFailedToShow) {
+    self.onAdFailedToShow(@{@"code": @(error.code), @"message": [error localizedDescription]});
+  }
 }
 
 - (void)adWillPresentFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
@@ -113,8 +130,11 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
   self.auRewardedView = nil;
   
   if (self.onAdClosed) {
-    NSDictionary *rewardDict = @{@"type": self.reward.type, @"amount": self.reward.amount};
-    self.onAdClosed(rewardDict);
+    // H6/crash-safety: the user can dismiss without earning a reward, leaving self.reward nil.
+    // A dictionary literal with nil values throws — fall back to a zero reward.
+    NSString *rewardType = self.reward.type ?: @"";
+    NSNumber *rewardAmount = self.reward.amount ?: @0;
+    self.onAdClosed(@{@"type": rewardType, @"amount": rewardAmount});
   }
 }
 

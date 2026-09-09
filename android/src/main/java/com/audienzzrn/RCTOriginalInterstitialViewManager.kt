@@ -53,6 +53,7 @@ class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalIntersti
     return mapOf(
       "onAdLoaded" to eventMap("onAdLoaded"),
       "onAdFailedToLoad" to eventMap("onAdFailedToLoad"),
+      "onAdFailedToShow" to eventMap("onAdFailedToShow"),
       "onAdClicked" to eventMap("onAdClicked"),
       "onAdOpened" to eventMap("onAdOpened"),
       "onAdClosed" to eventMap("onAdClosed"),

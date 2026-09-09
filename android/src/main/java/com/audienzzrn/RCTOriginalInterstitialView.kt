@@ -67,8 +67,32 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
       .receiveEvent(id, "onAdClosed", null)
   }
 
+  private fun handleAdFailedToShow(adError: AdError) {
+    val error: WritableMap = Arguments.createMap()
+    error.putInt("code", adError.code)
+    error.putString("message", adError.message)
+    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdFailedToShow", error)
+  }
+
+  private fun emitFailedToLoad(code: Int, message: String) {
+    val error: WritableMap = Arguments.createMap()
+    error.putInt("code", code)
+    error.putString("message", message)
+    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdFailedToLoad", error)
+  }
+
   override fun createAd() {
     super.createAd()
+
+    // H6: resolve the Activity once, up front. If it is gone (app backgrounded during load),
+    // report a load failure instead of force-unwrapping it later and crashing.
+    val activity = (context as? ReactContext)?.currentActivity
+    if (activity == null) {
+      emitFailedToLoad(-1, "No foreground Activity available to load the interstitial ad")
+      return
+    }
 
     auInterstitialView = AudienzzInterstitialAdUnit(
       auConfigID,
@@ -95,17 +119,13 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
     auInterstitialView?.impOrtbConfig = impOrtbConfig
     auInterstitialView?.setMinSizePercentage(minSizesPercentage[0], minSizesPercentage[1])
 
-    val activity = (context as? ReactContext)?.currentActivity
-
     this.lazyAdLoader(
       adHandler = handler,
       adLoadCallback = object : AudienzzInterstitialAdLoadCallback() {
         override fun onAdLoaded(interstitialAd: AdManagerInterstitialAd) {
           mInterstitialAd = interstitialAd
           handleAdLoaded()
-          if (activity != null) {
-            mInterstitialAd?.show(activity)
-          }
+          mInterstitialAd?.show(activity)
         }
 
         override fun onAdFailedToLoad(loadAdError: LoadAdError) {
@@ -122,7 +142,10 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
           mInterstitialAd = null
         }
 
-        override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+        override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+          // H8: surface show failures to JS instead of silently nulling the ad, so a bid burned
+          // by presenting into a backgrounded/covered app is observable by the publisher.
+          handleAdFailedToShow(adError)
           mInterstitialAd = null
         }
 
@@ -132,7 +155,7 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
   },
       resultCallback = { resultCode, request, listener ->
         AdManagerInterstitialAd.load(
-          activity!!,
+          activity,
           adUnitID,
           request,
           listener,

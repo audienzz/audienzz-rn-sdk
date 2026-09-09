@@ -1,7 +1,12 @@
 import type { AdEvents } from './AdEvents';
 import type { BaseAdProps } from './BaseAdProps';
 import type { Parameters } from './Parameters';
-import type { AdSize, MinSizePercentage, RewardEarnedEvent } from './Types';
+import type {
+  AdError,
+  AdSize,
+  MinSizePercentage,
+  RewardEarnedEvent,
+} from './Types';
 
 export interface OriginalBannerProps
   extends BaseAdProps,
@@ -32,6 +37,9 @@ export interface OriginalInterstitialProps
   AdEvents {
   sizes?: AdSize[];
   minSizePercentage?: MinSizePercentage;
+  /** Fired when a loaded ad fails to present full-screen (e.g. the app was
+   *  backgrounded or another ad is already showing). The bid is burned. */
+  onAdFailedToShow?(error: AdError): void;
 }
 
 export interface OriginalRewardedProps
@@ -42,4 +50,7 @@ export interface OriginalRewardedProps
   >,
   AdEvents {
   onUserEarnedReward?(reward: RewardEarnedEvent): void;
+  /** Fired when a loaded ad fails to present full-screen (e.g. the app was
+   *  backgrounded or another ad is already showing). The bid is burned. */
+  onAdFailedToShow?(error: AdError): void;
 }

@@ -16,6 +16,7 @@
  */
 
 #import "RCTRemoteConfigBannerView.h"
+#import "RCTAudienzzViewUtils.h"
 #import <React/RCTLog.h>
 
 @implementation RCTRemoteConfigBannerView {
@@ -74,8 +75,7 @@
       [[AURemoteConfigBannerView alloc] initWithAdConfigId:self.adConfigId];
 
   UIViewController *rootViewController =
-      [[[[UIApplication sharedApplication] delegate] window]
-          rootViewController];
+      [RCTAudienzzViewUtils currentRootViewController];
 
   [self.auRemoteConfigBannerView loadIn:self
                                   width:self.bounds.size.width
