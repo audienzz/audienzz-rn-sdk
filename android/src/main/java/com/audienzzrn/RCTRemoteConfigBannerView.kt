@@ -29,7 +29,12 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
 
   private val measureAndLayout = Runnable {
     val heightPx = (receivedSize.height * resources.displayMetrics.density).toInt()
-    val widthPx = (receivedSize.width * resources.displayMetrics.density).toInt()
+    // Keep the RN-assigned (full) container width and only drive the dynamic ad
+    // height. Forcing the container down to the creative's own width pinned it to
+    // the left edge, so a creative narrower than the screen (e.g. 300x600 on a
+    // tablet) rendered left-aligned instead of centered. The child banner is added
+    // with Gravity.CENTER, so a full-width container centers it horizontally.
+    val widthPx = if (width > 0) width else resources.displayMetrics.widthPixels
 
     if (widthPx <= 0 || heightPx <= 0) {
       return@Runnable
