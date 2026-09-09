@@ -200,7 +200,20 @@
   
   _auBannerView.frame = CGRectMake(0, 0, adSize.width, adSize.height);
   [self addSubview:_auBannerView];
+  [self setNeedsLayout];
+}
+
+// Center the banner horizontally within the RN host. A creative narrower than the host
+// (e.g. a 300-wide banner in a full-width slot / on a tablet) would otherwise pin to the
+// leading edge.
+- (void)layoutSubviews {
   [super layoutSubviews];
+  if (_auBannerView) {
+    CGRect frame = _auBannerView.frame;
+    CGFloat x = round((self.bounds.size.width - frame.size.width) / 2.0);
+    frame.origin.x = x > 0 ? x : 0;
+    _auBannerView.frame = frame;
+  }
 }
 
 #pragma mark - GADBannerViewDelegate
