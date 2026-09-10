@@ -18,6 +18,8 @@ package com.audienzz
 */
 
 import android.content.Context
+import android.view.Gravity
+import android.widget.FrameLayout
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
@@ -91,7 +93,16 @@ class RCTRenderingBannerView(context: Context) : RCTOriginalView(context) {
 
     auBannerView?.videoPlacementType =  AudienzzConversionUtils.convertToAudienzzVideoPlacementType(videoPlacement)
 
-    addView(auBannerView?.view)
+    // Center the rendering banner within the full-width host so a sub-width creative
+    // isn't left-aligned.
+    addView(
+      auBannerView?.view,
+      FrameLayout.LayoutParams(
+        FrameLayout.LayoutParams.WRAP_CONTENT,
+        FrameLayout.LayoutParams.WRAP_CONTENT,
+        Gravity.CENTER_HORIZONTAL,
+      ),
+    )
 
     auBannerView?.setBannerListener(object :
       AudienzzBannerViewListener {
