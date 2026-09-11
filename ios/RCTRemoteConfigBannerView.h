@@ -24,4 +24,8 @@
 @property(nonatomic, strong) NSString *adConfigId;
 @property(nonatomic, strong) AURemoteConfigBannerView *auRemoteConfigBannerView;
 
+- (void)reloadIfVisible;
+- (void)stopAutoRefresh;
+- (void)resumeAutoRefresh;
+
 @end

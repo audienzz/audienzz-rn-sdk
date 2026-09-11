@@ -306,31 +306,26 @@ RNAudienzz()
 | `setAutomaticPpidEnabled` |  `enablePpid: Boolean` | Used to enable or disable automatic PPID usage                                                                                           |
 | `getPpid`                |                        | Used to obtain current PPID if automaticPpid is enabled                                                                                  |
 | `setSchainObject`        | `schain: string`       | Method used to set Schain object for all ad requests.                                                                                    |
-| `setAutoScreenTracking`  | `enabled: boolean`     | Enable/disable native automatic screen tracking. Call **before** `initialize`. See [Screen tracking](#screen-tracking-analytics).        |
-| `onScreenResumed`        | `routeKey: string`     | Report the active screen by route key — fires a `pageImpression`. See [Screen tracking](#screen-tracking-analytics).                     |
+| `pageImpression`        | `name: string`         | Report an ad-bearing screen/dialog by name — fires a `pageImpression` and reloads on-screen banners. Call on each such screen. See [Screen tracking](#screen-tracking-analytics). |
+| `setSmartRefreshV2Enabled` | `enabled: boolean`   | Force smart-refresh v2 (directional viewport gate) on/off, overriding backend config. Call **before** creating banners.                  |
+| `setBlankOnScreenReload` | `enabled: boolean`     | Blank a banner's slot during a screen-resume reload (default `false`). Call **before** creating banners.                                 |
+| `setAppVolume`           | `volume: number`       | Set the global ad audio volume for all ad types (`0.0`–`1.0`, `0.0` = muted). The SDK defaults to muted.                                 |
 
 ### Screen tracking (analytics)
 
-The SDK ties ad events to the screen the user is on: entering an ad-bearing screen fires a
+The SDK ties ad events to the screen the user is on: reporting an ad-bearing screen fires a
 `pageImpression` and starts a fresh page-impression id that groups every ad event on that visit.
 
-The native SDK tracks screens **automatically**, but that model watches native
-Activities/ViewControllers — and a React Native app has **one** host Activity / root view
-controller, so auto-tracking would collapse *every* JS screen into a single coarse impression. So in
-RN you drive it explicitly by your navigation route:
-
-1. Turn native auto-tracking **off** once, before init.
-2. Report each ad-bearing screen with its route key on navigation.
+You report screens **explicitly** by their navigation route — call `pageImpression(name)` on each
+ad-bearing screen (there is no automatic tracking; the same call is used on every Audienzz SDK):
 
 ```js
 import { Audienzz } from 'audienzz';
 
-// 1. Disable native auto-tracking BEFORE initialize (single-host app).
-Audienzz.setAutoScreenTracking(false);
 Audienzz.initialize('YOUR_COMPANY_ID', false);
 
-// 2. Report the active screen on every navigation to an ad-bearing screen.
-Audienzz.onScreenResumed('home');
+// Report the active screen on every navigation to an ad-bearing screen.
+Audienzz.pageImpression('home');
 ```
 
 With React Navigation, report from the navigator's `state`/`focus` instead of each screen:
@@ -341,7 +336,7 @@ import { Audienzz } from 'audienzz';
 <NavigationContainer
   onStateChange={(state) => {
     const route = state?.routes[state.index]?.name;
-    if (route) Audienzz.onScreenResumed(route);
+    if (route) Audienzz.pageImpression(route);
   }}
 >
   {/* ... */}
@@ -349,12 +344,34 @@ import { Audienzz } from 'audienzz';
 ```
 
 Notes:
-- The `routeKey` is any stable per-screen string (your route name works well). It's the screen
+- The screen name is any stable per-screen string (your route name works well). It's the screen
   identity in analytics.
-- `setAutoScreenTracking(false)` must be called **before** `initialize` / `initializeRemote` to take
-  effect. Leaving auto-tracking on emits one page impression for the single host screen.
-- This is analytics only. Screen-aware ad *reload* is a native-app feature; RN banners already
-  reload on return because the component unmounts on navigate.
+
+#### Reload on screen resume
+
+`pageImpression(name)` also reloads banners: every mounted banner that is currently on screen
+fetches a fresh creative under the new page impression, matching the native SDKs. This works even
+for banners kept mounted across tabs (a hidden tab's banner is skipped, so it doesn't burn an
+auction). Banners that unmount on navigation reload naturally on remount.
+
+```js
+import { Audienzz } from 'audienzz';
+
+// On returning to a tab/route, report it — its on-screen banners reload immediately.
+Audienzz.pageImpression('feed');
+```
+
+Two optional session-wide toggles tune this behavior (call **before** creating banners):
+
+```js
+// Use the v2 directional viewport gate (top fully on screen, at most half off the
+// bottom) instead of the legacy 20%-visible gate. Overrides backend config.
+Audienzz.setSmartRefreshV2Enabled(true);
+
+// Blank the slot for the duration of a screen-resume reload (default: keep the old
+// creative until the new one arrives).
+Audienzz.setBlankOnScreenReload(true);
+```
 
 ### Displaying Ads
 

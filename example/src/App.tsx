@@ -14,6 +14,7 @@ import StickyAdExample from './components/StickyAdExample';
 import SmartRefreshBannerExample from './components/SmartRefreshBannerExample';
 import LegacyOriginalView_v0_3_8 from './components/LegacyOriginalView_v0_3_8';
 import TestScreenExample from './components/TestScreenExample';
+import ReloadTabsExample from './components/ReloadTabsExample';
 
 // Remote config ad units (IDs 118, 192, 267) are only provisioned for iOS on
 // the dev backend — Android returns HTTP 404 for publisher 81.  Use the direct
@@ -24,12 +25,15 @@ const PUBLISHER_ID = '81';
 
 export default function App() {
   const [initialized, setInitialized] = React.useState(false);
-  const [screen, setScreen] = React.useState<'main' | 'test' | 'sticky' | 'smartRefresh' | 'legacy'>('main');
+  const [screen, setScreen] = React.useState<'main' | 'test' | 'sticky' | 'smartRefresh' | 'legacy' | 'reloadTabs'>('main');
 
   React.useEffect(() => {
-    // Single-host RN app: turn off native auto screen tracking (it would collapse every JS screen
-    // into one) and report routes explicitly below. Must run before initialize.
-    RNAudienzz().setAutoScreenTracking(false);
+    // Report each ad-bearing screen explicitly via pageImpression (see the effect below).
+    // Opt into smart-refresh v2 (directional viewport gate) instead of the legacy 20% gate,
+    // and blank the slot during a screen-resume reload — parity with the native iOS/Android SDKs.
+    // Both override backend config for the session; call before creating banners.
+    RNAudienzz().setSmartRefreshV2Enabled(true);
+    RNAudienzz().setBlankOnScreenReload(true);
     if (REMOTE_CONFIG_ENABLED) {
       RNAudienzz()
         .initializeRemote(
@@ -74,7 +78,7 @@ export default function App() {
   // Report the active screen by route key for per-route page-impression analytics.
   React.useEffect(() => {
     if (initialized) {
-      RNAudienzz().onScreenResumed(screen);
+      RNAudienzz().pageImpression(screen);
     }
   }, [screen, initialized]);
 
@@ -120,12 +124,16 @@ export default function App() {
     return <LegacyOriginalView_v0_3_8 onBack={() => setScreen('main')} />;
   }
 
+  if (screen === 'reloadTabs') {
+    return <ReloadTabsExample onBack={() => setScreen('main')} />;
+  }
+
   return REMOTE_CONFIG_ENABLED
-    ? RemoteView(() => setScreen('test'), () => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'))
-    : OriginalView(() => setScreen('test'), () => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'));
+    ? RemoteView(() => setScreen('test'), () => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'), () => setScreen('reloadTabs'))
+    : OriginalView(() => setScreen('test'), () => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'), () => setScreen('reloadTabs'));
 }
 
-function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void) {
+function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void, onOpenReloadTabs: () => void) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
@@ -146,6 +154,11 @@ function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmar
           <Text style={styles.bigText}>SMART REFRESH</Text>
           <TouchableOpacity style={styles.navButton} onPress={onOpenSmartRefresh}>
             <Text style={styles.navButtonText}>Open Smart Refresh Example →</Text>
+          </TouchableOpacity>
+          <View style={styles.height30} />
+          <Text style={styles.bigText}>RELOAD TABS</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenReloadTabs}>
+            <Text style={styles.navButtonText}>Open Reload Tabs Example →</Text>
           </TouchableOpacity>
           <View style={styles.height30} />
           <Text style={styles.bigText}>REMOTE CONFIG</Text>
@@ -162,7 +175,7 @@ function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmar
   );
 }
 
-function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void) {
+function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void, onOpenReloadTabs: () => void) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
@@ -183,6 +196,11 @@ function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSm
           <Text style={styles.bigText}>SMART REFRESH</Text>
           <TouchableOpacity style={styles.navButton} onPress={onOpenSmartRefresh}>
             <Text style={styles.navButtonText}>Open Smart Refresh Example →</Text>
+          </TouchableOpacity>
+          <View style={styles.height30} />
+          <Text style={styles.bigText}>RELOAD TABS</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenReloadTabs}>
+            <Text style={styles.navButtonText}>Open Reload Tabs Example →</Text>
           </TouchableOpacity>
           <View style={styles.height30} />
           <Text style={styles.bigText}>ORIGINAL</Text>

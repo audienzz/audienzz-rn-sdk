@@ -70,7 +70,7 @@
 
 - (void)reloadIfVisible {
   // Force a fresh auction now — but only when the banner is actually on screen.
-  // The onScreenResumed broadcast reaches every mounted banner, including those
+  // The pageImpression broadcast reaches every mounted banner, including those
   // on inactive (kept-mounted) screens; skip those so we don't burn an auction.
   if (self.window == nil || self.isHidden || self.alpha < 0.01) {
     return;

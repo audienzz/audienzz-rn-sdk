@@ -19,11 +19,16 @@ import React, { Component } from 'react';
 import {
   requireNativeComponent,
   UIManager,
+  findNodeHandle,
   View,
   StyleSheet,
 } from 'react-native';
 import type { RenderingBannerProps, AdError, AdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
+import {
+  addBannerReloader,
+  removeBannerReloader,
+} from '../../screenReloadRegistry';
 
 const ComponentName = 'RCTRenderingBannerView';
 const NativeComponent = requireNativeComponent<any>(ComponentName);
@@ -37,12 +42,41 @@ export class RenderingBanner extends Component<
   RenderingBannerProps,
   RenderingBannerState
 > {
+  private nativeRef: any;
+
   constructor(props: RenderingBannerProps) {
     super(props);
     this.state = {
       isBannerVisible: props.isReserved ?? false,
     };
   }
+
+  componentDidMount() {
+    addBannerReloader(this.reload);
+  }
+
+  componentWillUnmount() {
+    removeBannerReloader(this.reload);
+  }
+
+  /**
+   * Reload this banner (fresh auction). Broadcast target for
+   * Audienzz.pageImpression; the native command self-filters by visibility.
+   * The rendering API has no in-place reload, so the native side tears down and
+   * rebuilds the ad view.
+   */
+  reload = () => {
+    const handle = findNodeHandle(this.nativeRef);
+    if (handle == null) {
+      return;
+    }
+    UIManager.dispatchViewManagerCommand(
+      handle,
+      // @ts-ignore
+      UIManager.getViewManagerConfig(ComponentName).Commands.reload,
+      []
+    );
+  };
 
   render() {
     const {
@@ -90,6 +124,9 @@ export class RenderingBanner extends Component<
       <View style={[bannerStyle]}>
         <NativeComponent
           {...restProps}
+          ref={(ref: any) => {
+            this.nativeRef = ref;
+          }}
           adUnitID={adUnitId}
           auConfigID={auConfigId}
           gpID={gpId}

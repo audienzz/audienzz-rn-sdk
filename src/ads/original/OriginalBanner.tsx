@@ -54,7 +54,7 @@ export class OriginalBanner extends Component<
 
   componentDidMount() {
     // Reload this banner when a screen/route/tab becomes active again
-    // (Audienzz.onScreenResumed broadcast). The native command self-filters by
+    // (Audienzz.pageImpression broadcast). The native command self-filters by
     // visibility, so a kept-mounted off-screen banner is left alone.
     addBannerReloader(this.reload);
   }

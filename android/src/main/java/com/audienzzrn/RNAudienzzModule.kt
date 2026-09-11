@@ -87,24 +87,34 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
   }
 
   /**
-   * Enable/disable native automatic screen tracking. It is ON in the native SDK, but a React Native
-   * app has a single host Activity, so auto-tracking would collapse every JS screen into one coarse
-   * page impression. Call `setAutoScreenTracking(false)` **before** [initialize] and report screens
-   * explicitly with [onScreenResumed] for per-route analytics.
+   * Force smart-refresh v2 on/off, overriding the backend `smartRefreshV2` config for the session.
+   * v2 uses the directional viewport gate; v1 uses the legacy >=20%-visible gate.
    */
   @ReactMethod
-  fun setAutoScreenTracking(enabled: Boolean) {
-    AudienzzPrebidMobile.autoScreenTracking = enabled
+  fun setSmartRefreshV2Enabled(enabled: Boolean) {
+    AudienzzPrebidMobile.smartRefreshV2Override = enabled
+  }
+
+  /** When true, a banner blanks its slot during a screen-resume reload. */
+  @ReactMethod
+  fun setBlankOnScreenReload(enabled: Boolean) {
+    AudienzzPrebidMobile.blankOnScreenReload = enabled
+  }
+
+  /** Global GMA ad audio volume for all ad types. Clamped to [0,1]; 0 = muted. */
+  @ReactMethod
+  fun setAppVolume(volume: Float) {
+    AudienzzPrebidMobile.setAppVolume(volume.coerceIn(0f, 1f))
   }
 
   /**
-   * Report the active screen by an opaque route key (your JS navigation route). Fires a
+   * Report an ad-bearing screen, dialog, or popup by name (your JS navigation route). Fires a
    * `pageImpression` and starts a fresh page-impression id that ties all ad events on this screen
    * visit together. Call on each navigation to an ad-bearing screen.
    */
   @ReactMethod
-  fun onScreenResumed(routeKey: String) {
-    AudienzzPrebidMobile.onScreenResumed(routeKey)
+  fun pageImpression(name: String) {
+    AudienzzPrebidMobile.pageImpression(name)
   }
 
   @ReactMethod

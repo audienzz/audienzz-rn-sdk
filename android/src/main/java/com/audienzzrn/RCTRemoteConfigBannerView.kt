@@ -29,7 +29,12 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
 
   private val measureAndLayout = Runnable {
     val heightPx = (receivedSize.height * resources.displayMetrics.density).toInt()
-    val widthPx = (receivedSize.width * resources.displayMetrics.density).toInt()
+    // Keep the RN-assigned (full) container width and only drive the dynamic ad
+    // height. Forcing the container down to the creative's own width pinned it to
+    // the left edge, so a creative narrower than the screen (e.g. 300x600 on a
+    // tablet) rendered left-aligned instead of centered. The child banner is added
+    // with Gravity.CENTER, so a full-width container centers it horizontally.
+    val widthPx = if (width > 0) width else resources.displayMetrics.widthPixels
 
     if (widthPx <= 0 || heightPx <= 0) {
       return@Runnable
@@ -53,6 +58,27 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
   }
 
   fun getConfigId(): String? = configId
+
+  /**
+   * Force a fresh auction now, but only when the banner is actually on screen.
+   * The pageImpression broadcast reaches every mounted banner, including those
+   * on inactive (kept-mounted) screens; skip those so we don't burn an auction.
+   */
+  fun reloadIfVisible() {
+    if (!isShown) return
+    if (!getGlobalVisibleRect(android.graphics.Rect())) return
+    remoteConfigBannerView?.reloadAd()
+  }
+
+  /** Pause Prebid smart-refresh for this banner. */
+  fun stopAutoRefresh() {
+    remoteConfigBannerView?.onPause()
+  }
+
+  /** Resume Prebid smart-refresh for this banner previously paused via [stopAutoRefresh]. */
+  fun resumeAutoRefresh() {
+    remoteConfigBannerView?.onResume()
+  }
 
   fun loadAd() {
     val id = configId ?: return

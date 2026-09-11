@@ -13,19 +13,29 @@ export interface RNAudienzzModule {
   setSchainObject(schain: string): Promise<void>;
 
   /**
-   * Enable/disable native automatic screen tracking. It is ON in the native SDK, but a React Native
-   * app has a single host screen, so auto-tracking collapses every JS route into one coarse page
-   * impression. Call `setAutoScreenTracking(false)` before `initialize()`/`initializeRemote()` and
-   * report screens explicitly with `onScreenResumed()` for per-route analytics.
+   * Set the global GMA ad audio volume for all ad types. `volume` is clamped to [0.0, 1.0]
+   * (0.0 = muted, 1.0 = full device volume). The SDK defaults to muted on init.
    */
-  setAutoScreenTracking(enabled: boolean): void;
+  setAppVolume(volume: number): void;
 
   /**
-   * Report the active screen by an opaque route key (your navigation route id/name). Fires a
+   * Force smart-refresh v2 on/off, overriding the backend `smartRefreshV2` config for the session.
+   * v2 uses the directional viewport gate; v1 uses the legacy ≥20%-visible gate. Omit to defer to backend.
+   */
+  setSmartRefreshV2Enabled(enabled: boolean): void;
+
+  /**
+   * When true, a banner blanks its slot during a screen-resume reload (native `blankOnScreenReload`).
+   * Default false — the old creative stays until the new one arrives.
+   */
+  setBlankOnScreenReload(enabled: boolean): void;
+
+  /**
+   * Report an ad-bearing screen, dialog, or popup by name (your navigation route id/name). Fires a
    * `pageImpression` and starts a fresh page-impression id that ties all ad events on this screen
    * visit together. Call on each navigation to an ad-bearing screen.
    */
-  onScreenResumed(routeKey: string): void;
+  pageImpression(name: string): void;
 
   configureRemote(remoteUrl: string, publisherId: string): Promise<void>;
   fetchPublisherConfig(publisherId: string, enablePpid: boolean): Promise<void>;

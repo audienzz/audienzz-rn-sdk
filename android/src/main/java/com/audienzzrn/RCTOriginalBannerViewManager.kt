@@ -285,7 +285,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
         adView = adView,
         adUnit = auBannerView,
       )
-      // Retain the handler on the view so the reload command (onScreenResumed
+      // Retain the handler on the view so the reload command (pageImpression
       // broadcast) can force a fresh auction via handler.reloadAd().
       reactViewGroup.updateAdViewHandler(handler)
       handler.load(

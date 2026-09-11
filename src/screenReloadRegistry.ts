@@ -16,7 +16,7 @@
 
 // Registry of mounted smart-refresh banner reload callbacks. Each banner
 // component registers its reload on mount and removes it on unmount;
-// `Audienzz.onScreenResumed` broadcasts to all of them so a returning
+// `Audienzz.pageImpression` broadcasts to all of them so a returning
 // route/tab reloads its on-screen banners (parity with the native SDK).
 // The native reload command self-filters by visibility, so off-screen
 // (kept-mounted) banners are not re-auctioned.
