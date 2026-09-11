@@ -1,5 +1,6 @@
 package com.audienzz
 
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
@@ -37,6 +38,20 @@ class RCTRemoteConfigBannerViewManager : SimpleViewManager<RCTRemoteConfigBanner
   override fun onDropViewInstance(view: RCTRemoteConfigBannerView) {
     super.onDropViewInstance(view)
     view.destroy()
+  }
+
+  override fun receiveCommand(view: RCTRemoteConfigBannerView, commandId: Int, args: ReadableArray?) {
+    when (commandId) {
+      0 -> view.stopAutoRefresh()
+      1 -> view.resumeAutoRefresh()
+      2 -> view.reloadIfVisible()
+    }
+  }
+
+  // Command names are resolved by name on the JS side (getViewManagerConfig().Commands.<name>),
+  // so the numeric ids only need to be stable within this manager.
+  override fun getCommandsMap(): Map<String, Int> {
+    return mapOf("stopAutoRefresh" to 0, "resumeAutoRefresh" to 1, "reload" to 2)
   }
 
   override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {

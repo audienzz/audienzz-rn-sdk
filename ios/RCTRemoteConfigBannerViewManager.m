@@ -35,4 +35,34 @@ RCT_EXPORT_VIEW_PROPERTY(onAdOpened, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdClosed, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdFailedToLoad, RCTBubblingEventBlock)
 
+RCT_EXPORT_METHOD(reload:(nonnull NSNumber *)reactTag) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        RCTUIManager *uiManager = self.bridge.uiManager;
+        UIView *view = [uiManager viewForReactTag:reactTag];
+        if ([view isKindOfClass:[RCTRemoteConfigBannerView class]]) {
+            [(RCTRemoteConfigBannerView *)view reloadIfVisible];
+        }
+    });
+}
+
+RCT_EXPORT_METHOD(stopAutoRefresh:(nonnull NSNumber *)reactTag) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        RCTUIManager *uiManager = self.bridge.uiManager;
+        UIView *view = [uiManager viewForReactTag:reactTag];
+        if ([view isKindOfClass:[RCTRemoteConfigBannerView class]]) {
+            [(RCTRemoteConfigBannerView *)view stopAutoRefresh];
+        }
+    });
+}
+
+RCT_EXPORT_METHOD(resumeAutoRefresh:(nonnull NSNumber *)reactTag) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        RCTUIManager *uiManager = self.bridge.uiManager;
+        UIView *view = [uiManager viewForReactTag:reactTag];
+        if ([view isKindOfClass:[RCTRemoteConfigBannerView class]]) {
+            [(RCTRemoteConfigBannerView *)view resumeAutoRefresh];
+        }
+    });
+}
+
 @end

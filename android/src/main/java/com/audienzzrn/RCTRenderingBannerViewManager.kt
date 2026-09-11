@@ -19,6 +19,7 @@ package com.audienzz
 
 import android.os.Handler
 import android.os.Looper
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
@@ -43,6 +44,16 @@ class RCTRenderingBannerViewManager : SimpleViewManager<RCTRenderingBannerView>(
     }
 
     view.updatePropsChanged(false)
+  }
+
+  override fun receiveCommand(view: RCTRenderingBannerView, commandId: Int, args: ReadableArray?) {
+    when (commandId) {
+      0 -> view.reloadIfVisible()
+    }
+  }
+
+  override fun getCommandsMap(): Map<String, Int> {
+    return mapOf("reload" to 0)
   }
 
   override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {

@@ -59,6 +59,27 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
 
   fun getConfigId(): String? = configId
 
+  /**
+   * Force a fresh auction now, but only when the banner is actually on screen.
+   * The pageImpression broadcast reaches every mounted banner, including those
+   * on inactive (kept-mounted) screens; skip those so we don't burn an auction.
+   */
+  fun reloadIfVisible() {
+    if (!isShown) return
+    if (!getGlobalVisibleRect(android.graphics.Rect())) return
+    remoteConfigBannerView?.reloadAd()
+  }
+
+  /** Pause Prebid smart-refresh for this banner. */
+  fun stopAutoRefresh() {
+    remoteConfigBannerView?.onPause()
+  }
+
+  /** Resume Prebid smart-refresh for this banner previously paused via [stopAutoRefresh]. */
+  fun resumeAutoRefresh() {
+    remoteConfigBannerView?.onResume()
+  }
+
   fun loadAd() {
     val id = configId ?: return
 

@@ -26,6 +26,10 @@ import {
 } from 'react-native';
 import type { ViewStyle } from 'react-native';
 import type { RemoteConfigBannerProps } from '../../types';
+import {
+    addBannerReloader,
+    removeBannerReloader,
+} from '../../screenReloadRegistry';
 
 const COMPONENT_NAME = 'RNRemoteConfigBanner';
 
@@ -58,6 +62,27 @@ export class RemoteConfigBanner extends Component<RemoteConfigBannerProps, { hei
 
     state = {
         height: undefined,
+    };
+
+    componentDidMount() {
+        addBannerReloader(this.reload);
+    }
+
+    componentWillUnmount() {
+        removeBannerReloader(this.reload);
+    }
+
+    /**
+     * Reload this banner (fresh auction). Broadcast target for
+     * Audienzz.pageImpression; the native command self-filters by visibility.
+     */
+    reload = () => {
+        UIManager.dispatchViewManagerCommand(
+            findNodeHandle(this.nativeRef),
+            // @ts-ignore
+            UIManager.getViewManagerConfig(COMPONENT_NAME).Commands.reload,
+            []
+        );
     };
 
     /**

@@ -130,6 +130,25 @@ class RCTRenderingBannerView(context: Context) : RCTOriginalView(context) {
     auBannerView = value
   }
 
+  /**
+   * Force a fresh auction now, but only when the banner is actually on screen.
+   * The pageImpression broadcast reaches every mounted banner, including those
+   * on inactive (kept-mounted) screens; skip those so we don't burn an auction.
+   *
+   * The rendering API (AudienzzBannerView) has no in-place reload primitive, so
+   * a reload tears down the current view and rebuilds a fresh one. The slot
+   * blanks while the new creative loads — matching the native
+   * blankOnScreenReload behavior.
+   */
+  fun reloadIfVisible() {
+    if (!isShown) return
+    if (!getGlobalVisibleRect(android.graphics.Rect())) return
+    auBannerView?.destroy()
+    auBannerView = null
+    removeAllViews()
+    createAd()
+  }
+
   fun updateVideoPlacement(value: String) {
     videoPlacement = value
   }

@@ -1,5 +1,6 @@
 import NativeModulesCombined from './NativeRNAudienzzModule';
 import type { RNAudienzzModule, AudienzzInitStatus } from './types';
+import { notifyScreenResumedReload } from './screenReloadRegistry';
 
 class RNAudienzzClass implements RNAudienzzModule {
   initialize(companyId: string, enablePpid: boolean = false) {
@@ -22,12 +23,46 @@ class RNAudienzzClass implements RNAudienzzModule {
     return NativeModulesCombined.AudienzzModule.setSchainObject(schain);
   }
 
-  setAutoScreenTracking(enabled: boolean): void {
-    NativeModulesCombined.AudienzzModule.setAutoScreenTracking(enabled);
+  /**
+   * Set the global GMA ad audio volume for all ad types (banner, interstitial,
+   * rewarded). `volume` is clamped to [0.0, 1.0]: 0.0 = muted, 1.0 = full device
+   * volume. The SDK defaults to 0.0 (muted) on init.
+   */
+  setAppVolume(volume: number): void {
+    NativeModulesCombined.AudienzzModule.setAppVolume(volume);
   }
 
-  onScreenResumed(routeKey: string): void {
-    NativeModulesCombined.AudienzzModule.onScreenResumed(routeKey);
+  /**
+   * Force smart-refresh v2 on/off, overriding the backend `smartRefreshV2`
+   * config for the rest of the session. v2 uses the directional viewport gate
+   * (top fully on screen, at most half off the bottom); v1 uses the legacy
+   * ≥20%-visible gate. Call before creating banners. Omit to defer to backend.
+   */
+  setSmartRefreshV2Enabled(enabled: boolean): void {
+    NativeModulesCombined.AudienzzModule.setSmartRefreshV2Enabled(enabled);
+  }
+
+  /**
+   * When true, a banner blanks its slot for the duration of a screen-resume
+   * reload (matching the native blankOnScreenReload). Default false — the old
+   * creative stays visible until the new one arrives. Call before creating banners.
+   */
+  setBlankOnScreenReload(enabled: boolean): void {
+    NativeModulesCombined.AudienzzModule.setBlankOnScreenReload(enabled);
+  }
+
+  /**
+   * Report an ad-bearing screen, dialog, or popup by name. Call it on every such screen (React
+   * Native has a single host, so there's nothing to auto-derive — pass a stable name, e.g. your
+   * navigation route name). Fires a `pageImpression` + a fresh page-impression id, and reloads the
+   * on-screen smart-refresh banners so a returning route/tab shows a fresh creative.
+   */
+  pageImpression(name: string): void {
+    NativeModulesCombined.AudienzzModule.pageImpression(name);
+    // Parity with native: a resumed screen reloads its on-screen smart-refresh
+    // banners, so a returning route/tab shows a fresh creative under the new
+    // page impression. The native reload command self-filters by visibility.
+    notifyScreenResumedReload();
   }
 
   configureRemote(remoteUrl: string, publisherId: string): Promise<void> {

@@ -7,7 +7,7 @@ import { ADS } from '../ads_constants';
  * Minimal second screen for testing per-screen analytics / screen tracking, mirroring the
  * native example's "ad screen" (RemoteConfigAdScreenViewController / RemoteConfigAdActivity).
  *
- * The App reports this route via `onScreenResumed('test')` on entry and `onScreenResumed('main')`
+ * The App reports this route via `pageImpression('test')` on entry and `pageImpression('main')`
  * on Back, so navigating Home -> Test Screen -> Home produces a fresh `pageImpression` per visit
  * and the banner's auction events are attributed to `screen_name: test`. Uses the same 300x250
  * unit (wuobgeuc) as the native example so logs line up across platforms.

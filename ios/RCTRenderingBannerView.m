@@ -63,6 +63,26 @@
     [_auBannerView.adUnitConfiguration resumeAutoRefresh];
 }
 
+- (void)reloadIfVisible {
+    // Force a fresh auction now — but only when on screen. The pageImpression
+    // broadcast reaches every mounted banner, including those on inactive
+    // (kept-mounted) screens; skip those so we don't burn an auction.
+    if (self.window == nil || self.isHidden || self.alpha < 0.01) {
+        return;
+    }
+    CGRect frameInWindow = [self convertRect:self.bounds toView:nil];
+    if (!CGRectIntersectsRect(frameInWindow, self.window.bounds)) {
+        return;
+    }
+    // The rendering API (AUBannerRenderingView) has no in-place reload primitive,
+    // so a reload tears down the current view and builds a fresh one. The slot
+    // blanks for a frame while the new creative loads — matching the native
+    // blankOnScreenReload behavior.
+    [self.auBannerView removeFromSuperview];
+    self.auBannerView = nil;
+    [self internalCreateAd];
+}
+
 - (void)createAd {
     dispatch_semaphore_wait(self.semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)));
     

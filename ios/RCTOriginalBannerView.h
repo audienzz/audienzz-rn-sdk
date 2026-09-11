@@ -22,6 +22,7 @@
 
 - (void)stopAutoRefresh;
 - (void)resumeAutoRefresh;
+- (void)reloadIfVisible;
 
 @property(nonatomic, strong) GAMBannerView *bannerView;
 @property(nonatomic, strong) AUBannerView *auBannerView;

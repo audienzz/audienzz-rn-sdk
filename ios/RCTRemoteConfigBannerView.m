@@ -86,6 +86,28 @@
   dispatch_semaphore_signal(self.semaphore);
 }
 
+- (void)reloadIfVisible {
+  // Force a fresh auction now — but only when on screen. The pageImpression
+  // broadcast reaches every mounted banner, including those on inactive
+  // (kept-mounted) screens; skip those so we don't burn an auction.
+  if (self.window == nil || self.isHidden || self.alpha < 0.01) {
+    return;
+  }
+  CGRect frameInWindow = [self convertRect:self.bounds toView:nil];
+  if (!CGRectIntersectsRect(frameInWindow, self.window.bounds)) {
+    return;
+  }
+  [self.auRemoteConfigBannerView reloadAd];
+}
+
+- (void)stopAutoRefresh {
+  [self.auRemoteConfigBannerView stopAutoRefresh];
+}
+
+- (void)resumeAutoRefresh {
+  [self.auRemoteConfigBannerView resumeAutoRefresh];
+}
+
 #pragma mark - Event Handlers
 
 - (void)setOnAdLoaded:(RCTBubblingEventBlock)onAdLoaded {

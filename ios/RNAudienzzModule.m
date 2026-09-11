@@ -83,18 +83,26 @@ RCT_EXPORT_METHOD(setAutomaticPpidEnabled: (BOOL)isPpidEnabled) {
   [[PPIDManager shared] setAutomaticPpidEnabled:isPpidEnabled];
 }
 
-// Enable/disable native automatic screen tracking. It is ON in the native SDK, but a React Native
-// app has a single host UIViewController, so auto-tracking would collapse every JS screen into one
-// coarse page impression. Call setAutoScreenTracking(false) before initialize() and report screens
-// explicitly with onScreenResumed(routeKey) for per-route analytics.
-RCT_EXPORT_METHOD(setAutoScreenTracking: (BOOL)enabled) {
-  [Audienzz shared].autoScreenTracking = enabled;
+// Force smart-refresh v2 on/off, overriding the backend smartRefreshV2 config for the session.
+// v2 uses the directional viewport gate; v1 uses the legacy >=20%-visible gate.
+RCT_EXPORT_METHOD(setSmartRefreshV2Enabled: (BOOL)enabled) {
+  [Audienzz shared].smartRefreshV2Override = @(enabled);
 }
 
-// Report the active screen by an opaque route key (your JS navigation route). Fires a
+// When true, a banner blanks its slot during a screen-resume reload.
+RCT_EXPORT_METHOD(setBlankOnScreenReload: (BOOL)enabled) {
+  [Audienzz shared].blankOnScreenReload = enabled;
+}
+
+// Global GMA ad audio volume for all ad types. Clamped to [0,1]; 0 = muted.
+RCT_EXPORT_METHOD(setAppVolume: (float)volume) {
+  [[Audienzz shared] setAppVolume:volume];
+}
+
+// Report an ad-bearing screen, dialog, or popup by name (your JS navigation route). Fires a
 // pageImpression and starts a fresh page-impression id tying all ad events on this visit together.
-RCT_EXPORT_METHOD(onScreenResumed: (NSString *)routeKey) {
-  [[Audienzz shared] onScreenResumedWithKey:routeKey];
+RCT_EXPORT_METHOD(pageImpression: (NSString *)name) {
+  [[Audienzz shared] pageImpressionWithName:name];
 }
 
 RCT_EXPORT_METHOD(getPpid: (RCTPromiseResolveBlock)resolve
