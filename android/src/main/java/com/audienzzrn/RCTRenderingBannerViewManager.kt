@@ -37,9 +37,9 @@ class RCTRenderingBannerViewManager : SimpleViewManager<RCTRenderingBannerView>(
     super.onAfterUpdateTransaction(view)
 
     if (view.getPropsChanged()) {
-      Handler(Looper.getMainLooper()).postDelayed({
-        view.createAd()
-      }, 1100)
+      val task = Runnable { view.createAd() }
+      view.setPendingAdCreation(task)
+      Handler(Looper.getMainLooper()).postDelayed(task, 1100)
 
     }
 
@@ -112,5 +112,12 @@ class RCTRenderingBannerViewManager : SimpleViewManager<RCTRenderingBannerView>(
 
   companion object {
     const val REACT_CLASS = "RCTRenderingBannerView"
+  }
+
+  override fun onDropViewInstance(view: RCTRenderingBannerView) {
+    super.onDropViewInstance(view)
+    // Unmounting the JS component is how a rendering banner is page-released, so this has to
+    // actually stop the ad — including a creation task still pending in the 1.1s window.
+    view.destroyAd()
   }
 }

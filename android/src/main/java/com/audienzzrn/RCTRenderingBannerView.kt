@@ -75,6 +75,34 @@ class RCTRenderingBannerView(context: Context) : RCTOriginalView(context) {
     auBannerView?.stopRefresh()
   }
 
+  private var pendingAdCreation: Runnable? = null
+
+  /** Retains the delayed ad-creation task so [destroyAd] can drop it. */
+  fun setPendingAdCreation(task: Runnable) {
+    cancelPendingAdCreation()
+    pendingAdCreation = task
+  }
+
+  fun cancelPendingAdCreation() {
+    pendingAdCreation?.let {
+      android.os.Handler(android.os.Looper.getMainLooper()).removeCallbacks(it)
+    }
+    pendingAdCreation = null
+  }
+
+  /**
+   * Tear the rendering ad down. React dropping the view is not enough on its own: the delayed
+   * creation task can still be pending, and AudienzzBannerView keeps its own refresh running until
+   * it is told to stop.
+   */
+  fun destroyAd() {
+    cancelPendingAdCreation()
+    auBannerView?.stopRefresh()
+    auBannerView?.destroy()
+    auBannerView = null
+    removeAllViews()
+  }
+
   override fun createAd() {
     super.createAd()
 

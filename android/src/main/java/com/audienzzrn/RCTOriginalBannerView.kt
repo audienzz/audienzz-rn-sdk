@@ -94,7 +94,10 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
   }
 
   fun resumeAutoRefresh() {
-    auBannerView?.resumeAutoRefresh()
+    // Route through the handler, which refuses while the page is released. Calling the Prebid ad
+    // unit directly started a refresh timer for a banner the page sweep had released — the auction
+    // happened even though the generation guard later dropped its response.
+    adViewHandler?.resumeSmartRefresh() ?: auBannerView?.resumeAutoRefresh()
   }
 
   /** Retains the handler created in the manager so [reloadIfVisible] can reload. */
@@ -105,6 +108,10 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
   fun getPageKey(): String? = pageKey
 
   fun updateAdViewHandler(value: AudienzzAdViewHandler) {
+    // Retire the predecessor. A prop change rebuilds the ad view and handler, and overwriting the
+    // reference left the old handler registered with the page coordinator and retained by
+    // AppForegroundMonitor — still holding its GAM view and Activity.
+    adViewHandler?.destroy()
     adViewHandler = value
   }
 
@@ -173,6 +180,19 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
    * deregisters from the page coordinator and AppForegroundMonitor, both of which otherwise keep
    * this view (and its Activity) reachable after React drops it.
    */
+  private var pendingAdCreation: Runnable? = null
+
+  /** Retains the delayed ad-creation task so [cancelPendingAdCreation] can drop it. */
+  fun setPendingAdCreation(task: Runnable) {
+    cancelPendingAdCreation()
+    pendingAdCreation = task
+  }
+
+  fun cancelPendingAdCreation() {
+    pendingAdCreation?.let { android.os.Handler(android.os.Looper.getMainLooper()).removeCallbacks(it) }
+    pendingAdCreation = null
+  }
+
   fun destroyAdViewHandler() {
     adViewHandler?.destroy()
     adViewHandler = null
