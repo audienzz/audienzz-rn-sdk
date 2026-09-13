@@ -23,6 +23,10 @@
 
 @property(nonatomic, strong) NSString *adConfigId;
 @property(nonatomic, strong) AURemoteConfigBannerView *auRemoteConfigBannerView;
+// Route key reported to pageImpression when this ad mounted. Every React Native ad lives in the
+// single host view controller, so the native page coordinator can't tell one route's ads from
+// another's by host identity — this key is what it matches on instead.
+@property(nonatomic, copy) NSString *pageKey;
 
 - (void)reloadIfVisible;
 - (void)stopAutoRefresh;

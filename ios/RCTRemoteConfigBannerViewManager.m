@@ -28,6 +28,7 @@ RCT_EXPORT_MODULE(RNRemoteConfigBanner)
   return [[RCTRemoteConfigBannerView alloc] init];
 }
 
+RCT_EXPORT_VIEW_PROPERTY(pageKey, NSString)
 RCT_EXPORT_VIEW_PROPERTY(adConfigId, NSString)
 RCT_EXPORT_VIEW_PROPERTY(onAdLoaded, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdClicked, RCTBubblingEventBlock)

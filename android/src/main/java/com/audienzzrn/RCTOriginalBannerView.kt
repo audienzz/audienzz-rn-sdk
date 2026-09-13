@@ -35,6 +35,10 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
   private var videoPlacement: String = ""
   private var smartRefresh: Boolean = false
   private var prefetchMarginDp: Int = 200
+  // Route key reported to pageImpression when this ad mounted. Every React Native ad lives in the
+  // single host Activity, so the native page coordinator can't tell one route's ads from another's
+  // by host identity — this key is what it matches on instead.
+  private var pageKey: String? = null
 
   private var auBannerView: AudienzzBannerAdUnit? = null
   private var adViewHandler: AudienzzAdViewHandler? = null
@@ -94,6 +98,12 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
   }
 
   /** Retains the handler created in the manager so [reloadIfVisible] can reload. */
+  fun updatePageKey(value: String?) {
+    pageKey = value
+  }
+
+  fun getPageKey(): String? = pageKey
+
   fun updateAdViewHandler(value: AudienzzAdViewHandler) {
     adViewHandler = value
   }

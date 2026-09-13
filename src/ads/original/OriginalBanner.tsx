@@ -26,14 +26,16 @@ import {
 import type { OriginalBannerProps, AdError, AdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 import {
-  addBannerReloader,
-  removeBannerReloader,
-} from '../../screenReloadRegistry';
+  getCurrentPage,
+  subscribe as subscribeToPage,
+  unsubscribe as unsubscribeFromPage,
+} from '../../pageRegistry';
 
 const ComponentName = 'RCTOriginalBannerView';
 const NativeComponent = requireNativeComponent<any>(ComponentName);
 
 interface OriginalBannerState {
+  viewEpoch?: number;
   isBannerVisible: boolean;
   adSize?: AdSize;
 }
@@ -48,19 +50,45 @@ export class OriginalBanner extends Component<
     super(props);
     this.nativeComponentRef = createRef();
     this.state = {
+      viewEpoch: 0,
       isBannerVisible: props.isReserved ?? false,
     };
   }
+
+  /**
+   * The page that was current when this banner mounted. Travels to native as
+   * the `pageKey` prop so the page coordinator can match this ad to its screen
+   * by value — host identity can't, since every RN ad shares one host.
+   *
+   * `null` means the app never called `pageImpression` before rendering this
+   * ad, which native reports as an integration error.
+   */
+  private readonly pageKey = getCurrentPage();
+
+  /**
+   * Remount the native view when this banner's own page is re-reported (back
+   * navigation, or a return from the background). Native has already recreated
+   * the ad by this point; remounting is what makes the fresh creative actually
+   * paint, since an in-place re-auction doesn't reliably repaint the native
+   * view. A page impression for a *different* page is ignored here — native
+   * released this banner, and it must stay dormant.
+   */
+  onPageImpression = (page: string, epoch: number) => {
+    if (page !== this.pageKey) {
+      return;
+    }
+    this.setState({ viewEpoch: epoch });
+  };
 
   componentDidMount() {
     // Reload this banner when a screen/route/tab becomes active again
     // (Audienzz.pageImpression broadcast). The native command self-filters by
     // visibility, so a kept-mounted off-screen banner is left alone.
-    addBannerReloader(this.reload);
+    subscribeToPage(this.onPageImpression);
   }
 
   componentWillUnmount() {
-    removeBannerReloader(this.reload);
+    unsubscribeFromPage(this.onPageImpression);
   }
 
   reload = () => {
@@ -149,6 +177,8 @@ export class OriginalBanner extends Component<
     return (
       <View style={[bannerStyle]}>
         <NativeComponent
+          key={`audienzz-ad-${this.state.viewEpoch ?? 0}`}
+          pageKey={this.pageKey}
           {...restProps}
           adUnitID={adUnitId}
           auConfigID={auConfigId}

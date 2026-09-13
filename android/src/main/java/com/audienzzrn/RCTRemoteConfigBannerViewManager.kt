@@ -15,6 +15,11 @@ class RCTRemoteConfigBannerViewManager : SimpleViewManager<RCTRemoteConfigBanner
     return RCTRemoteConfigBannerView(reactContext)
   }
 
+  @ReactProp(name = "pageKey")
+  fun setPageKey(view: RCTRemoteConfigBannerView, value: String?) {
+    view.updatePageKey(value)
+  }
+
   @ReactProp(name = "adConfigId")
   fun setAdConfigId(view: RCTRemoteConfigBannerView, value: String) {
     view.updateConfigId(value)

@@ -200,6 +200,10 @@
   _bannerView.adUnitID = self.adUnitID;
   
   AUBannerEventHandler *eventHandler = [[AUBannerEventHandler alloc] initWithAdUnitId:self.adUnitID gamView:_bannerView];
+  // Must precede createAdWith:, which is where the ad joins the current page.
+  if (self.pageKey != nil) {
+    [_auBannerView setScreen:self.pageKey];
+  }
   [_auBannerView createAdWith:request gamBanner:_bannerView eventHandler:eventHandler];
 
   void (^onLoadRequest)(id) = ^(id gamRequest) {

@@ -1,6 +1,6 @@
 import NativeModulesCombined from './NativeRNAudienzzModule';
 import type { RNAudienzzModule, AudienzzInitStatus } from './types';
-import { notifyScreenResumedReload } from './screenReloadRegistry';
+import { notifyPageImpression } from './pageRegistry';
 
 class RNAudienzzClass implements RNAudienzzModule {
   initialize(companyId: string, enablePpid: boolean = false) {
@@ -58,11 +58,12 @@ class RNAudienzzClass implements RNAudienzzModule {
    * on-screen smart-refresh banners so a returning route/tab shows a fresh creative.
    */
   pageImpression(name: string): void {
+    // Native sweeps first: every banner not on the incoming page is released
+    // (auction and refresh stopped) and the incoming page's are recreated.
     NativeModulesCombined.AudienzzModule.pageImpression(name);
-    // Parity with native: a resumed screen reloads its on-screen smart-refresh
-    // banners, so a returning route/tab shows a fresh creative under the new
-    // page impression. The native reload command self-filters by visibility.
-    notifyScreenResumedReload();
+    // Then the JS side remounts the incoming page's native views, because a
+    // recreate is an in-place re-auction and does not reliably repaint.
+    notifyPageImpression(name);
   }
 
   configureRemote(remoteUrl: string, publisherId: string): Promise<void> {

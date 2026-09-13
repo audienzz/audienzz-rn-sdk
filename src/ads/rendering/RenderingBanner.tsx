@@ -26,14 +26,16 @@ import {
 import type { RenderingBannerProps, AdError, AdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 import {
-  addBannerReloader,
-  removeBannerReloader,
-} from '../../screenReloadRegistry';
+  getCurrentPage,
+  subscribe as subscribeToPage,
+  unsubscribe as unsubscribeFromPage,
+} from '../../pageRegistry';
 
 const ComponentName = 'RCTRenderingBannerView';
 const NativeComponent = requireNativeComponent<any>(ComponentName);
 
 interface RenderingBannerState {
+  viewEpoch?: number;
   isBannerVisible: boolean;
   adSize?: AdSize;
 }
@@ -47,16 +49,43 @@ export class RenderingBanner extends Component<
   constructor(props: RenderingBannerProps) {
     super(props);
     this.state = {
+      viewEpoch: 0,
       isBannerVisible: props.isReserved ?? false,
     };
   }
 
+  /**
+   * The page that was current when this banner mounted.
+   *
+   * Rendering-API banners are NOT page-scoped natively — the coordinator only
+   * tracks original-API banners (AudienzzAdViewHandler / AUBannerView), so
+   * there is no `pageKey` to send. Remounting on a return to this page is all
+   * the page scoping a rendering banner gets: it tears the native ad down and
+   * builds a fresh one, which is why the epoch is still tracked here.
+   */
+  private readonly pageKey = getCurrentPage();
+
+  /**
+   * Remount the native view when this banner's own page is re-reported (back
+   * navigation, or a return from the background). Native has already recreated
+   * the ad by this point; remounting is what makes the fresh creative actually
+   * paint, since an in-place re-auction doesn't reliably repaint the native
+   * view. A page impression for a *different* page is ignored here — native
+   * released this banner, and it must stay dormant.
+   */
+  onPageImpression = (page: string, epoch: number) => {
+    if (page !== this.pageKey) {
+      return;
+    }
+    this.setState({ viewEpoch: epoch });
+  };
+
   componentDidMount() {
-    addBannerReloader(this.reload);
+    subscribeToPage(this.onPageImpression);
   }
 
   componentWillUnmount() {
-    removeBannerReloader(this.reload);
+    unsubscribeFromPage(this.onPageImpression);
   }
 
   /**
@@ -123,6 +152,7 @@ export class RenderingBanner extends Component<
     return (
       <View style={[bannerStyle]}>
         <NativeComponent
+          key={`audienzz-ad-${this.state.viewEpoch ?? 0}`}
           {...restProps}
           ref={(ref: any) => {
             this.nativeRef = ref;

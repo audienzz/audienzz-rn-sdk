@@ -28,6 +28,7 @@ RCT_EXPORT_MODULE(RCTOriginalBannerView)
     return [[RCTOriginalBannerView alloc] init];
 }
 
+RCT_EXPORT_VIEW_PROPERTY(pageKey, NSString)
 RCT_EXPORT_VIEW_PROPERTY(isLazyLoad, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(adFormats, NSArray)
 RCT_EXPORT_VIEW_PROPERTY(playbackMethod, NSArray)

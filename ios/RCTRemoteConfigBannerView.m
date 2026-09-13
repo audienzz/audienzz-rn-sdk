@@ -73,6 +73,11 @@
   self.auRemoteConfigBannerView =
       [[AURemoteConfigBannerView alloc] initWithAdConfigId:self.adConfigId];
 
+  // Must precede loadIn:, which is where the ad joins the current page.
+  if (self.pageKey != nil) {
+    [self.auRemoteConfigBannerView setScreen:self.pageKey];
+  }
+
   UIViewController *rootViewController =
       [[[[UIApplication sharedApplication] delegate] window]
           rootViewController];

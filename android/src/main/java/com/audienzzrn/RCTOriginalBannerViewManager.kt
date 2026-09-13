@@ -288,6 +288,8 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
       // Retain the handler on the view so the reload command (pageImpression
       // broadcast) can force a fresh auction via handler.reloadAd().
       reactViewGroup.updateAdViewHandler(handler)
+      // Must precede load(), which is where the ad joins the current page.
+      handler.setScreen(reactViewGroup.getPageKey())
       handler.load(
         withLazyLoading = isLazyLoad,
         prefetchMarginDp = reactViewGroup.getPrefetchMarginDp(),
@@ -410,6 +412,12 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
   @ReactProp(name = "videoPlacement")
   fun setVideoPlacement(view: RCTOriginalBannerView, value: String) {
     view.updateVideoPlacement(value)
+    view.updatePropsChanged(true)
+  }
+
+  @ReactProp(name = "pageKey")
+  fun setPageKey(view: RCTOriginalBannerView, value: String?) {
+    view.updatePageKey(value)
     view.updatePropsChanged(true)
   }
 

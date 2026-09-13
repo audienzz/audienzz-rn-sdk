@@ -21,6 +21,15 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
   private var adHeight: Int? = null
   private var receivedSize: AdSize = AdSize(1, 1)
   private var remoteConfigBannerView: AudienzzRemoteBannerView? = null
+  // Route key reported to pageImpression when this ad mounted. Every React Native ad lives in the
+  // single host Activity, so the native page coordinator can't tell one route's ads from another's
+  // by host identity — this key is what it matches on instead.
+  private var pageKey: String? = null
+
+  fun updatePageKey(value: String?) {
+    pageKey = value
+    value?.let { remoteConfigBannerView?.setScreen(it) }
+  }
 
   override fun requestLayout() {
     super.requestLayout()
@@ -107,6 +116,9 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
 
     addView(bannerView)
     remoteConfigBannerView = bannerView
+    // Must precede the config-driven load inside AudienzzRemoteBannerView, which is where the ad
+    // joins the current page. setScreen stores it as a pending key until the handler exists.
+    pageKey?.let { bannerView.setScreen(it) }
 
     bannerView.setAdListener(object : AdListener() {
       override fun onAdLoaded() {
