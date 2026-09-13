@@ -38,6 +38,17 @@ const listeners = new Set<PageListener>();
 
 /** The page reported by the most recent `Audienzz.pageImpression`. */
 export function getCurrentPage(): string | null {
+  if (currentPage == null) {
+    // Native attach-time adoption cannot repair a bridge ad: with no page key
+    // its host resolves to the single host Activity / view controller, which
+    // can never equal a route key. So the ordering contract has to be enforced
+    // by the app, and staying silent would just leave a dead slot.
+    console.warn(
+      '[Audienzz] Ad created before any pageImpression() call. Page-scoped ' +
+        'release and reload cannot work for it: call ' +
+        'Audienzz.pageImpression() for this screen BEFORE rendering its ads.'
+    );
+  }
   return currentPage;
 }
 

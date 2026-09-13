@@ -66,11 +66,15 @@ class RNAudienzzClass implements RNAudienzzModule {
    * on-screen smart-refresh banners so a returning route/tab shows a fresh creative.
    */
   pageImpression(name: string): void {
-    // Native sweeps first: every banner not on the incoming page is released
-    // (auction and refresh stopped) and the incoming page's are recreated.
+    // Native owns the transition end-to-end for original-API banners: every
+    // banner not on the incoming page is released (auction and refresh stopped)
+    // and the incoming page's are re-auctioned in place. An RN banner is a real
+    // native ad view, so that repaints on its own -- the bridge must NOT also
+    // remount it, or the replacement's initial load would fire a second
+    // auction and discard the creative native just fetched.
     NativeModulesCombined.AudienzzModule.pageImpression(name);
-    // Then the JS side remounts the incoming page's native views, because a
-    // recreate is an in-place re-auction and does not reliably repaint.
+    // Rendering-API banners are not tracked by the native coordinator, so they
+    // page-scope themselves off this notification.
     notifyPageImpression(name);
   }
 

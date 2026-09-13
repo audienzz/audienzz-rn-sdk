@@ -25,17 +25,12 @@ import {
 } from 'react-native';
 import type { OriginalBannerProps, AdError, AdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
-import {
-  getCurrentPage,
-  subscribe as subscribeToPage,
-  unsubscribe as unsubscribeFromPage,
-} from '../../pageRegistry';
+import { getCurrentPage } from '../../pageRegistry';
 
 const ComponentName = 'RCTOriginalBannerView';
 const NativeComponent = requireNativeComponent<any>(ComponentName);
 
 interface OriginalBannerState {
-  viewEpoch?: number;
   isBannerVisible: boolean;
   adSize?: AdSize;
 }
@@ -50,7 +45,6 @@ export class OriginalBanner extends Component<
     super(props);
     this.nativeComponentRef = createRef();
     this.state = {
-      viewEpoch: 0,
       isBannerVisible: props.isReserved ?? false,
     };
   }
@@ -66,30 +60,16 @@ export class OriginalBanner extends Component<
   private readonly pageKey = getCurrentPage();
 
   /**
-   * Remount the native view when this banner's own page is re-reported (back
-   * navigation, or a return from the background). Native has already recreated
-   * the ad by this point; remounting is what makes the fresh creative actually
-   * paint, since an in-place re-auction doesn't reliably repaint the native
-   * view. A page impression for a *different* page is ignored here — native
-   * released this banner, and it must stay dormant.
+   * A page impression is handled ENTIRELY by native for original-API banners:
+   * the coordinator releases every banner that isn't on the incoming page and
+   * re-auctions the ones that are, in place.
+   *
+   * The bridge must NOT also remount the native view. An RN banner is a real
+   * AdManagerAdView / GAMBannerView in the view hierarchy, so an in-place
+   * re-auction repaints on its own; remounting would drop the view, and the
+   * replacement's own initial load would fire a SECOND auction, discarding the
+   * creative native had just fetched.
    */
-  onPageImpression = (page: string, epoch: number) => {
-    if (page !== this.pageKey) {
-      return;
-    }
-    this.setState({ viewEpoch: epoch });
-  };
-
-  componentDidMount() {
-    // Reload this banner when a screen/route/tab becomes active again
-    // (Audienzz.pageImpression broadcast). The native command self-filters by
-    // visibility, so a kept-mounted off-screen banner is left alone.
-    subscribeToPage(this.onPageImpression);
-  }
-
-  componentWillUnmount() {
-    unsubscribeFromPage(this.onPageImpression);
-  }
 
   reload = () => {
     const handle = findNodeHandle(this.nativeComponentRef.current);
@@ -177,7 +157,6 @@ export class OriginalBanner extends Component<
     return (
       <View style={[bannerStyle]}>
         <NativeComponent
-          key={`audienzz-ad-${this.state.viewEpoch ?? 0}`}
           pageKey={this.pageKey}
           {...restProps}
           adUnitID={adUnitId}

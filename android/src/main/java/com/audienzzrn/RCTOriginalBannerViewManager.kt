@@ -61,6 +61,8 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
   override fun onDropViewInstance(reactViewGroup: RCTOriginalBannerView) {
     super.onDropViewInstance(reactViewGroup)
 
+    reactViewGroup.destroyAdViewHandler()
+
     val adView = getAdView(reactViewGroup)
 
     if (adView != null) {

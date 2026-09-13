@@ -167,4 +167,14 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
     receivedSize = adSize
     requestLayout()
   }
+
+  /**
+   * Tear down the Prebid handler: stops refresh, destroys the ad unit, and — importantly —
+   * deregisters from the page coordinator and AppForegroundMonitor, both of which otherwise keep
+   * this view (and its Activity) reachable after React drops it.
+   */
+  fun destroyAdViewHandler() {
+    adViewHandler?.destroy()
+    adViewHandler = null
+  }
 }

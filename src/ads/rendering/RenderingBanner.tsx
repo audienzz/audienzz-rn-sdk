@@ -36,6 +36,7 @@ const NativeComponent = requireNativeComponent<any>(ComponentName);
 
 interface RenderingBannerState {
   viewEpoch?: number;
+  isPageActive: boolean;
   isBannerVisible: boolean;
   adSize?: AdSize;
 }
@@ -50,6 +51,7 @@ export class RenderingBanner extends Component<
     super(props);
     this.state = {
       viewEpoch: 0,
+      isPageActive: true,
       isBannerVisible: props.isReserved ?? false,
     };
   }
@@ -57,27 +59,29 @@ export class RenderingBanner extends Component<
   /**
    * The page that was current when this banner mounted.
    *
-   * Rendering-API banners are NOT page-scoped natively — the coordinator only
-   * tracks original-API banners (AudienzzAdViewHandler / AUBannerView), so
-   * there is no `pageKey` to send. Remounting on a return to this page is all
-   * the page scoping a rendering banner gets: it tears the native ad down and
-   * builds a fresh one, which is why the epoch is still tracked here.
+   * Rendering-API banners are NOT tracked by the native page coordinator — it
+   * only knows about original-API banners (AudienzzAdViewHandler /
+   * AUBannerView). So page ownership for them is enforced here instead: the
+   * native view is unmounted while another page is active, which tears the
+   * rendering ad down, and remounted when this page returns, which builds a
+   * fresh one. Without this a rendering banner would keep refreshing on a
+   * screen the user has left — the exact leak page-scoping exists to stop.
+   *
+   * A `null` pageKey means the app never called `pageImpression`; such a banner
+   * stays permanently active, preserving behaviour for apps that don't use page
+   * impressions.
    */
   private readonly pageKey = getCurrentPage();
 
-  /**
-   * Remount the native view when this banner's own page is re-reported (back
-   * navigation, or a return from the background). Native has already recreated
-   * the ad by this point; remounting is what makes the fresh creative actually
-   * paint, since an in-place re-auction doesn't reliably repaint the native
-   * view. A page impression for a *different* page is ignored here — native
-   * released this banner, and it must stay dormant.
-   */
   onPageImpression = (page: string, epoch: number) => {
-    if (page !== this.pageKey) {
+    if (this.pageKey == null) {
       return;
     }
-    this.setState({ viewEpoch: epoch });
+    if (page === this.pageKey) {
+      this.setState({ isPageActive: true, viewEpoch: epoch });
+    } else {
+      this.setState({ isPageActive: false });
+    }
   };
 
   componentDidMount() {
@@ -148,6 +152,13 @@ export class RenderingBanner extends Component<
     const bannerStyle = this.state.isBannerVisible
       ? { width: this.state.adSize?.width, height: this.state.adSize?.height }
       : styles.hiddenBanner;
+
+    // Unmounting the native view while another page is active IS the release for
+    // a rendering banner — see `pageKey`. The slot keeps its layout box so the
+    // page doesn't reflow when the ad comes back.
+    if (!this.state.isPageActive) {
+      return <View style={[bannerStyle]} />;
+    }
 
     return (
       <View style={[bannerStyle]}>

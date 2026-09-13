@@ -26,11 +26,7 @@ import {
 } from 'react-native';
 import type { ViewStyle } from 'react-native';
 import type { RemoteConfigBannerProps } from '../../types';
-import {
-  getCurrentPage,
-  subscribe as subscribeToPage,
-  unsubscribe as unsubscribeFromPage,
-} from '../../pageRegistry';
+import { getCurrentPage } from '../../pageRegistry';
 
 const COMPONENT_NAME = 'RNRemoteConfigBanner';
 
@@ -62,47 +58,20 @@ const RNRemoteConfigBannerView =
  */
 export class RemoteConfigBanner extends Component<
     RemoteConfigBannerProps,
-    { height?: number; viewEpoch: number }
+    { height?: number }
 > {
     private nativeRef: any;
 
     state = {
         height: undefined,
-        viewEpoch: 0,
     };
 
     /**
      * The page that was current when this banner mounted. Travels to native as
      * the `pageKey` prop so the page coordinator can match this ad to its
      * screen by value — host identity can't, since every RN ad shares one host.
-     *
-     * `null` means the app never called `pageImpression` before rendering this
-     * ad, which native reports as an integration error.
      */
     private readonly pageKey = getCurrentPage();
-
-    /**
-     * Remount the native view when this banner's own page is re-reported (back
-     * navigation, or a return from the background). Native has already
-     * recreated the ad by this point; remounting is what makes the fresh
-     * creative actually paint, since an in-place re-auction doesn't reliably
-     * repaint the native view. A page impression for a *different* page is
-     * ignored — native released this banner, and it must stay dormant.
-     */
-    onPageImpression = (page: string, epoch: number) => {
-        if (page !== this.pageKey) {
-            return;
-        }
-        this.setState({ viewEpoch: epoch });
-    };
-
-    componentDidMount() {
-        subscribeToPage(this.onPageImpression);
-    }
-
-    componentWillUnmount() {
-        unsubscribeFromPage(this.onPageImpression);
-    }
 
     /**
      * Reload this banner (fresh auction). Broadcast target for
@@ -165,7 +134,6 @@ export class RemoteConfigBanner extends Component<
         return (
             <View style={[style, dynamicStyle]}>
                 <RNRemoteConfigBannerView
-                    key={`audienzz-ad-${this.state.viewEpoch}`}
                     pageKey={this.pageKey}
                     {...otherProps}
                     adWidth={adWidth}
