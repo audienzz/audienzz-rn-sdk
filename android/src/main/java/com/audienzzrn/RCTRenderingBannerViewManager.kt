@@ -37,9 +37,7 @@ class RCTRenderingBannerViewManager : SimpleViewManager<RCTRenderingBannerView>(
     super.onAfterUpdateTransaction(view)
 
     if (view.getPropsChanged()) {
-      val task = Runnable { view.createAd() }
-      view.setPendingAdCreation(task)
-      Handler(Looper.getMainLooper()).postDelayed(task, 1100)
+      view.scheduleAdCreation(Runnable { view.createAd() }, 1100)
 
     }
 

@@ -55,9 +55,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
       // Retained so teardown can cancel it: React can drop the view inside this window, and the
       // task would then build an ad — handler, coordinator registration and all — for a view that
       // no longer exists.
-      val task = Runnable { requestAd(reactViewGroup) }
-      reactViewGroup.setPendingAdCreation(task)
-      Handler(Looper.getMainLooper()).postDelayed(task, 1100)
+      reactViewGroup.scheduleAdCreation(Runnable { requestAd(reactViewGroup) }, 1100)
     }
 
     reactViewGroup.updatePropsChanged(false)

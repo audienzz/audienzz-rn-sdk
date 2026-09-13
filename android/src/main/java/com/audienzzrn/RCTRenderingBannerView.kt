@@ -75,18 +75,20 @@ class RCTRenderingBannerView(context: Context) : RCTOriginalView(context) {
     auBannerView?.stopRefresh()
   }
 
+  // Handler.removeCallbacks only removes messages whose target is THIS handler instance, so the
+  // scheduling handler has to be the same object that cancels.
+  private val adCreationHandler = android.os.Handler(android.os.Looper.getMainLooper())
   private var pendingAdCreation: Runnable? = null
 
-  /** Retains the delayed ad-creation task so [destroyAd] can drop it. */
-  fun setPendingAdCreation(task: Runnable) {
+  /** Schedules delayed ad creation so [destroyAd] can actually drop it. */
+  fun scheduleAdCreation(task: Runnable, delayMillis: Long) {
     cancelPendingAdCreation()
     pendingAdCreation = task
+    adCreationHandler.postDelayed(task, delayMillis)
   }
 
   fun cancelPendingAdCreation() {
-    pendingAdCreation?.let {
-      android.os.Handler(android.os.Looper.getMainLooper()).removeCallbacks(it)
-    }
+    pendingAdCreation?.let { adCreationHandler.removeCallbacks(it) }
     pendingAdCreation = null
   }
 
