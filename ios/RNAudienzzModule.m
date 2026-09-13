@@ -30,11 +30,9 @@ RCT_EXPORT_MODULE();
 }
 
 RCT_EXPORT_METHOD(initialize: (NSString *)companyId
-                  enablePPID: (BOOL)enablePPID
                     resolver: (RCTPromiseResolveBlock)resolve
                     rejecter: (RCTPromiseRejectBlock)reject) {
   [self initializeWithCompanyId:companyId
-                     enablePPID:enablePPID
                        resolver:resolve
                        rejecter:reject];
 }
@@ -46,12 +44,10 @@ RCT_EXPORT_METHOD(setSchainObject: (NSString *)schain
 }
 
 - (void)initializeWithCompanyId:(NSString *)companyId
-                     enablePPID:(BOOL)enablePPID
                        resolver:(RCTPromiseResolveBlock)resolve
                        rejecter:(RCTPromiseRejectBlock)reject {
   [[Audienzz shared]
       configureSDK_RNWithCompanyId:companyId
-                        enablePPID:enablePPID
                         completion:^{
                           NSDictionary *result = @{
                             @"status" : @"SUCCEEDED",
@@ -72,15 +68,11 @@ RCT_EXPORT_METHOD(setSchainObject: (NSString *)schain
   resolve(nil);
 }
 
-RCT_EXPORT_METHOD(isAutomaticPpidEnabled: (RCTPromiseResolveBlock)
-                        resolve rejecter: (RCTPromiseRejectBlock)reject) {
-  NSNumber *getAutomaticPpidEnabled =
-      [NSNumber numberWithBool:[[PPIDManager shared] getAutomaticPpidEnabled]];
-  resolve(getAutomaticPpidEnabled);
-}
-
-RCT_EXPORT_METHOD(setAutomaticPpidEnabled: (BOOL)isPpidEnabled) {
-  [[PPIDManager shared] setAutomaticPpidEnabled:isPpidEnabled];
+// Supply a publisher-owned PPID (e.g. a hashed e-mail). Takes precedence over the
+// SDK-generated one; pass null to clear and fall back to it. A PPID is always
+// sent -- there is no opt-out.
+RCT_EXPORT_METHOD(setPublisherPpid: (nullable NSString *)ppid) {
+  [[PPIDManager shared] setPublisherPPID:ppid];
 }
 
 // Force smart-refresh v2 on/off, overriding the backend smartRefreshV2 config for the session.
@@ -127,7 +119,6 @@ RCT_EXPORT_METHOD(configureRemote : (NSString *)remoteUrl publisherId : (
 }
 
 RCT_EXPORT_METHOD(fetchPublisherConfig: (NSString *)publisherId
-                            enablePPID: (BOOL)enablePPID
                               resolver: (RCTPromiseResolveBlock)resolve
                               rejecter: (RCTPromiseRejectBlock)reject) {
   // GMAS removed the `sdkVersion` string; build it from `versionNumber`.
@@ -138,7 +129,6 @@ RCT_EXPORT_METHOD(fetchPublisherConfig: (NSString *)publisherId
                           (long)gamVersionNumber.patchVersion];
   [[Audienzz shared]
       configureWithRemoteSDKWithGadMobileAdsVersion:gamVersion
-                               enablePPID:enablePPID
                         completionHandler:^(NSError *_Nullable error) {
                           if (error != nil) {
                             reject(@"FETCH_FAILED",

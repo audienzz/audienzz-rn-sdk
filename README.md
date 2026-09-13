@@ -302,9 +302,13 @@ RNAudienzz()
 ------------------------------------
 | Method                   | Parameters             | Description                                                                                                                              |
 |--------------------------|------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
-| `isAutomaticPpidEnabled` |                        | Used to get current status of automatic PPID usage (if true - PPID is generated and used with all requests, if false - PPID is not used) |
-| `setAutomaticPpidEnabled` |  `enablePpid: Boolean` | Used to enable or disable automatic PPID usage                                                                                           |
-| `getPpid`                |                        | Used to obtain current PPID if automaticPpid is enabled                                                                                  |
+| `setPublisherPpid`       | `ppid: string \| null` | Supply your own PPID (e.g. a hashed e-mail). Takes precedence over the SDK-generated one; pass `null` to clear and fall back to it.       |
+| `getPpid`                |                        | The PPID currently being sent: yours if set, otherwise the SDK-generated UUID. `null` only when consent is missing.                       |
+
+A PPID is **always** sent with ad requests — the SDK generates one (persisted
+locally, rotated every 12 months) whenever you haven't supplied your own. There
+is no enable/disable switch: a missing PPID costs frequency capping and
+cross-session targeting. It is suppressed only when consent is missing.
 | `setSchainObject`        | `schain: string`       | Method used to set Schain object for all ad requests.                                                                                    |
 | `pageImpression`        | `name: string`         | Report an ad-bearing screen/dialog by name — fires a `pageImpression` and reloads on-screen banners. Call on each such screen. See [Screen tracking](#screen-tracking-analytics). |
 | `setSmartRefreshV2Enabled` | `enabled: boolean`   | Force smart-refresh v2 (directional viewport gate) on/off, overriding backend config. Call **before** creating banners.                  |

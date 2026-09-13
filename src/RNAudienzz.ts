@@ -3,18 +3,26 @@ import type { RNAudienzzModule, AudienzzInitStatus } from './types';
 import { notifyPageImpression } from './pageRegistry';
 
 class RNAudienzzClass implements RNAudienzzModule {
-  initialize(companyId: string, enablePpid: boolean = false) {
-    return NativeModulesCombined.AudienzzModule.initialize(companyId, enablePpid);
+  initialize(companyId: string) {
+    return NativeModulesCombined.AudienzzModule.initialize(companyId);
   }
 
-  isAutomaticPpidEnabled(): Promise<boolean> {
-    return NativeModulesCombined.AudienzzModule.isAutomaticPpidEnabled();
+  /**
+   * Supply your own PPID (e.g. a hashed e-mail address). It takes precedence
+   * over the SDK-generated one; pass `null` to clear and fall back to it.
+   */
+  setPublisherPpid(ppid: string | null): Promise<void> {
+    return NativeModulesCombined.AudienzzModule.setPublisherPpid(ppid);
   }
 
-  setAutomaticPpidEnabled(enablePpid: boolean): Promise<void> {
-    return NativeModulesCombined.AudienzzModule.setAutomaticPpidEnabled(enablePpid);
-  }
-
+  /**
+   * The PPID currently being sent: yours if set via `setPublisherPpid`,
+   * otherwise the SDK-generated UUID. `null` only when consent is missing.
+   *
+   * A PPID is always sent with ad requests — the SDK generates one (persisted
+   * locally, rotated every 12 months) whenever you haven't supplied your own.
+   * There is no enable/disable switch.
+   */
   getPpid(): Promise<string | null> {
     return NativeModulesCombined.AudienzzModule.getPpid();
   }
@@ -70,14 +78,14 @@ class RNAudienzzClass implements RNAudienzzModule {
     return NativeModulesCombined.AudienzzModule.configureRemote(remoteUrl, publisherId);
   }
 
-  fetchPublisherConfig(publisherId: string, enablePpid: boolean = false): Promise<void> {
-    return NativeModulesCombined.AudienzzModule.fetchPublisherConfig(publisherId, enablePpid);
+  fetchPublisherConfig(publisherId: string): Promise<void> {
+    return NativeModulesCombined.AudienzzModule.fetchPublisherConfig(publisherId);
   }
 
-  initializeRemote(remoteUrl: string, publisherId: string, enablePpid: boolean = false): Promise<AudienzzInitStatus> {
+  initializeRemote(remoteUrl: string, publisherId: string): Promise<AudienzzInitStatus> {
     return this.configureRemote(remoteUrl, publisherId)
       .then(() => {
-        return this.fetchPublisherConfig(publisherId, enablePpid);
+        return this.fetchPublisherConfig(publisherId);
       })
       .then(() => ({
         status: 'SUCCEEDED',

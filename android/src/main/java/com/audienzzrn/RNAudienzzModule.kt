@@ -34,8 +34,8 @@ private const val RN_SDK_VERSION = "0.4.4"
 class RNAudienzzModule(reactContext: ReactApplicationContext) :
   ReactNativeModule(reactContext, SERVICE) {
   @ReactMethod
-  fun initialize(companyID: String, enablePpid: Boolean = false, promise: Promise) {
-    AudienzzPrebidMobile.initializeSdk(applicationContext, companyID, enablePpid = enablePpid) { status ->
+  fun initialize(companyID: String, promise: Promise) {
+    AudienzzPrebidMobile.initializeSdk(applicationContext, companyID) { status ->
       when (status) {
         AudienzzInitializationStatus.SUCCEEDED -> {
           setupOmid()
@@ -66,14 +66,13 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
     AudienzzTargetingParams.setBridgeTargeting("au_rn_v", RN_SDK_VERSION)
   }
 
+  /**
+   * Supply a publisher-owned PPID (e.g. a hashed e-mail). Takes precedence over the SDK-generated
+   * one; pass null to clear and fall back to it. A PPID is always sent — there is no opt-out.
+   */
   @ReactMethod
-  fun isAutomaticPpidEnabled(promise: Promise) {
-    promise.resolve(AudienzzPrebidMobile.ppidManager?.isAutomaticPpidEnabled() ?: false)
-  }
-
-  @ReactMethod
-  fun setAutomaticPpidEnabled(isPpidEnabled: Boolean) {
-    AudienzzPrebidMobile.ppidManager?.setAutomaticPpidEnabled(isPpidEnabled)
+  fun setPublisherPpid(ppid: String?) {
+    AudienzzPrebidMobile.ppidManager?.setPublisherPpid(ppid)
   }
 
   @ReactMethod
@@ -131,11 +130,10 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
-  fun fetchPublisherConfig(publisherId: String, enablePpid: Boolean, promise: Promise) {
+  fun fetchPublisherConfig(publisherId: String, promise: Promise) {
     AudienzzPrebidMobile.initializeRemoteSdk(
       applicationContext,
-      publisherId,
-      enablePpid = enablePpid
+      publisherId
     ) { status ->
       if (status == AudienzzInitializationStatus.SUCCEEDED) {
         setupOmid()
