@@ -23,10 +23,28 @@ static NSString * const kRNSdkVersion = @"0.4.4";
 
 @implementation RNAudienzzModule
 
+@synthesize bridge = _bridge;
+
 RCT_EXPORT_MODULE();
 
 - (dispatch_queue_t)methodQueue {
   return dispatch_get_main_queue();
+}
+
+// Forward every native page impression to JS -- including the automatic one fired on returning to
+// the foreground, which never passes through the JS API. Native owns foreground reporting; JS just
+// page-scopes the ad types the native coordinator doesn't track (rendering banners).
+- (void)setBridge:(RCTBridge *)bridge {
+  _bridge = bridge;
+  __weak __typeof(self) weakSelf = self;
+  [Audienzz shared].pageImpressionObserver = ^(NSString *name) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [weakSelf.bridge enqueueJSCall:@"RCTDeviceEventEmitter"
+                              method:@"emit"
+                                args:@[ @"AudienzzPageImpression", name ?: @"" ]
+                          completion:NULL];
+    });
+  };
 }
 
 RCT_EXPORT_METHOD(initialize: (NSString *)companyId

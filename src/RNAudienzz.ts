@@ -1,6 +1,5 @@
 import NativeModulesCombined from './NativeRNAudienzzModule';
 import type { RNAudienzzModule, AudienzzInitStatus } from './types';
-import { notifyPageImpression } from './pageRegistry';
 
 class RNAudienzzClass implements RNAudienzzModule {
   initialize(companyId: string) {
@@ -73,9 +72,10 @@ class RNAudienzzClass implements RNAudienzzModule {
     // remount it, or the replacement's initial load would fire a second
     // auction and discard the creative native just fetched.
     NativeModulesCombined.AudienzzModule.pageImpression(name);
-    // Rendering-API banners are not tracked by the native coordinator, so they
-    // page-scope themselves off this notification.
-    notifyPageImpression(name);
+    // No JS-side notify here: native echoes every page impression back as the
+    // `AudienzzPageImpression` device event (see pageRegistry), including the
+    // automatic one on returning to the foreground, which never passes through
+    // this method. One owner, so a transition can't be counted twice.
   }
 
   configureRemote(remoteUrl: string, publisherId: string): Promise<void> {

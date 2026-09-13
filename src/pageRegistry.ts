@@ -14,6 +14,8 @@
     limitations under the License.
 */
 
+import { DeviceEventEmitter } from 'react-native';
+
 // Page-scoped ad ownership for the React Native bridge.
 //
 // The native SDKs match an ad to its screen by host identity (Activity /
@@ -28,6 +30,9 @@
 // auction into the same native view, which on Android does not necessarily
 // repaint, so banners belonging to the incoming page also remount their native
 // view here — see `subscribe`.
+
+/** Device event native emits after every page impression. */
+const PAGE_IMPRESSION_EVENT = 'AudienzzPageImpression';
 
 let currentPage: string | null = null;
 let epoch = 0;
@@ -66,12 +71,23 @@ export function unsubscribe(listener: PageListener): void {
 }
 
 /**
- * Record a page transition and notify mounted banners. Called by
- * `Audienzz.pageImpression` after the native call, so native has already swept
- * by the time listeners run.
+ * Record a page transition and notify mounted banners.
+ *
+ * Driven by the native `AudienzzPageImpression` device event, not by the JS
+ * API, so it fires for EVERY real page impression — including the automatic one
+ * native emits on returning to the foreground, which never passes through
+ * `Audienzz.pageImpression`. Rendering banners page-scope themselves off this;
+ * without it they missed foreground recreation entirely. One owner also means a
+ * transition can't be counted twice.
  */
-export function notifyPageImpression(page: string): void {
+function notifyPageImpression(page: string): void {
   currentPage = page;
   epoch += 1;
   listeners.forEach((listener) => listener(page, epoch));
 }
+
+DeviceEventEmitter.addListener(PAGE_IMPRESSION_EVENT, (page: string) => {
+  if (typeof page === 'string' && page.length > 0) {
+    notifyPageImpression(page);
+  }
+});

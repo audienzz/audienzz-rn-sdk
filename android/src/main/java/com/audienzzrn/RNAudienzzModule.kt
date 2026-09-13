@@ -116,6 +116,17 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
     AudienzzPrebidMobile.pageImpression(name)
   }
 
+  init {
+    // Forward every native page impression to JS -- including the automatic one fired on returning
+    // to the foreground, which never passes through the JS API. Native owns foreground reporting;
+    // JS just page-scopes the ad types the native coordinator doesn't track (rendering banners).
+    AudienzzPrebidMobile.pageImpressionObserver = { name ->
+      reactContext
+        .getJSModule(com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+        .emit(PAGE_IMPRESSION_EVENT, name)
+    }
+  }
+
   @ReactMethod
   fun configureRemote(remoteUrl: String, publisherId: String, promise: Promise) {
     try {
@@ -160,5 +171,8 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
   companion object {
     private const val SERVICE = "RNAudienzzModule"
     private const val TAG = "AudienzzSDKInitializer"
+
+    /** Device event carrying the page name of every native page impression. */
+    const val PAGE_IMPRESSION_EVENT = "AudienzzPageImpression"
   }
 }
