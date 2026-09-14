@@ -6,7 +6,7 @@ export type AudienzzInitStatus = {
 export interface RNAudienzzModule {
   initialize(companyId: string): Promise<AudienzzInitStatus>;
 
-  setPublisherPpid(ppid: string | null): Promise<void>;
+  setPublisherPpid(ppid: string | null): void;
   getPpid(): Promise<string | null>;
 
   setSchainObject(schain: string): Promise<void>;

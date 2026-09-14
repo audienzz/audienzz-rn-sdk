@@ -11,8 +11,12 @@ class RNAudienzzClass implements RNAudienzzModule {
    * Supply your own PPID (e.g. a hashed e-mail address). It takes precedence
    * over the SDK-generated one; pass `null` to clear and fall back to it.
    */
-  setPublisherPpid(ppid: string | null): Promise<void> {
-    return NativeModulesCombined.AudienzzModule.setPublisherPpid(ppid);
+  setPublisherPpid(ppid: string | null): void {
+    // Deliberately not a Promise: both native implementations are plain void methods with no
+    // promise callbacks, so a declared Promise<void> was a lie that made valid TypeScript --
+    // `setPublisherPpid(id).then(...)` -- throw at runtime. Setting a PPID is a local assignment;
+    // there is nothing to await.
+    NativeModulesCombined.AudienzzModule.setPublisherPpid(ppid);
   }
 
   /**
