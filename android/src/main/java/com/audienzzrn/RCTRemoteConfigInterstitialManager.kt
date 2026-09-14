@@ -1,44 +1,40 @@
 package com.audienzz
 
-import android.os.Handler
-import android.os.Looper
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
 
-class RCTRemoteConfigInterstitialManager :
-  SimpleViewManager<RCTRemoteConfigInterstitialView>() {
-
-  override fun getName(): String = "RNRemoteConfigInterstitial"
-
-  override fun createViewInstance(
-    reactContext: ThemedReactContext
-  ): RCTRemoteConfigInterstitialView {
-    return RCTRemoteConfigInterstitialView(reactContext)
-  }
-
+class RCTRemoteConfigInterstitialManager : SimpleViewManager<RCTRemoteConfigInterstitialView>() {
+  override fun getName() = "RNRemoteConfigInterstitial"
+  override fun createViewInstance(reactContext: ThemedReactContext) = RCTRemoteConfigInterstitialView(reactContext)
   override fun onAfterUpdateTransaction(view: RCTRemoteConfigInterstitialView) {
     super.onAfterUpdateTransaction(view)
-
-    Handler(Looper.getMainLooper()).postDelayed({
-      view.createAd()
-    }, 1100)
+    view.createAd()
   }
-
-  override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
-    fun eventMap(eventName: String) = mapOf("registrationName" to eventName)
-
-    return mapOf(
-      "onAdLoaded" to eventMap("onAdLoaded"),
-      "onAdClicked" to eventMap("onAdClicked"),
-      "onAdOpened" to eventMap("onAdOpened"),
-      "onAdClosed" to eventMap("onAdClosed"),
-      "onAdFailedToLoad" to eventMap("onAdFailedToLoad")
-    )
+  override fun onDropViewInstance(view: RCTRemoteConfigInterstitialView) {
+    view.dispose()
+    super.onDropViewInstance(view)
   }
+  override fun getCommandsMap() = mapOf("show" to 0, "preload" to 1, "showAtOpportunity" to 2, "dispose" to 3)
+  override fun receiveCommand(view: RCTRemoteConfigInterstitialView, commandId: Int, args: ReadableArray?) {
+    when (commandId) {
+      0 -> view.show()
+      1 -> view.preload()
+      2 -> view.showAtOpportunity(args?.let { it.size() > 0 && it.getBoolean(0) } ?: false)
+      3 -> view.dispose()
+    }
+  }
+  override fun receiveCommand(view: RCTRemoteConfigInterstitialView, commandId: String, args: ReadableArray?) {
+    getCommandsMap()[commandId]?.let { receiveCommand(view, it, args) }
+  }
+  override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> =
+    listOf("onAdLoaded", "onAdClicked", "onAdOpened", "onAdClosed", "onAdFailedToLoad",
+      "onAdFailedToShow", "onAdImpression", "onLifecycleEvent")
+      .associateWith { mapOf("registrationName" to it) }
 
   @ReactProp(name = "adConfigId")
-  fun setAdConfigId(view: RCTRemoteConfigInterstitialView, value: String?) {
-    view.setAdConfigId(value)
-  }
+  fun setAdConfigId(view: RCTRemoteConfigInterstitialView, value: String?) { view.setAdConfigId(value) }
+  @ReactProp(name = "manualControl", defaultBoolean = false)
+  fun setManualControl(view: RCTRemoteConfigInterstitialView, value: Boolean) { view.setManualControl(value) }
 }

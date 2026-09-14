@@ -16,146 +16,126 @@
  */
 
 #import "RCTRemoteConfigInterstitialView.h"
-#import <React/RCTLog.h>
+#import <React/UIView+React.h>
 
 @implementation RCTRemoteConfigInterstitialView {
-  RCTBubblingEventBlock _onAdLoaded;
-  RCTBubblingEventBlock _onAdFailedToLoad;
-  RCTBubblingEventBlock _onAdClicked;
-  RCTBubblingEventBlock _onAdOpened;
-  RCTBubblingEventBlock _onAdClosed;
+  NSString *_appliedConfig;
+  BOOL _appliedManualControl;
+  BOOL _disposed;
+  BOOL _loading;
+  BOOL _presenting;
+  NSUInteger _generation;
 }
 
-- (instancetype)init {
-  self = [super init];
-  if (self) {
-    // Interstitial doesn't need semaphore/background queue
-  }
-  return self;
-}
+- (void)didSetProps:(NSArray<NSString *> *)changedProps { [self createAd]; }
 
-- (void)setAdConfigId:(NSString *)adConfigId {
-  _adConfigId = adConfigId;
-  self.propsChanged = YES;
-
-  if (_adConfigId) {
-    self.auRemoteConfigInterstitial =
-        [[AURemoteConfigInterstitial alloc] initWithAdConfigId:_adConfigId];
-    self.auRemoteConfigInterstitial.delegate = self;
-  }
-}
-
-- (void)didSetProps:(NSArray<NSString *> *)changedProps {
-  if (self.propsChanged) {
-    [self createAd];
-  }
-  self.propsChanged = NO;
+- (void)releaseOwner {
+  _generation++;
+  _loading = NO;
+  _presenting = NO;
+  self.auRemoteConfigInterstitial.delegate = nil;
+  self.auRemoteConfigInterstitial.onPresentationError = nil;
+  self.auRemoteConfigInterstitial.onLifecycleEvent = nil;
+  [self.auRemoteConfigInterstitial destroy];
+  self.auRemoteConfigInterstitial = nil;
 }
 
 - (void)createAd {
-  [self load];
-}
-
-- (void)load {
-  if (!self.auRemoteConfigInterstitial) {
-    RCTLogError(@"[RCTRemoteConfigInterstitialView] adConfigId must be set "
-                @"before loading");
-    if (_onAdFailedToLoad) {
-      _onAdFailedToLoad(
-          @{@"code" : @(-1), @"message" : @"adConfigId is required"});
-    }
-    return;
-  }
-
-  self.auRemoteConfigInterstitial.presentationViewController =
-      [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+  if (_disposed) return;
+  if ((_appliedConfig == self.adConfigId || [_appliedConfig isEqualToString:self.adConfigId]) &&
+      _appliedManualControl == self.manualControl) return;
+  [self releaseOwner];
+  _appliedConfig = [self.adConfigId copy];
+  _appliedManualControl = self.manualControl;
+  if (self.adConfigId.length == 0) return;
+  self.auRemoteConfigInterstitial = [[AURemoteConfigInterstitial alloc] initWithAdConfigId:self.adConfigId];
+  self.auRemoteConfigInterstitial.delegate = self;
+  NSUInteger token = _generation;
   __weak typeof(self) weakSelf = self;
   self.auRemoteConfigInterstitial.onPresentationError = ^(NSError *error) {
-    __strong typeof(weakSelf) strongSelf = weakSelf;
-    if (strongSelf && strongSelf->_onAdFailedToLoad) {
-      // Preserve the bridge's legacy failure prop, including new native preflight errors.
-      strongSelf->_onAdFailedToLoad(@{@"code": @(error.code), @"message": error.localizedDescription});
-    }
+    typeof(self) self = weakSelf;
+    if (!self || self->_disposed || token != self->_generation) return;
+    self->_presenting = NO;
+    NSDictionary *payload = [self errorPayload:error];
+    if (self.onAdFailedToShow) self.onAdFailedToShow(payload);
+    else if (!self.manualControl && self.onAdFailedToLoad) self.onAdFailedToLoad(payload);
   };
-  [self.auRemoteConfigInterstitial
-      loadWithCompletion:^(NSError *_Nullable error) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf)
-          return;
-
-        if (error) {
-          RCTLogError(@"[RCTRemoteConfigInterstitialView] Failed to load: %@",
-                      error.localizedDescription);
-          if (strongSelf->_onAdFailedToLoad) {
-            strongSelf->_onAdFailedToLoad(@{
-              @"code" : @(error.code),
-              @"message" : [error localizedDescription]
-            });
-          }
-        } else {
-          if (strongSelf->_onAdLoaded) {
-            strongSelf->_onAdLoaded(@{});
-          }
-
-        }
-      }];
+  self.auRemoteConfigInterstitial.onLifecycleEvent = ^(NSDictionary *event) {
+    typeof(self) self = weakSelf;
+    if (!self || self->_disposed || token != self->_generation) return;
+    if ([event[@"event"] isEqual:@"showAttempted"]) self->_presenting = YES;
+    if (self.onLifecycleEvent) self.onLifecycleEvent(event);
+  };
+  if (!self.manualControl) [self load];
 }
 
-- (void)show {
-  if (!self.auRemoteConfigInterstitial ||
-      !self.auRemoteConfigInterstitial.isReady) {
-    RCTLogError(@"[RCTRemoteConfigInterstitialView] Ad not ready to show");
+- (NSDictionary *)errorPayload:(NSError *)error {
+  return @{@"code": @(error.code), @"message": error.localizedDescription, @"domain": error.domain};
+}
+
+- (UIViewController *)presentationController {
+  return [self reactViewController] ?: self.window.rootViewController;
+}
+
+- (void)load { if (!self.manualControl) [self startLoad:NO]; }
+- (void)preload { if (self.manualControl) [self startLoad:YES]; }
+
+- (void)startLoad:(BOOL)preload {
+  if (_disposed || _loading || _presenting || self.auRemoteConfigInterstitial.isReady) return;
+  if (!self.auRemoteConfigInterstitial) {
+    if (self.onAdFailedToLoad) self.onAdFailedToLoad(@{@"code": @(-1), @"message": @"adConfigId is required", @"domain": @"Audienzz"});
     return;
   }
-
-  UIViewController *rootViewController =
-      [[[[UIApplication sharedApplication] delegate] window]
-          rootViewController];
-  [self.auRemoteConfigInterstitial showFrom:rootViewController];
+  _loading = YES;
+  self.auRemoteConfigInterstitial.presentationViewController = [self presentationController];
+  NSUInteger token = _generation;
+  __weak typeof(self) weakSelf = self;
+  void (^completion)(NSError *) = ^(NSError *error) {
+    typeof(self) self = weakSelf;
+    if (!self || self->_disposed || token != self->_generation) return;
+    self->_loading = NO;
+    if (error) {
+      if (self.onAdFailedToLoad) self.onAdFailedToLoad([self errorPayload:error]);
+    } else if (self.onAdLoaded) self.onAdLoaded(@{});
+  };
+  if (preload) [self.auRemoteConfigInterstitial preloadWithCompletion:completion];
+  else [self.auRemoteConfigInterstitial loadWithCompletion:completion];
 }
 
-#pragma mark - Event Handlers
+- (void)showAtOpportunity:(BOOL)eligible {
+  if (!_disposed && self.manualControl) [self showOnce:eligible];
+}
+- (void)show { if (!_disposed) [self showOnce:YES]; }
 
-- (void)setOnAdLoaded:(RCTBubblingEventBlock)onAdLoaded {
-  _onAdLoaded = onAdLoaded;
+- (void)showOnce:(BOOL)eligible {
+  UIViewController *controller = [self presentationController];
+  if (!controller) {
+    if (self.onLifecycleEvent) self.onLifecycleEvent(@{@"event": @"opportunitySkipped", @"reason": @"inactive", @"configId": self.adConfigId ?: @""});
+    return;
+  }
+  [self.auRemoteConfigInterstitial showAtOpportunityFrom:controller eligible:eligible];
 }
 
-- (void)setOnAdFailedToLoad:(RCTBubblingEventBlock)onAdFailedToLoad {
-  _onAdFailedToLoad = onAdFailedToLoad;
+- (void)dispose {
+  if (_disposed) return;
+  _disposed = YES;
+  [self releaseOwner];
 }
-
-- (void)setOnAdClicked:(RCTBubblingEventBlock)onAdClicked {
-  _onAdClicked = onAdClicked;
-}
-
-- (void)setOnAdOpened:(RCTBubblingEventBlock)onAdOpened {
-  _onAdOpened = onAdOpened;
-}
-
-- (void)setOnAdClosed:(RCTBubblingEventBlock)onAdClosed {
-  _onAdClosed = onAdClosed;
-}
-
-#pragma mark - GADFullScreenContentDelegate
+// Paper calls invalidate when purging a view; Fabric interop releases its paper view.
+- (void)invalidate { [self dispose]; }
+- (void)dealloc { [self releaseOwner]; }
 
 - (void)adDidRecordClick:(id<GADFullScreenPresentingAd>)ad {
-  if (_onAdClicked) {
-    _onAdClicked(@{});
-  }
+  if (!_disposed && self.onAdClicked) self.onAdClicked(@{});
 }
-
+- (void)adDidRecordImpression:(id<GADFullScreenPresentingAd>)ad {
+  if (!_disposed && self.onAdImpression) self.onAdImpression(@{});
+}
 - (void)adWillPresentFullScreenContent:(id<GADFullScreenPresentingAd>)ad {
-  if (_onAdOpened) {
-    _onAdOpened(@{});
-  }
+  if (!_disposed && self.onAdOpened) self.onAdOpened(@{});
 }
-
 - (void)adDidDismissFullScreenContent:(id<GADFullScreenPresentingAd>)ad {
-  if (_onAdClosed) {
-    _onAdClosed(@{});
-  }
+  _presenting = NO;
+  if (!_disposed && self.onAdClosed) self.onAdClosed(@{});
 }
-
-// Presentation failures are forwarded once through onPresentationError above.
-
 @end

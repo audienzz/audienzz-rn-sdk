@@ -29,6 +29,10 @@ RCT_EXPORT_MODULE(RNRemoteConfigInterstitial)
 }
 
 RCT_EXPORT_VIEW_PROPERTY(adConfigId, NSString)
+RCT_EXPORT_VIEW_PROPERTY(manualControl, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(onAdFailedToShow, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onAdImpression, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onLifecycleEvent, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdLoaded, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdClicked, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdOpened, RCTBubblingEventBlock)
@@ -55,4 +59,22 @@ RCT_EXPORT_METHOD(show : (nonnull NSNumber *)reactTag) {
   });
 }
 
+RCT_EXPORT_METHOD(preload : (nonnull NSNumber *)reactTag) {
+  [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *manager, NSDictionary<NSNumber *, UIView *> *registry) {
+    UIView *view = registry[reactTag];
+    if ([view isKindOfClass:[RCTRemoteConfigInterstitialView class]]) [(RCTRemoteConfigInterstitialView *)view preload];
+  }];
+}
+RCT_EXPORT_METHOD(showAtOpportunity : (nonnull NSNumber *)reactTag eligible : (BOOL)eligible) {
+  [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *manager, NSDictionary<NSNumber *, UIView *> *registry) {
+    UIView *view = registry[reactTag];
+    if ([view isKindOfClass:[RCTRemoteConfigInterstitialView class]]) [(RCTRemoteConfigInterstitialView *)view showAtOpportunity:eligible];
+  }];
+}
+RCT_EXPORT_METHOD(dispose : (nonnull NSNumber *)reactTag) {
+  [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *manager, NSDictionary<NSNumber *, UIView *> *registry) {
+    UIView *view = registry[reactTag];
+    if ([view isKindOfClass:[RCTRemoteConfigInterstitialView class]]) [(RCTRemoteConfigInterstitialView *)view dispose];
+  }];
+}
 @end

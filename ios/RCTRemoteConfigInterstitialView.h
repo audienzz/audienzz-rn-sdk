@@ -18,14 +18,23 @@
 #import "RCTOriginalView.h"
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 #import <React/RCTComponent.h>
+#import <React/RCTInvalidating.h>
 
-@interface RCTRemoteConfigInterstitialView : RCTOriginalView
-
-@property(nonatomic, strong) NSString *adConfigId;
-@property(nonatomic, strong)
-    AURemoteConfigInterstitial *auRemoteConfigInterstitial;
-
+@interface RCTRemoteConfigInterstitialView : RCTOriginalView <RCTInvalidating>
+@property(nonatomic, copy) NSString *adConfigId;
+@property(nonatomic, assign) BOOL manualControl;
+@property(nonatomic, strong) AURemoteConfigInterstitial *auRemoteConfigInterstitial;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdLoaded;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdFailedToLoad;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdFailedToShow;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdClicked;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdOpened;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdClosed;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdImpression;
+@property(nonatomic, copy) RCTBubblingEventBlock onLifecycleEvent;
 - (void)load;
 - (void)show;
-
+- (void)preload;
+- (void)showAtOpportunity:(BOOL)eligible;
+- (void)dispose;
 @end

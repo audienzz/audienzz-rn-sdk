@@ -669,48 +669,54 @@ If adaptive banners are enabled in the remote configuration, and you don't provi
 
 ### Interstitial Ad (Remote Config)
 
-Use `RemoteConfigInterstitial` to load an interstitial defined by a remote configuration ID.
+Use one persistent `RemoteConfigInterstitial` with `manualControl` to preload inventory and present only at a publisher-approved transition. Keep it mounted above transient routes until dismissal. Do not remount it to retry a missed opportunity.
 
-<details>
-<summary><span>Component example:</span></summary>
+```tsx
+import React, { useRef } from 'react';
+import { Button } from 'react-native';
+import {
+  RemoteConfigInterstitial,
+  type RemoteConfigInterstitialHandle,
+} from 'audienzz';
 
-```jsx
-import React from 'react';
-import { RemoteConfigInterstitial } from 'audienzz';
-
-function MyComponent() {
+function InterstitialPlacement({ eligible }: { eligible: boolean }) {
+  const ad = useRef<RemoteConfigInterstitialHandle>(null);
   return (
-    <RemoteConfigInterstitial
-      adConfigId="YOUR_CONFIG_ID"
-      onAdLoaded={() => {
-        console.log('Remote interstitial loaded successfully');
-      }}
-      onAdFailedToLoad={(error) => {
-        console.log('Remote interstitial failed to load:', error.message);
-      }}
-      onAdClicked={() => console.log('Remote interstitial clicked')}
-      onAdOpened={() => console.log('Remote interstitial opened')}
-      onAdClosed={() => console.log('Remote interstitial closed')}
-    />
+    <>
+      <RemoteConfigInterstitial
+        ref={ad}
+        adConfigId="YOUR_CONFIG_ID"
+        manualControl
+        onAdLoaded={() => console.log('Ready for a future opportunity')}
+        onAdFailedToLoad={(error) => console.log('Load failed', error)}
+        onAdFailedToShow={(error) => console.log('Presentation failed', error)}
+        onAdImpression={() => console.log('Impression')}
+        onLifecycleEvent={(event) => console.log('Interstitial lifecycle', event)}
+      />
+      <Button title="Preload" onPress={() => ad.current?.preload()} />
+      <Button title="Continue" onPress={() => ad.current?.showAtOpportunity(eligible)} />
+    </>
   );
 }
 ```
 
-</details>
+In your app, preload ahead of a natural transition. Pass current frequency-cap and placement eligibility into `showAtOpportunity`; the SDK does not calculate publisher frequency caps. Continue normal navigation if no ad appears. Do not call show from `onAdLoaded` or automatically replay a skipped opportunity.
 
-<details>
-<summary><span>Props:</span></summary>
+| API | Behavior |
+| --- | --- |
+| `manualControl` | Opt in; mounting does not load or show. Keep this and `adConfigId` stable. Changing either releases the previous owner. |
+| `preload()` | Load one ad. Repeated calls while loading, ready, or presenting do not request another ad. |
+| `showAtOpportunity(eligible)` | Check native readiness, foreground state and managed presentation ownership once. A skip retains ready inventory and never queues a later show. Requires manual mode. |
+| `dispose()` | Release this owner permanently; subsequent commands are ignored. Unmount also releases it. |
+| `show()` | Legacy command. Uses the same native opportunity checks with eligibility `true`; prefer the explicit eligibility API. |
+| `onAdFailedToLoad` / `onAdFailedToShow` | Separate failures; payload contains `code`, `message` and, when available, `domain`. |
+| `onLifecycleEvent` | Native diagnostics, including `opportunitySkipped` and its reason, load/presentation events and available load/response IDs. |
 
-| Name               | Description                                                | Required | Type                                                    |
-| ------------------ | ---------------------------------------------------------- | :------: | ------------------------------------------------------- |
-| `adConfigId`       | Remote configuration ID for the ad unit.                   | **YES**  | string                                                  |
-| `onAdLoaded`       | Callback when ad is loaded.                                |    No    | onAdLoaded?(): void                                     |
-| `onAdFailedToLoad` | Callback when ad fails to load.                            |    No    | onAdFailedToLoad?(error: {message: string}): void       |
-| `onAdClicked`      | Callback when ad is clicked.                               |    No    | onAdClicked?(): void                                    |
-| `onAdOpened`       | Callback when ad opens an overlay.                         |    No    | onAdOpened?(): void                                     |
-| `onAdClosed`       | Callback when user returns to the app.                     |    No    | onAdClosed?(): void                                     |
+Commands return `void` because the React Native bridge is asynchronous. Observe `onAdOpened`, `onAdFailedToShow`, `onAdImpression`, and lifecycle events for outcomes. A command is not proof of an impression. An unmounted/disposed component stops receiving callbacks, even if a fullscreen ad is still closing.
 
-</details>
+Without `manualControl`, the existing mount-to-load-and-show behavior remains. The new flow applies to **RemoteConfigInterstitial**; the lower-level Original and Rendering interstitial components retain their existing APIs. Native presentation exclusion covers SDK-managed remote interstitials, not unrelated fullscreen ads presented outside this API.
+
+**Release dependency:** these commands require the native SDK changes for `preload` / `showAtOpportunity`. Publish those native versions and update bridge pins before release; the currently pinned published versions cannot provide this API.
 
 ## Sticky Ad Wrapper
 

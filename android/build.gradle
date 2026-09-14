@@ -68,6 +68,8 @@ android {
     }
   }
 
+  testOptions { unitTests.includeAndroidResources = true }
+
   lintOptions {
     disable "GradleCompatible"
   }
@@ -86,6 +88,9 @@ repositories {
 def kotlin_version = getExtOrDefault("kotlinVersion")
 
 dependencies {
+  testImplementation "junit:junit:4.13.2"
+  testImplementation "org.robolectric:robolectric:4.14.1"
+  testImplementation "io.mockk:mockk:1.13.16"
   // For < 0.71, this will be from the local maven repo
   // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
   //noinspection GradleDynamicVersion

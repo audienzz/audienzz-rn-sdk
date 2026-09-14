@@ -28,8 +28,14 @@ const ComponentName = 'RNRemoteConfigInterstitial';
 const NativeComponent = requireNativeComponent<any>(ComponentName);
 
 export interface RemoteConfigInterstitialHandle {
-  /** Displays the loaded interstitial ad. Call this after `onAdLoaded` fires. */
+  /** Legacy explicit show. In manual mode, equivalent to showAtOpportunity(true). */
   show(): void;
+  /** In manualControl mode, retain one ad without displaying it. */
+  preload(): void;
+  /** Try this opportunity once. Check publisher frequency caps before passing true. */
+  showAtOpportunity(eligible: boolean): void;
+  /** Release this owner permanently. Remount to use a new owner. */
+  dispose(): void;
 }
 
 export const RemoteConfigInterstitial = forwardRef<
@@ -37,23 +43,49 @@ export const RemoteConfigInterstitial = forwardRef<
   RemoteConfigInterstitialProps
 >((props, ref) => {
   const nativeRef = useRef<any>(null);
+  const config = UIManager.getViewManagerConfig(ComponentName);
+  if (config == null) throw new Error(LINKING_ERROR);
 
-  if (UIManager.getViewManagerConfig(ComponentName) == null) {
-    throw new Error(LINKING_ERROR);
-  }
-
-  useImperativeHandle(ref, () => ({
-    show() {
-      const node = findNodeHandle(nativeRef.current);
-      if (node != null) {
-        UIManager.dispatchViewManagerCommand(
-          node,
-          UIManager.getViewManagerConfig(ComponentName).Commands.show ?? 'show',
-          []
-        );
-      }
+  useImperativeHandle(
+    ref,
+    () => {
+      const dispatch = (command: string, args: unknown[] = []) => {
+        const node = findNodeHandle(nativeRef.current);
+        if (node != null) {
+          UIManager.dispatchViewManagerCommand(
+            node,
+            config.Commands?.[command] ?? command,
+            args
+          );
+        }
+      };
+      return {
+        show: () => dispatch('show'),
+        preload: () => dispatch('preload'),
+        showAtOpportunity: (eligible: boolean) =>
+          dispatch('showAtOpportunity', [eligible]),
+        dispose: () => dispatch('dispose'),
+      };
     },
-  }));
+    [config]
+  );
 
-  return <NativeComponent ref={nativeRef} {...props} />;
+  return (
+    <NativeComponent
+      ref={nativeRef}
+      {...props}
+      onAdFailedToLoad={
+        props.onAdFailedToLoad &&
+        ((e: any) => props.onAdFailedToLoad?.(e.nativeEvent))
+      }
+      onAdFailedToShow={
+        props.onAdFailedToShow &&
+        ((e: any) => props.onAdFailedToShow?.(e.nativeEvent))
+      }
+      onLifecycleEvent={
+        props.onLifecycleEvent &&
+        ((e: any) => props.onLifecycleEvent?.(e.nativeEvent))
+      }
+    />
+  );
 });
