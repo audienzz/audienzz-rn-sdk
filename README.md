@@ -305,10 +305,16 @@ RNAudienzz()
 | `setPublisherPpid`       | `ppid: string \| null` | Supply your own PPID (e.g. a hashed e-mail). Takes precedence over the SDK-generated one; pass `null` to clear and fall back to it.       |
 | `getPpid`                |                        | The PPID currently being sent: yours if set, otherwise the SDK-generated UUID. `null` only when consent is missing.                       |
 
-A PPID is **always** sent with ad requests — the SDK generates one (persisted
-locally, rotated every 12 months) whenever you haven't supplied your own. There
-is no enable/disable switch: a missing PPID costs frequency capping and
-cross-session targeting. It is suppressed only when consent is missing.
+A PPID is **always** sent with ad requests — the SDK generates one (a UUID,
+persisted locally and rotated every 12 months) whenever you haven't supplied
+your own. There is no enable/disable switch in the SDK: a missing PPID costs
+frequency capping and cross-session targeting. It is suppressed only when
+consent is missing, or when your publisher config turns it off:
+
+| Publisher config field | Effect when `false` | Absent |
+|---|---|---|
+| `ppidEnabled` | No PPID is sent at all, including one you supplied | Enabled |
+| `automaticPpidEnabled` | The SDK stops generating its own UUID; a PPID you supplied is still sent | Enabled |
 | `setSchainObject`        | `schain: string`       | Method used to set Schain object for all ad requests.                                                                                    |
 | `pageImpression`        | `name: string`         | Report an ad-bearing screen/dialog by name — fires a `pageImpression` and reloads on-screen banners. Call on each such screen. See [Screen tracking](#screen-tracking-analytics). |
 | `setSmartRefreshV2Enabled` | `enabled: boolean`   | Force smart-refresh v2 (directional viewport gate) on/off, overriding backend config. Call **before** creating banners.                  |
