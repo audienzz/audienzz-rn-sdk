@@ -55,6 +55,11 @@
     self.propsChanged = YES;
 }
 
+// Inert for a rendering banner, deliberately. Prebid's rendering BannerView schedules its own
+// refresh through AutoRefreshManager and already gates every tick on its own visibility check; it
+// exposes stopRefresh() but no resume (the flag clears itself on the next bid request), so a
+// pause/resume pair cannot be built on it without tearing the view down. Page scoping for rendering
+// banners is done by unmounting the native view instead — see the pageImpression handling below.
 - (void)stopAutoRefresh {
     [_auBannerView.adUnitConfiguration stopAutoRefresh];
 }

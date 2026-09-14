@@ -79,14 +79,17 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
     remoteConfigBannerView?.reloadAd()
   }
 
-  /** Pause Prebid smart-refresh for this banner. */
+  /**
+   * Publisher pause, the command behind `bannerRef.current.stopAutoRefresh()`. Durable: only
+   * [resumeAutoRefresh] clears it. It forwarded to the visibility pause, which any scroll undid.
+   */
   fun stopAutoRefresh() {
-    remoteConfigBannerView?.onPause()
+    remoteConfigBannerView?.stopAutoRefresh()
   }
 
-  /** Resume Prebid smart-refresh for this banner previously paused via [stopAutoRefresh]. */
+  /** Clears the publisher pause set by [stopAutoRefresh]. */
   fun resumeAutoRefresh() {
-    remoteConfigBannerView?.onResume()
+    remoteConfigBannerView?.resumeAutoRefresh()
   }
 
   fun loadAd() {

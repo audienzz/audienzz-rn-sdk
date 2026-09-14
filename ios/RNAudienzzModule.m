@@ -16,6 +16,8 @@
  */
 
 #import "RNAudienzzModule.h"
+// RCTBridgeModule.h only forward-declares RCTBridge; -enqueueJSCall: needs the full definition.
+#import <React/RCTBridge.h>
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 #import <GoogleMobileAds/GoogleMobileAds.h>
 
@@ -96,7 +98,9 @@ RCT_EXPORT_METHOD(setPublisherPpid: (nullable NSString *)ppid) {
 // Force smart-refresh v2 on/off, overriding the backend smartRefreshV2 config for the session.
 // v2 uses the directional viewport gate; v1 uses the legacy >=20%-visible gate.
 RCT_EXPORT_METHOD(setSmartRefreshV2Enabled: (BOOL)enabled) {
-  [Audienzz shared].smartRefreshV2Override = @(enabled);
+  // The Swift property is a tri-state `Bool?`, which Objective-C cannot see; the SDK exposes this
+  // setter for it.
+  [[Audienzz shared] setSmartRefreshV2Override:enabled];
 }
 
 // When true, a banner blanks its slot during a screen-resume reload.

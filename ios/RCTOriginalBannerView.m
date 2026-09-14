@@ -60,12 +60,16 @@
   self.propsChanged = YES;
 }
 
+// The publisher-facing commands (`bannerRef.current.stopAutoRefresh()`), not visibility
+// reporting. They map to the SDK's durable publisher pause, so a scroll back into view or a page
+// impression cannot silently undo them. They used to forward to the viewport pause, which any
+// scroll then cleared.
 - (void)stopAutoRefresh {
-  [_auBannerView pauseSmartRefresh];
+  [_auBannerView.adUnitConfiguration stopAutoRefresh];
 }
 
 - (void)resumeAutoRefresh {
-  [_auBannerView resumeSmartRefresh];
+  [_auBannerView.adUnitConfiguration resumeAutoRefresh];
 }
 
 - (void)reloadIfVisible {

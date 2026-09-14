@@ -86,18 +86,22 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
     error.putString("message", loadError.message)
     (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
       .receiveEvent(id, "onAdFailedToLoad", error)
-    auBannerView?.stopAutoRefresh()
+    // Deliberately no refresh stop here. This is a GAM load failure, not a publisher decision, and
+    // stopping on it would be indistinguishable from stopAutoRefresh() — nothing but an explicit
+    // resume would ever clear it, so one transient ad-server error killed the slot for good. The
+    // SDK's refresh controller keeps the normal interval; a persistent Prebid transport failure is
+    // separately bounded by its own backoff.
   }
 
+  // The publisher-facing commands, not visibility reporting. They map to the SDK's durable
+  // publisher pause, so a scroll back into view or a page impression cannot silently undo them.
+  // The ad-unit methods they used to call became no-ops when the SDK took over refresh scheduling.
   fun stopAutoRefresh() {
-    auBannerView?.stopAutoRefresh()
+    adViewHandler?.stopAutoRefresh()
   }
 
   fun resumeAutoRefresh() {
-    // Route through the handler, which refuses while the page is released. Calling the Prebid ad
-    // unit directly started a refresh timer for a banner the page sweep had released — the auction
-    // happened even though the generation guard later dropped its response.
-    adViewHandler?.resumeSmartRefresh() ?: auBannerView?.resumeAutoRefresh()
+    adViewHandler?.resumeAutoRefresh()
   }
 
   /** Retains the handler created in the manager so [reloadIfVisible] can reload. */
