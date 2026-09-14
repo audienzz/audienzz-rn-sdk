@@ -116,15 +116,32 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
     AudienzzPrebidMobile.pageImpression(name)
   }
 
+  /**
+   * Our own registration, so teardown removes ONLY ours and never someone else's.
+   *
+   * Forwards every native page impression to JS -- including the automatic one fired on returning
+   * to the foreground, which never passes through the JS API. Native owns foreground reporting; JS
+   * just page-scopes the ad types the native coordinator doesn't track (rendering banners).
+   */
+  private var pageImpressionObserver: ((String) -> Unit)? = { name ->
+    reactContext
+      .getJSModule(com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+      .emit(PAGE_IMPRESSION_EVENT, name)
+  }
+
   init {
-    // Forward every native page impression to JS -- including the automatic one fired on returning
-    // to the foreground, which never passes through the JS API. Native owns foreground reporting;
-    // JS just page-scopes the ad types the native coordinator doesn't track (rendering banners).
-    AudienzzPrebidMobile.pageImpressionObserver = { name ->
-      reactContext
-        .getJSModule(com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-        .emit(PAGE_IMPRESSION_EVENT, name)
+    AudienzzPrebidMobile.pageImpressionObserver = pageImpressionObserver
+  }
+
+  override fun invalidate() {
+    // The observer is a process-global singleton capturing the ReactApplicationContext. Without
+    // this, destroying the React instance leaves that context retained and later page impressions
+    // still emitting into a dead bridge.
+    if (AudienzzPrebidMobile.pageImpressionObserver === pageImpressionObserver) {
+      AudienzzPrebidMobile.pageImpressionObserver = null
     }
+    pageImpressionObserver = null
+    super.invalidate()
   }
 
   @ReactMethod

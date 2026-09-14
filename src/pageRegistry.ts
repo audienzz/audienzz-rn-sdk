@@ -81,9 +81,21 @@ export function unsubscribe(listener: PageListener): void {
  * transition can't be counted twice.
  */
 function notifyPageImpression(page: string): void {
-  currentPage = page;
   epoch += 1;
   listeners.forEach((listener) => listener(page, epoch));
+}
+
+/**
+ * Records the page new ads are stamped with. Called synchronously by
+ * `Audienzz.pageImpression`, because the documented ordering is "report the
+ * page, then render its ads" — waiting for native's asynchronous echo would
+ * stamp those ads with the previous page (or null), permanently.
+ *
+ * Kept separate from [notifyPageImpression]: the stamp is JS-owned and
+ * immediate; the epoch and listener notifications stay native-owned.
+ */
+export function setCurrentPage(page: string): void {
+  currentPage = page;
 }
 
 DeviceEventEmitter.addListener(PAGE_IMPRESSION_EVENT, (page: string) => {

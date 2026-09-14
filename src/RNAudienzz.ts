@@ -1,5 +1,6 @@
 import NativeModulesCombined from './NativeRNAudienzzModule';
 import type { RNAudienzzModule, AudienzzInitStatus } from './types';
+import { setCurrentPage } from './pageRegistry';
 
 class RNAudienzzClass implements RNAudienzzModule {
   initialize(companyId: string) {
@@ -71,6 +72,9 @@ class RNAudienzzClass implements RNAudienzzModule {
     // native ad view, so that repaints on its own -- the bridge must NOT also
     // remount it, or the replacement's initial load would fire a second
     // auction and discard the creative native just fetched.
+    // Stamp synchronously so ads rendered right after this call belong to this
+    // page; the epoch and listener notifications arrive with native's echo.
+    setCurrentPage(name);
     NativeModulesCombined.AudienzzModule.pageImpression(name);
     // No JS-side notify here: native echoes every page impression back as the
     // `AudienzzPageImpression` device event (see pageRegistry), including the
