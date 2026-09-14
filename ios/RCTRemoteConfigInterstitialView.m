@@ -67,7 +67,16 @@
     return;
   }
 
+  self.auRemoteConfigInterstitial.presentationViewController =
+      [[[[UIApplication sharedApplication] delegate] window] rootViewController];
   __weak typeof(self) weakSelf = self;
+  self.auRemoteConfigInterstitial.onPresentationError = ^(NSError *error) {
+    __strong typeof(weakSelf) strongSelf = weakSelf;
+    if (strongSelf && strongSelf->_onAdFailedToLoad) {
+      // Preserve the bridge's legacy failure prop, including new native preflight errors.
+      strongSelf->_onAdFailedToLoad(@{@"code": @(error.code), @"message": error.localizedDescription});
+    }
+  };
   [self.auRemoteConfigInterstitial
       loadWithCompletion:^(NSError *_Nullable error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -87,7 +96,7 @@
           if (strongSelf->_onAdLoaded) {
             strongSelf->_onAdLoaded(@{});
           }
-          [strongSelf show];
+
         }
       }];
 }
@@ -147,12 +156,6 @@
   }
 }
 
-- (void)ad:(id<GADFullScreenPresentingAd>)ad
-    didFailToPresentFullScreenContentWithError:(NSError *)error {
-  if (_onAdFailedToLoad) {
-    _onAdFailedToLoad(
-        @{@"code" : @(error.code), @"message" : [error localizedDescription]});
-  }
-}
+// Presentation failures are forwarded once through onPresentationError above.
 
 @end
