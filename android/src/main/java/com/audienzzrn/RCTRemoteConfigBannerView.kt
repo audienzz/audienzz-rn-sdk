@@ -112,8 +112,15 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
   }
 
   private fun loadAdInternal(id: String) {
-
-    removeAllViews()
+    // Detaching the predecessor is not enough: its handler stays registered with the page
+    // coordinator and its refresh controller keeps posting, so a replaced banner went on
+    // auctioning into a view nobody could see. Destroy it, and take out only our own child —
+    // removeAllViews() would also drop anything React Native mounted inside this container.
+    remoteConfigBannerView?.let { previous ->
+      previous.destroy()
+      removeView(previous)
+    }
+    remoteConfigBannerView = null
 
     val bannerView = AudienzzRemoteBannerView(context, id)
 

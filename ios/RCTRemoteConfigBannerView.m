@@ -18,6 +18,12 @@
 #import "RCTRemoteConfigBannerView.h"
 #import <React/RCTLog.h>
 
+@interface RCTRemoteConfigBannerView ()
+/// The placement the current owner was built for. A prop change that does not change it reuses
+/// the owner, so the SDK can recognise the repeat instead of building a second banner.
+@property(nonatomic, copy) NSString *loadedAdConfigId;
+@end
+
 @implementation RCTRemoteConfigBannerView {
   RCTBubblingEventBlock _onAdLoaded;
   RCTBubblingEventBlock _onAdFailedToLoad;
@@ -67,11 +73,26 @@
       self->_onAdFailedToLoad(
           @{@"code" : @(-1), @"message" : @"adConfigId is required"});
     }
+    // Balance the wait taken in createAd; returning without this left the semaphore held and
+    // made the next prop change wait out its full timeout.
+    dispatch_semaphore_signal(self.semaphore);
     return;
   }
 
-  self.auRemoteConfigBannerView =
-      [[AURemoteConfigBannerView alloc] initWithAdConfigId:self.adConfigId];
+  // didSetProps fires on every prop change, and each run used to allocate another owner while
+  // its predecessor's banner stayed in this view's subviews — still registered with the page
+  // coordinator and still refreshing. Reuse the owner for the same placement (the SDK coalesces
+  // the repeat), and destroy it before switching to a different one.
+  if (self.auRemoteConfigBannerView != nil &&
+      ![self.loadedAdConfigId isEqualToString:self.adConfigId]) {
+    [self.auRemoteConfigBannerView destroy];
+    self.auRemoteConfigBannerView = nil;
+  }
+  if (self.auRemoteConfigBannerView == nil) {
+    self.auRemoteConfigBannerView =
+        [[AURemoteConfigBannerView alloc] initWithAdConfigId:self.adConfigId];
+    self.loadedAdConfigId = self.adConfigId;
+  }
 
   // Must precede loadIn:, which is where the ad joins the current page.
   if (self.pageKey != nil) {
@@ -89,6 +110,12 @@
                                delegate:self];
 
   dispatch_semaphore_signal(self.semaphore);
+}
+
+/// React Native releases the view when the component unmounts; Android already tears the
+/// placement down in onDropViewInstance, and iOS had no equivalent at all.
+- (void)dealloc {
+  [_auRemoteConfigBannerView destroy];
 }
 
 - (void)reloadIfVisible {
