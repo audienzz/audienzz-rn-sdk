@@ -34,6 +34,12 @@ class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalIntersti
     return RCTOriginalInterstitialView(reactContext)
   }
 
+  override fun onDropViewInstance(view: RCTOriginalInterstitialView) {
+    super.onDropViewInstance(view)
+    // React Native drops the view on unmount; without this the ad unit outlived it.
+    view.destroyAd()
+  }
+
   override fun onAfterUpdateTransaction(view: RCTOriginalInterstitialView) {
     super.onAfterUpdateTransaction(view)
 

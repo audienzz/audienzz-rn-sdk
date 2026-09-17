@@ -20,6 +20,12 @@
 #import <GoogleMobileAds/GoogleMobileAds.h>
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 
+@interface RCTOriginalInterstitialView ()
+/// What the current interstitial was built for. A prop change that does not change it reuses the
+/// ad already held instead of buying another one.
+@property(nonatomic, copy) NSString *loadedIdentity;
+@end
+
 @implementation RCTOriginalInterstitialView
 
 - (void)setMinSizesPercentage:(NSArray<NSNumber *> *)value {
@@ -79,6 +85,12 @@
     return [cgSizes copy];
 }
 
+/// React Native releases the view when the component unmounts; without this the interstitial and
+/// its Prebid ad unit outlived it.
+- (void)dealloc {
+  [_auInterstitialView destroy];
+}
+
 - (void)createAd {
   dispatch_semaphore_wait(self.semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)));
   
@@ -89,7 +101,22 @@
 
 - (void)internalCreateAd {
   [super internalCreateAd];
-  
+
+  // didSetProps fires on every prop change, and each run used to allocate another
+  // AUInterstitialView, add it as a subview and start its own auction — so a handful of prop
+  // updates bought a handful of interstitials, only one of which could ever be shown. Keep the ad
+  // we already have unless the placement itself changed.
+  NSString *identity = [NSString stringWithFormat:@"%@|%@", self.auConfigID ?: @"", self.adUnitID ?: @""];
+  if (_auInterstitialView != nil && [identity isEqualToString:self.loadedIdentity]) {
+    return;
+  }
+  if (_auInterstitialView != nil) {
+    [_auInterstitialView destroy];
+    [_auInterstitialView removeFromSuperview];
+    _auInterstitialView = nil;
+  }
+  self.loadedIdentity = identity;
+
   GAMRequest *request = [GAMRequest request];
   
   _auInterstitialView = [[AUInterstitialView alloc] initWithConfigId:self.auConfigID adFormats:[AUConverter convertToAUAdFormats:self.adFormats] isLazyLoad:self.isLazyLoad minWidthPerc:[_minSizesPercentage[0] integerValue] minHeightPerc:[_minSizesPercentage[1] integerValue]];

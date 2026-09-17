@@ -67,8 +67,28 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
       .receiveEvent(id, "onAdClosed", null)
   }
 
+  /** Releases the interstitial this view owns. Safe to call more than once. */
+  fun destroyAd() {
+    auInterstitialView?.destroy()
+    auInterstitialView = null
+    loadedIdentity = null
+  }
+
+  /// What the current interstitial was built for. A prop change that does not change it reuses the
+  /// ad already held rather than buying another one.
+  private var loadedIdentity: String? = null
+
   override fun createAd() {
     super.createAd()
+
+    // onAfterUpdateTransaction re-runs this on every prop change, and each run used to build
+    // another ad unit and another handler and start another auction — so a few prop updates
+    // bought a few interstitials, only one of which could ever be shown.
+    val identity = "$auConfigID|$adUnitID"
+    if (auInterstitialView != null && identity == loadedIdentity) return
+    auInterstitialView?.destroy()
+    auInterstitialView = null
+    loadedIdentity = identity
 
     auInterstitialView = AudienzzInterstitialAdUnit(
       auConfigID,
