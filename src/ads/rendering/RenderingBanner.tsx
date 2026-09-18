@@ -27,6 +27,7 @@ import type { RenderingBannerProps, AdError, AdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 import {
   getCurrentPage,
+  pageKeyOf,
   subscribe as subscribeToPage,
   unsubscribe as unsubscribeFromPage,
 } from '../../pageRegistry';
@@ -71,7 +72,8 @@ export class RenderingBanner extends Component<
    * stays permanently active, preserving behaviour for apps that don't use page
    * impressions.
    */
-  private readonly pageKey = getCurrentPage();
+  private readonly page = getCurrentPage();
+  private readonly pageKey = pageKeyOf(this.page);
 
   onPageImpression = (page: string, epoch: number) => {
     if (this.pageKey == null) {

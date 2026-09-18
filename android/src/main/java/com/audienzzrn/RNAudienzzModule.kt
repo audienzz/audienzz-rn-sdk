@@ -117,6 +117,16 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
   }
 
   /**
+   * Report a page whose identity and analytics name differ. Every React Native ad lives in the one
+   * host Activity, so host identity can never separate two routes — the id is the only thing that
+   * can, and a screen name repeats (two articles are both "article").
+   */
+  @ReactMethod
+  fun pageImpressionWithId(pageId: String, name: String) {
+    AudienzzPrebidMobile.pageImpression(pageId, name)
+  }
+
+  /**
    * Our own registration, so teardown removes ONLY ours and never someone else's.
    *
    * Forwards every native page impression to JS -- including the automatic one fired on returning

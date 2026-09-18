@@ -12,13 +12,14 @@ describe('Audienzz.pageImpression', () => {
 
   let registry: typeof import('../pageRegistry');
   let Audienzz: typeof import('../RNAudienzz').Audienzz;
-  let nativeCalls: string[];
+  let nativeCalls: Array<{ pageId: string; name: string }>;
 
   beforeEach(() => {
     jest.resetModules();
     nativeCalls = [];
     NativeModules.RNAudienzzModule = {
-      pageImpression: (name: string) => nativeCalls.push(name),
+      pageImpressionWithId: (pageId: string, name: string) =>
+        nativeCalls.push({ pageId, name }),
     };
     jest.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -30,17 +31,30 @@ describe('Audienzz.pageImpression', () => {
     jest.restoreAllMocks();
   });
 
-  it('forwards the page to native', () => {
+  it('forwards the page to native as an id plus an analytics name', () => {
     Audienzz.pageImpression('Article');
 
-    expect(nativeCalls).toEqual(['Article']);
+    expect(nativeCalls).toHaveLength(1);
+    expect(nativeCalls[0]!.name).toBe('Article');
+    expect(nativeCalls[0]!.pageId).not.toBe('Article');
+  });
+
+  it('gives two visits to the same screen name distinct identities', () => {
+    // The whole point of the id: a repeated name must not make the second report match the first
+    // page's banners and recreate them instead of releasing them.
+    Audienzz.pageImpression('Article');
+    Audienzz.pageImpression('Article');
+
+    expect(nativeCalls.map((c) => c.name)).toEqual(['Article', 'Article']);
+    expect(nativeCalls[0]!.pageId).not.toBe(nativeCalls[1]!.pageId);
   });
 
   it('stamps the creation page synchronously', () => {
     // Ads rendered on the very next line must belong to this page.
     Audienzz.pageImpression('Article');
 
-    expect(registry.getCurrentPage()).toBe('Article');
+    expect(registry.getCurrentPage()?.name).toBe('Article');
+    expect(registry.getCurrentPage()?.id).toBe(nativeCalls[0]!.pageId);
   });
 
   it('does not advance the epoch itself', () => {
@@ -52,7 +66,8 @@ describe('Audienzz.pageImpression', () => {
 
   it('advances the epoch exactly once per impression, on the echo', () => {
     Audienzz.pageImpression('Article');
-    DeviceEventEmitter.emit(PAGE_IMPRESSION_EVENT, 'Article');
+    // Native echoes the ROUTING key — the page id — because that is what banners match on.
+    DeviceEventEmitter.emit(PAGE_IMPRESSION_EVENT, nativeCalls[0]!.pageId);
 
     expect(registry.getPageEpoch()).toBe(1);
   });
@@ -62,8 +77,8 @@ describe('Audienzz.pageImpression', () => {
     registry.subscribe((page) => seen.push(page));
 
     Audienzz.pageImpression('Article');
-    DeviceEventEmitter.emit(PAGE_IMPRESSION_EVENT, 'Article');
+    DeviceEventEmitter.emit(PAGE_IMPRESSION_EVENT, nativeCalls[0]!.pageId);
 
-    expect(seen).toEqual(['Article']);
+    expect(seen).toEqual([nativeCalls[0]!.pageId]);
   });
 });

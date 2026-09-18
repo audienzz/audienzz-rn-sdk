@@ -34,7 +34,31 @@ import { DeviceEventEmitter } from 'react-native';
 /** Device event native emits after every page impression. */
 const PAGE_IMPRESSION_EVENT = 'AudienzzPageImpression';
 
-let currentPage: string | null = null;
+/**
+ * A page instance.
+ *
+ * `id` is identity and `name` is what analytics records, and they are different things: a name
+ * repeats — two article routes are both "article" — while ownership must not. When the name is used
+ * as identity, the second article's page impression matches the first article's banners and
+ * recreates them instead of releasing them, so they keep auctioning for a screen the reader left.
+ */
+export interface AudienzzPageHandle {
+  readonly id: string;
+  readonly name: string;
+}
+
+let nextPageSeq = 0;
+
+/**
+ * Mint a page instance. Call once per route instance — typically from `AudienzzPage`, which holds
+ * it for the lifetime of the mounted route.
+ */
+export function createPage(name: string): AudienzzPageHandle {
+  nextPageSeq += 1;
+  return { id: `${name}#${nextPageSeq}`, name };
+}
+
+let currentPage: AudienzzPageHandle | null = null;
 let epoch = 0;
 
 type PageListener = (page: string, epoch: number) => void;
@@ -42,7 +66,7 @@ type PageListener = (page: string, epoch: number) => void;
 const listeners = new Set<PageListener>();
 
 /** The page reported by the most recent `Audienzz.pageImpression`. */
-export function getCurrentPage(): string | null {
+export function getCurrentPage(): AudienzzPageHandle | null {
   if (currentPage == null) {
     // Native attach-time adoption cannot repair a bridge ad: with no page key
     // its host resolves to the single host Activity / view controller, which
@@ -94,8 +118,17 @@ function notifyPageImpression(page: string): void {
  * Kept separate from [notifyPageImpression]: the stamp is JS-owned and
  * immediate; the epoch and listener notifications stay native-owned.
  */
-export function setCurrentPage(page: string): void {
+export function setCurrentPage(page: AudienzzPageHandle): void {
   currentPage = page;
+}
+
+/**
+ * The routing key a banner sends to native as `pageKey`, and that native echoes back on a page
+ * impression. It is the page id, not the display name — matching on the name cannot separate two
+ * routes that share one.
+ */
+export function pageKeyOf(page: AudienzzPageHandle | null): string | null {
+  return page == null ? null : page.id;
 }
 
 DeviceEventEmitter.addListener(PAGE_IMPRESSION_EVENT, (page: string) => {

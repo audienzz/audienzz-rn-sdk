@@ -26,7 +26,7 @@ import {
 } from 'react-native';
 import type { ViewStyle } from 'react-native';
 import type { RemoteConfigBannerProps } from '../../types';
-import { getCurrentPage } from '../../pageRegistry';
+import { getCurrentPage, pageKeyOf } from '../../pageRegistry';
 
 const COMPONENT_NAME = 'RNRemoteConfigBanner';
 
@@ -71,7 +71,7 @@ export class RemoteConfigBanner extends Component<
      * the `pageKey` prop so the page coordinator can match this ad to its
      * screen by value — host identity can't, since every RN ad shares one host.
      */
-    private readonly pageKey = getCurrentPage();
+    private readonly page = getCurrentPage();
 
     /**
      * Reload this banner (fresh auction). Broadcast target for
@@ -134,7 +134,7 @@ export class RemoteConfigBanner extends Component<
         return (
             <View style={[style, dynamicStyle]}>
                 <RNRemoteConfigBannerView
-                    pageKey={this.pageKey}
+                    pageKey={pageKeyOf(this.page)}
                     {...otherProps}
                     adWidth={adWidth}
                     adHeight={adHeight}

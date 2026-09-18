@@ -119,6 +119,13 @@ RCT_EXPORT_METHOD(pageImpression: (NSString *)name) {
   [[Audienzz shared] pageImpressionWithName:name];
 }
 
+// Report a page whose identity and analytics name differ. Every React Native ad lives in the one
+// host view controller, so host identity can never separate two routes — the id is the only thing
+// that can, and a screen name repeats (two articles are both "article").
+RCT_EXPORT_METHOD(pageImpressionWithId: (NSString *)pageId name: (NSString *)name) {
+  [[Audienzz shared] pageImpressionWithPageId:pageId name:name];
+}
+
 RCT_EXPORT_METHOD(getPpid: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject) {
   NSString *ppid = [[PPIDManager shared] getPPID];

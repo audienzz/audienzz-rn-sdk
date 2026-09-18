@@ -107,3 +107,14 @@ export type {
   AudienzzUniqueId,
   AudienzzLocation,
 };
+
+// Managed integration: one page wrapper, one banner component.
+export { AudienzzPage, useAudienzzPage } from './managed/AudienzzPage';
+export type {
+  AudienzzPageProps,
+  AudienzzPageContextValue,
+} from './managed/AudienzzPage';
+export { AudienzzBanner } from './managed/AudienzzBanner';
+export type { AudienzzBannerProps } from './managed/AudienzzBanner';
+export { createPage } from './pageRegistry';
+export type { AudienzzPageHandle } from './pageRegistry';

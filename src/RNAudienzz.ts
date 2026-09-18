@@ -1,6 +1,10 @@
 import NativeModulesCombined from './NativeRNAudienzzModule';
 import type { RNAudienzzModule, AudienzzInitStatus } from './types';
-import { setCurrentPage } from './pageRegistry';
+import {
+  createPage,
+  setCurrentPage,
+  type AudienzzPageHandle,
+} from './pageRegistry';
 
 class RNAudienzzClass implements RNAudienzzModule {
   initialize(companyId: string) {
@@ -69,6 +73,25 @@ class RNAudienzzClass implements RNAudienzzModule {
    * navigation route name). Fires a `pageImpression` + a fresh page-impression id, and reloads the
    * on-screen smart-refresh banners so a returning route/tab shows a fresh creative.
    */
+  /**
+   * Activate a page instance minted with `createPage` (or held by `AudienzzPage`).
+   *
+   * Prefer this over `pageImpression(name)` whenever two routes can share a screen name: the id is
+   * what the page coordinator matches banners against, and a repeated name cannot separate them.
+   */
+  activatePage(page: AudienzzPageHandle): void {
+    // Stamp synchronously so ads rendered right after this call belong to this page; the epoch and
+    // listener notifications arrive with native's echo.
+    setCurrentPage(page);
+    NativeModulesCombined.AudienzzModule.pageImpressionWithId(page.id, page.name);
+  }
+
+  /** Report a page by explicit id and analytics name. See `activatePage` for the usual path. */
+  pageImpressionWithId(pageId: string, name: string): void {
+    this.activatePage({ id: pageId, name });
+  }
+
+  /** @deprecated in spirit — see `activatePage`. Kept: it is the documented public API. */
   pageImpression(name: string): void {
     // Native owns the transition end-to-end for original-API banners: every
     // banner not on the incoming page is released (auction and refresh stopped)
@@ -78,8 +101,7 @@ class RNAudienzzClass implements RNAudienzzModule {
     // auction and discard the creative native just fetched.
     // Stamp synchronously so ads rendered right after this call belong to this
     // page; the epoch and listener notifications arrive with native's echo.
-    setCurrentPage(name);
-    NativeModulesCombined.AudienzzModule.pageImpression(name);
+    this.activatePage(createPage(name));
     // No JS-side notify here: native echoes every page impression back as the
     // `AudienzzPageImpression` device event (see pageRegistry), including the
     // automatic one on returning to the foreground, which never passes through
@@ -120,7 +142,10 @@ const Instance = new RNAudienzzClass();
  * import { Audienzz } from 'audienzz';
  * Audienzz.initialize('companyId', false);
  */
-export const Audienzz: RNAudienzzModule = Instance;
+// Typed as the class rather than the native-module interface: `activatePage` is JS-owned page
+// bookkeeping, not a bridged method, and pinning the export to the native contract would hide it.
+// The `implements RNAudienzzModule` on the class still checks that every bridged method exists.
+export const Audienzz = Instance;
 
 /**
  * @deprecated Use `Audienzz` instead.

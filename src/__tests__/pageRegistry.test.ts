@@ -39,15 +39,15 @@ describe('pageRegistry', () => {
   });
 
   it('stamps the creation page synchronously', () => {
-    registry.setCurrentPage('Article');
+    registry.setCurrentPage(registry.createPage('Article'));
 
-    expect(registry.getCurrentPage()).toBe('Article');
+    expect(registry.getCurrentPage()?.name).toBe('Article');
     expect(console.warn).not.toHaveBeenCalled();
   });
 
   it('does not advance the epoch when only the stamp is set', () => {
     // The stamp is JS-owned and immediate; the epoch belongs to native.
-    registry.setCurrentPage('Article');
+    registry.setCurrentPage(registry.createPage('Article'));
 
     expect(registry.getPageEpoch()).toBe(0);
   });

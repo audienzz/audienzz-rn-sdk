@@ -36,6 +36,12 @@ export interface RNAudienzzModule {
    */
   pageImpression(name: string): void;
 
+  /**
+   * Report a page whose identity and analytics name differ. `pageId` identifies the route instance
+   * and is what banners are matched against; `name` is what analytics records.
+   */
+  pageImpressionWithId(pageId: string, name: string): void;
+
   configureRemote(remoteUrl: string, publisherId: string): Promise<void>;
   fetchPublisherConfig(publisherId: string): Promise<void>;
 
