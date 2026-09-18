@@ -15,7 +15,11 @@
 */
 
 import React from 'react';
-import { createPage, type AudienzzPageHandle } from '../pageRegistry';
+import {
+  createPage,
+  createPageInstance,
+  type AudienzzPageHandle,
+} from '../pageRegistry';
 import { Audienzz } from '../RNAudienzz';
 
 /**
@@ -38,8 +42,17 @@ export function useAudienzzPage(): AudienzzPageContextValue | null {
 }
 
 export interface AudienzzPageProps {
-  /** Analytics screen name. It may repeat across routes; identity is minted separately. */
+  /** Analytics screen name. Also the page identity unless [id] is given. */
   name: string;
+  /**
+   * Page identity, when it must differ from the name — two article routes that should own their
+   * banners separately, for example.
+   *
+   * Opt-in on **both** sides: pass `{ perInstance: true }` to `audienzzOnNavigationStateChange`
+   * and the same key here, or the adapter and this wrapper will disagree about which page a banner
+   * is on and each will release the other's banners. With React Navigation, use `route.key`.
+   */
+  id?: string;
   /**
    * Whether this page currently owns the screen. Defaults to `true`, which is correct for a plain
    * stack where mounting *is* navigating. With a tab or nested navigator, pass focus — e.g. React
@@ -64,15 +77,23 @@ export interface AudienzzPageProps {
  */
 export function AudienzzPage({
   name,
+  id,
   active = true,
   children,
 }: AudienzzPageProps): React.ReactElement {
-  // Created during render, so a child sees it in the same commit. Never recreated by a rebuild.
-  const [page] = React.useState(() => createPage(name));
+  // Resolved during render, so a child sees it in the same commit. A rebuild never changes it.
+  const page = React.useMemo<AudienzzPageHandle>(
+    () => (id == null ? createPage(name) : createPageInstance(id, name)),
+    [id, name]
+  );
   const [isActive, setIsActive] = React.useState(false);
 
   React.useEffect(() => {
     if (!active) {
+      // Revoked, not sticky. A retained tab that loses focus must stop reporting itself as the
+      // active page: otherwise a banner added to it afterwards is created as if it were on the
+      // foreground page, and the tab can never be re-activated when the reader comes back.
+      setIsActive(false);
       return;
     }
     // Reporting the page is a side effect and belongs in an effect. A managed banner does not

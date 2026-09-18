@@ -36,17 +36,25 @@ describe('Audienzz.pageImpression', () => {
 
     expect(nativeCalls).toHaveLength(1);
     expect(nativeCalls[0]!.name).toBe('Article');
-    expect(nativeCalls[0]!.pageId).not.toBe('Article');
+    expect(nativeCalls[0]!.pageId).toBe('Article');
   });
 
-  it('gives two visits to the same screen name distinct identities', () => {
-    // The whole point of the id: a repeated name must not make the second report match the first
-    // page's banners and recreate them instead of releasing them.
+  it('keeps the name as the identity so a repeat report matches the same page', () => {
+    // This is the long-standing contract. A revision that minted a fresh id per call released the
+    // screen's existing banners on every re-report instead of refreshing them, and they could never
+    // match again. Separating two same-named routes is opt-in through activatePage.
     Audienzz.pageImpression('Article');
     Audienzz.pageImpression('Article');
 
+    expect(nativeCalls.map((c) => c.pageId)).toEqual(['Article', 'Article']);
+  });
+
+  it('activatePage can still identify a route instance explicitly', () => {
+    Audienzz.activatePage({ id: 'Article-a', name: 'Article' });
+    Audienzz.activatePage({ id: 'Article-b', name: 'Article' });
+
+    expect(nativeCalls.map((c) => c.pageId)).toEqual(['Article-a', 'Article-b']);
     expect(nativeCalls.map((c) => c.name)).toEqual(['Article', 'Article']);
-    expect(nativeCalls[0]!.pageId).not.toBe(nativeCalls[1]!.pageId);
   });
 
   it('stamps the creation page synchronously', () => {

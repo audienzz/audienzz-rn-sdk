@@ -15,6 +15,15 @@ export interface RemoteConfigBannerProps extends AdEvents {
    * Changing it remounts the underlying banner, so keep it stable for the component's lifetime
    * unless you mean to reload.
    */
+  /**
+   * The page this banner belongs to, when the caller knows it better than the SDK does.
+   *
+   * Omitted, the banner captures whichever page was current when it was constructed. That is wrong
+   * for a banner added to a retained-but-unfocused screen: the current page is the foreground one,
+   * so the banner would be created as if it lived there. `AudienzzBanner` always supplies this from
+   * its own `AudienzzPage`.
+   */
+  pageKey?: string;
   lazyLoad?: boolean;
   /**
    * How far ahead of the viewport the auction starts, in dp (Android) / points (iOS). Only has

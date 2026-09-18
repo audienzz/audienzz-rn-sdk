@@ -47,15 +47,34 @@ export interface AudienzzPageHandle {
   readonly name: string;
 }
 
-let nextPageSeq = 0;
-
 /**
- * Mint a page instance. Call once per route instance — typically from `AudienzzPage`, which holds
- * it for the lifetime of the mounted route.
+ * A page whose identity is its name.
+ *
+ * This is the long-standing contract and the default everywhere: the navigation adapter, the
+ * `AudienzzPage` wrapper and `Audienzz.pageImpression(name)` all produce the same id for the same
+ * name, so reporting a screen again matches the banners already on it and refreshes them.
+ *
+ * An earlier revision minted a fresh id per call. That silently broke the contract — a second
+ * report of the same name released the banners instead of refreshing them, and they could never
+ * match again — and it made the adapter and the wrapper disagree about who owned a page.
  */
 export function createPage(name: string): AudienzzPageHandle {
-  nextPageSeq += 1;
-  return { id: `${name}#${nextPageSeq}`, name };
+  return { id: name, name };
+}
+
+/**
+ * A page identified by route instance rather than by name, so two routes that share a screen name
+ * own their banners separately.
+ *
+ * Opt-in, and it must be opted into on **both** sides: pass `perInstance` to the navigation adapter
+ * and the matching `id` to `AudienzzPage`, or the two will disagree about which page a banner is
+ * on. With React Navigation, `route.key` is the instance key to use for both.
+ */
+export function createPageInstance(
+  instanceId: string,
+  name: string
+): AudienzzPageHandle {
+  return { id: instanceId, name };
 }
 
 let currentPage: AudienzzPageHandle | null = null;

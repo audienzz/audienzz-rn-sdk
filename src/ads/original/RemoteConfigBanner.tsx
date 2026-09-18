@@ -134,7 +134,7 @@ export class RemoteConfigBanner extends Component<
         return (
             <View style={[style, dynamicStyle]}>
                 <RNRemoteConfigBannerView
-                    pageKey={pageKeyOf(this.page)}
+                    pageKey={this.props.pageKey ?? pageKeyOf(this.page) ?? undefined}
                     {...otherProps}
                     adWidth={adWidth}
                     adHeight={adHeight}

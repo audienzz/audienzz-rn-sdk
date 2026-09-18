@@ -25,7 +25,7 @@ import {
 } from 'react-native';
 import type { OriginalBannerProps, AdError, AdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
-import { getCurrentPage } from '../../pageRegistry';
+import { getCurrentPage, pageKeyOf } from '../../pageRegistry';
 
 const ComponentName = 'RCTOriginalBannerView';
 const NativeComponent = requireNativeComponent<any>(ComponentName);
@@ -57,7 +57,7 @@ export class OriginalBanner extends Component<
    * `null` means the app never called `pageImpression` before rendering this
    * ad, which native reports as an integration error.
    */
-  private readonly pageKey = getCurrentPage();
+  private readonly pageKey = pageKeyOf(getCurrentPage());
 
   /**
    * A page impression is handled ENTIRELY by native for original-API banners:

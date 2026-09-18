@@ -367,10 +367,26 @@ function ArticleScreen() {
 }
 ```
 
-`AudienzzPage` mints one page identity per route instance, so two article screens own their banners
-separately even though both are named `article`. `AudienzzBanner` identifies a slot by
-`(page instance, slotKey)` — an `adConfigId` is not unique, the same placement can appear twice on
-one screen.
+By default the **screen name is the page identity**, and every component agrees on that: the
+adapter, `AudienzzPage` and `Audienzz.pageImpression(name)` all produce the same id for the same
+name. Reporting a screen again therefore matches the banners already on it and refreshes them.
+
+`AudienzzBanner` identifies a slot by `(page, slotKey)` — an `adConfigId` is not unique, the same
+placement can appear twice on one screen — and binds explicitly to the page it is rendered inside,
+not to whichever page was activated most recently.
+
+**Two routes with the same name, owned separately?** Opt in on *both* sides, or they will disagree
+about who owns a banner:
+
+```tsx
+<NavigationContainer
+  onStateChange={(s) => audienzzOnNavigationStateChange(s, { perInstance: true })}
+>
+…
+function ArticleScreen({ route }) {
+  return <AudienzzPage name="article" id={route.key}>…</AudienzzPage>;
+}
+```
 
 For a tab navigator, pass focus so a pre-mounted tab does not claim the active page:
 

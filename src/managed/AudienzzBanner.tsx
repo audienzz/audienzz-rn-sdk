@@ -107,6 +107,9 @@ export function AudienzzBanner({
         // construction and would silently keep the old one.
         key={`${context.page.id}:${slotKey}`}
         adConfigId={adConfigId}
+        // Explicit, not inherited. A banner added to a retained-but-unfocused screen would
+        // otherwise capture the foreground page and be created as if it lived there.
+        pageKey={context.page.id}
         lazyLoad={lazyLoad}
         prefetchMargin={prefetchMargin}
         style={styles.fill}
