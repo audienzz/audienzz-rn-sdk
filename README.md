@@ -401,8 +401,13 @@ function FeedScreen() {
 becomes visible.
 
 ```ts
-const page = createPage('article');   // once per route instance
-Audienzz.activatePage(page);          // when it becomes visible
+// `createPage` gives a page whose identity IS its name — the legacy contract, so reporting the
+// same screen again refreshes its banners rather than releasing them.
+Audienzz.activatePage(createPage('article'));
+
+// A router with its own stable per-instance key should use that instead, so two article routes
+// own their banners separately:
+Audienzz.activatePage({ id: routeKey, name: 'article' });
 ```
 
 Activate the destination on every transition, including to screens with no ads. Activating a page is

@@ -113,27 +113,61 @@ export function forgetManagedActivation(page: AudienzzPageHandle): void {
   }
 }
 
-/** Which wrapper, if any, owns a screen name — so the adapter can defer to it. */
-const claimedByName = new Map<string, AudienzzPageHandle>();
+/**
+ * The most recently mounted managed page that has not yet been bound to a navigation route.
+ *
+ * Deliberately NOT keyed by screen name. A name map cannot distinguish two retained routes that
+ * share one — the second wrapper overwrote the first, and popping back to the first then found
+ * nothing and fell back to a route-key handle its banner did not belong to. It also fails outright
+ * when the analytics name differs from the router's screen name, which is a legitimate thing to
+ * want.
+ */
+let pendingClaim: AudienzzPageHandle | null = null;
 
 export function claimManagedPage(page: AudienzzPageHandle): void {
-  claimedByName.set(page.name, page);
+  pendingClaim = page;
 }
 
 export function releaseManagedPage(page: AudienzzPageHandle): void {
-  if (claimedByName.get(page.name)?.id === page.id) {
-    claimedByName.delete(page.name);
+  if (pendingClaim?.id === page.id) {
+    pendingClaim = null;
+  }
+  for (const [key, bound] of routeBindings) {
+    if (bound.id === page.id) {
+      routeBindings.delete(key);
+    }
   }
 }
 
-export function claimedManagedPage(name: string): AudienzzPageHandle | null {
-  return claimedByName.get(name) ?? null;
+/**
+ * Which handle owns a navigation route instance.
+ *
+ * Bound once, when that route is first focused and a wrapper has just claimed, and reused on every
+ * later return — which is what makes popping back to a retained route reactivate the page its
+ * banners actually belong to.
+ */
+const routeBindings = new Map<string, AudienzzPageHandle>();
+
+export function bindRoute(
+  routeKey: string,
+  fallback: AudienzzPageHandle
+): AudienzzPageHandle {
+  const existing = routeBindings.get(routeKey);
+  if (existing != null) {
+    return existing;
+  }
+  const claimed = pendingClaim;
+  const page = claimed ?? fallback;
+  pendingClaim = null;
+  routeBindings.set(routeKey, page);
+  return page;
 }
 
-/** Test hook: forget managed activation and claim bookkeeping. */
+/** Test hook: forget managed activation, claims and route bindings. */
 export function resetManagedPagesForTesting(): void {
   lastManagedActivation = null;
-  claimedByName.clear();
+  pendingClaim = null;
+  routeBindings.clear();
 }
 
 /**

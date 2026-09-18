@@ -22,6 +22,11 @@
 /// The placement the current owner was built for. A prop change that does not change it reuses
 /// the owner, so the SDK can recognise the repeat instead of building a second banner.
 @property(nonatomic, copy) NSString *loadedAdConfigId;
+/// Publisher state requested before the owner existed. `didSetProps` queues creation onto a
+/// background queue and then the main queue, so a command can legitimately arrive while
+/// `auRemoteConfigBannerView` is still nil — and messaging nil silently drops it.
+@property(nonatomic, assign) BOOL pendingPublisherStop;
+@property(nonatomic, assign) BOOL pendingHostCover;
 @end
 
 @implementation RCTRemoteConfigBannerView {
@@ -128,6 +133,9 @@
       [[[[UIApplication sharedApplication] delegate] window]
           rootViewController];
 
+  // Before loadIn:, which is where the owner builds the banner and it can request.
+  [self applyPendingPublisherState];
+
   [self.auRemoteConfigBannerView loadIn:self
                                   width:self.bounds.size.width
                                  height:self.bounds.size.height
@@ -158,16 +166,30 @@
 }
 
 - (void)stopAutoRefresh {
+  self.pendingPublisherStop = YES;
   [self.auRemoteConfigBannerView stopAutoRefresh];
 }
 
 - (void)resumeAutoRefresh {
+  self.pendingPublisherStop = NO;
   [self.auRemoteConfigBannerView resumeAutoRefresh];
+}
+
+/// Replays whatever the host asked for before the owner existed. The stop goes on first, before
+/// loadIn: can request.
+- (void)applyPendingPublisherState {
+  if (self.pendingPublisherStop) {
+    [self.auRemoteConfigBannerView stopAutoRefresh];
+  }
+  if (self.pendingHostCover) {
+    [self.auRemoteConfigBannerView pauseSmartRefresh];
+  }
 }
 
 /// A cover the SDK cannot infer — a pointer-transparent veil, a painted overlay. Current state, not
 /// an event, and separate from the publisher pause: clearing one must not clear the other.
 - (void)setCovered:(BOOL)covered {
+  self.pendingHostCover = covered;
   if (covered) {
     [self.auRemoteConfigBannerView pauseSmartRefresh];
   } else {

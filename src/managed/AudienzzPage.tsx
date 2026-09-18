@@ -49,12 +49,13 @@ export interface AudienzzPageProps {
   /** Analytics screen name. Also the page identity unless [id] is given. */
   name: string;
   /**
-   * Page identity, when it must differ from the name — two article routes that should own their
-   * banners separately, for example.
+   * Page identity, when a host wants to choose it — a custom router that already has a stable
+   * per-instance key.
    *
-   * Opt-in on **both** sides: pass `{ perInstance: true }` to `audienzzOnNavigationStateChange`
-   * and the same key here, or the adapter and this wrapper will disagree about which page a banner
-   * is on and each will release the other's banners. With React Navigation, use `route.key`.
+   * Not needed for the default setup: a managed page is uniquely owned per route instance on its
+   * own, and `audienzzOnNavigationStateChange` binds that same handle to the navigation route
+   * rather than deriving one of its own. Name identity lives only where compatibility needs it —
+   * the legacy `Audienzz.pageImpression(name)`.
    */
   id?: string;
   /**

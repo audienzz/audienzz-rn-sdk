@@ -16,7 +16,7 @@
 
 import {
   activateManagedPage,
-  claimedManagedPage,
+  bindRoute,
   createPageInstance,
 } from '../pageRegistry';
 import { Audienzz } from '../RNAudienzz';
@@ -78,11 +78,12 @@ export function audienzzOnNavigationStateChange(
     return;
   }
   lastReportedRouteKey = route.key;
-  // A wrapper on this screen is the authority on which page instance this is; both of us reporting
-  // the same navigation cost two replacement auctions. Identity is per route instance either way —
-  // React Navigation's route.key is exactly that.
-  const page =
-    claimedManagedPage(route.name) ?? createPageInstance(route.key, route.name);
+  // Bound to the ROUTE INSTANCE, not matched by screen name. The wrapper that just mounted is the
+  // authority on which page this is; after that the binding is what returns to the right owner when
+  // the reader pops back to a retained route. A name map could not do either: a second wrapper with
+  // the same name overwrote the first, and an analytics name that differs from the router's screen
+  // name never matched at all. Without a wrapper, route.key is the identity.
+  const page = bindRoute(route.key, createPageInstance(route.key, route.name));
   activateManagedPage(page, (p) => Audienzz.activatePage(p));
 }
 
