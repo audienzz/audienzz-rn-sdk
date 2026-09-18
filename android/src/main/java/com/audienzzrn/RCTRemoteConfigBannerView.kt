@@ -26,6 +26,22 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
   // by host identity — this key is what it matches on instead.
   private var pageKey: String? = null
 
+  // Delivery overrides. Nullable so "the publisher said nothing" stays distinguishable from
+  // "the publisher said false/0" — null defers to the ad config, which carries the per-placement
+  // value. Part of the reload key below, so changing one actually takes effect.
+  private var lazyLoad: Boolean? = null
+  private var prefetchMargin: Int? = null
+  private var loadedLazyLoad: Boolean? = null
+  private var loadedPrefetchMargin: Int? = null
+
+  fun updateLazyLoad(value: Boolean?) {
+    lazyLoad = value
+  }
+
+  fun updatePrefetchMargin(value: Int?) {
+    prefetchMargin = value
+  }
+
   fun updatePageKey(value: String?) {
     pageKey = value
     value?.let { remoteConfigBannerView?.setScreen(it) }
@@ -95,12 +111,19 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
   fun loadAd() {
     val id = configId ?: return
 
-    if (id == loadedConfigId && remoteConfigBannerView != null) {
+    // The delivery settings are part of the identity of a load, not incidental to it: a publisher
+    // that changes one and re-renders means it, and coalescing on the config id alone silently
+    // dropped the change.
+    if (id == loadedConfigId && remoteConfigBannerView != null &&
+      lazyLoad == loadedLazyLoad && prefetchMargin == loadedPrefetchMargin
+    ) {
       Log.d(TAG, "Ad already loaded for config: $id, skipping")
       return
     }
 
     loadedConfigId = id
+    loadedLazyLoad = lazyLoad
+    loadedPrefetchMargin = prefetchMargin
     Log.d(TAG, "Loading ad for config: $id, container size: ${width}x${height}")
 
     loadAdInternal(id)
@@ -123,6 +146,9 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
     remoteConfigBannerView = null
 
     val bannerView = AudienzzRemoteBannerView(context, id)
+    // Before loadAd(), which is where the view resolves them to build the ad handler.
+    bannerView.lazyLoadOverride = lazyLoad
+    bannerView.prefetchMarginDpOverride = prefetchMargin
 
     addView(bannerView)
     remoteConfigBannerView = bannerView

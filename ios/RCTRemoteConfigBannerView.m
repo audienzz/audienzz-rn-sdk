@@ -47,6 +47,16 @@
   self.propsChanged = YES;
 }
 
+- (void)setLazyLoad:(NSNumber *)lazyLoad {
+  _lazyLoad = lazyLoad;
+  self.propsChanged = YES;
+}
+
+- (void)setPrefetchMargin:(NSNumber *)prefetchMargin {
+  _prefetchMargin = prefetchMargin;
+  self.propsChanged = YES;
+}
+
 - (void)didSetProps:(NSArray<NSString *> *)changedProps {
   if (self.propsChanged) {
     dispatch_async(self.backgroundQueue, ^{
@@ -97,6 +107,21 @@
   // Must precede loadIn:, which is where the ad joins the current page.
   if (self.pageKey != nil) {
     [self.auRemoteConfigBannerView setScreen:self.pageKey];
+  }
+
+  // Also before loadIn:, which is where the owner reads them to build the banner. Clearing on nil
+  // matters because the owner is reused across prop changes, so a removed prop has to remove the
+  // override rather than leave the last value in place.
+  if (self.lazyLoad != nil) {
+    [self.auRemoteConfigBannerView setLazyLoadOverride:[self.lazyLoad boolValue]];
+  } else {
+    [self.auRemoteConfigBannerView clearLazyLoadOverride];
+  }
+  if (self.prefetchMargin != nil) {
+    [self.auRemoteConfigBannerView
+        setPrefetchMarginPointsOverride:(CGFloat)[self.prefetchMargin doubleValue]];
+  } else {
+    [self.auRemoteConfigBannerView clearPrefetchMarginPointsOverride];
   }
 
   UIViewController *rootViewController =

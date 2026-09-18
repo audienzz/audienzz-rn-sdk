@@ -27,6 +27,11 @@
 // single host view controller, so the native page coordinator can't tell one route's ads from
 // another's by host identity — this key is what it matches on instead.
 @property(nonatomic, copy) NSString *pageKey;
+// Delivery overrides, forwarded to AURemoteConfigBannerView. NSNumber rather than BOOL/CGFloat so
+// "the publisher said nothing" stays distinguishable from "the publisher said NO/0" — nil defers
+// to the ad config, which is what carries the per-placement value.
+@property(nonatomic, strong) NSNumber *lazyLoad;
+@property(nonatomic, strong) NSNumber *prefetchMargin;
 
 - (void)reloadIfVisible;
 - (void)stopAutoRefresh;

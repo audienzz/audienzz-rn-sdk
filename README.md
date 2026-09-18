@@ -653,12 +653,30 @@ If adaptive banners are enabled in the remote configuration, and you don't provi
 />
 ```
 
+#### When the auction starts
+
+By default a `RemoteConfigBanner` auctions as soon as it mounts, wherever the slot sits. Two optional props change that, each resolving **prop → ad config → SDK default**:
+
+```jsx
+<RemoteConfigBanner
+  adConfigId="YOUR_CONFIG_ID"
+  lazyLoad                  // wait until the slot approaches the viewport
+  prefetchMargin={600}      // …starting 600 dp/pt ahead (default 200)
+/>
+```
+
+Omit a prop to use the ad config's `lazyLoad` / `prefetchDistanceDp`, which lets you tune a placement from the backend without an app release. Changing either prop remounts the banner, so keep them stable unless you mean to reload.
+
+> In a `FlatList`, `prefetchMargin` is usually the setting that matters: the ad component mounts many viewports ahead, so the margin — not the list — decides when the auction starts. If raising it does not move the auction earlier, raise the list's `windowSize` / `initialNumToRender` instead.
+
 <details>
 <summary><span>Props:</span></summary>
 
 | Name               | Description                                                | Required | Type                                                    |
 | ------------------ | ---------------------------------------------------------- | :------: | ------------------------------------------------------- |
 | `adConfigId`       | Remote configuration ID for the ad unit.                   | **YES**  | string                                                  |
+| `lazyLoad`         | Defer the auction until the slot approaches the viewport. Omitted = ad config, then eager. |    No    | boolean                        |
+| `prefetchMargin`   | How far ahead of the viewport the auction starts (dp/pt). Only applies while `lazyLoad` is on. Omitted = ad config, then 200. |    No    | number |
 | `onAdLoaded`       | Callback when ad is loaded. Returns ad size.               |    No    | onAdLoaded?(size: AdSize): void |
 | `onAdFailedToLoad` | Callback when ad fails to load.                            |    No    | onAdFailedToLoad?(error: {message: string}): void       |
 | `onAdClicked`      | Callback when ad is clicked.                               |    No    | onAdClicked?(): void                                    |
