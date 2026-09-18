@@ -113,13 +113,10 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
    * not an event, and separate from the publisher pause: clearing one must not clear the other.
    */
   fun setCovered(covered: Boolean) {
-    // onPause/onResume are the VISIBILITY pair on AudienzzRemoteBannerView; they clear only the
-    // visibility reason, so a publisher pause or a released page survives.
-    if (covered) {
-      remoteConfigBannerView?.onPause()
-    } else {
-      remoteConfigBannerView?.onResume()
-    }
+    // setHostCover, NOT onPause/onResume. Those write the same NOT_VISIBLE reason the native
+    // geometry listener uses, and a RemoteBanner has that listener enabled — so a scroll back into
+    // view cleared the cover, and clearing the cover cleared a genuine offscreen hold.
+    remoteConfigBannerView?.setHostCover(covered)
   }
 
   fun loadAd() {

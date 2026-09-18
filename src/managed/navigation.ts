@@ -14,7 +14,11 @@
     limitations under the License.
 */
 
-import { createPage, createPageInstance } from '../pageRegistry';
+import {
+  activateManagedPage,
+  claimedManagedPage,
+  createPageInstance,
+} from '../pageRegistry';
 import { Audienzz } from '../RNAudienzz';
 
 /**
@@ -60,21 +64,8 @@ function focusedRoute(
  * Every focus change is reported, including moves to screens that carry no ads: that is what
  * releases the previous page's banners. Deactivation does not need a fabricated ad event.
  */
-export interface AudienzzNavigationOptions {
-  /**
-   * Identify a page by route instance rather than by screen name, so two article routes own their
-   * banners separately.
-   *
-   * Opt-in on **both** sides: pass `id={route.key}` to the matching `AudienzzPage`. With this off
-   * (the default) every component agrees that the screen name is the page identity, which is the
-   * long-standing contract.
-   */
-  perInstance?: boolean;
-}
-
 export function audienzzOnNavigationStateChange(
-  state: AudienzzNavigationState | undefined,
-  options?: AudienzzNavigationOptions
+  state: AudienzzNavigationState | undefined
 ): void {
   const route = focusedRoute(state);
   if (route == null) {
@@ -87,11 +78,12 @@ export function audienzzOnNavigationStateChange(
     return;
   }
   lastReportedRouteKey = route.key;
-  Audienzz.activatePage(
-    options?.perInstance === true
-      ? createPageInstance(route.key, route.name)
-      : createPage(route.name)
-  );
+  // A wrapper on this screen is the authority on which page instance this is; both of us reporting
+  // the same navigation cost two replacement auctions. Identity is per route instance either way —
+  // React Navigation's route.key is exactly that.
+  const page =
+    claimedManagedPage(route.name) ?? createPageInstance(route.key, route.name);
+  activateManagedPage(page, (p) => Audienzz.activatePage(p));
 }
 
 /** Test/host-restart hook: forget what this adapter last reported. */

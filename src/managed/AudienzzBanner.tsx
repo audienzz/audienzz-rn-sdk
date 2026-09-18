@@ -97,12 +97,39 @@ export const AudienzzBanner = React.forwardRef<
   const context = useAudienzzPage();
   const bannerRef = React.useRef<RemoteConfigBanner | null>(null);
 
+  // Requested publisher state, held by the SLOT rather than by whichever native child currently
+  // occupies it. A retained page that is hidden and shown again unmounts and recreates that child,
+  // so a stop forwarded only to the old one came back cleared although the publisher never resumed.
+  const intent = React.useRef({ covered: false, stopped: false });
+
+  const applyIntent = React.useCallback(() => {
+    const banner = bannerRef.current;
+    if (banner == null) {
+      return;
+    }
+    if (intent.current.covered) {
+      banner.setCovered(true);
+    }
+    if (intent.current.stopped) {
+      banner.stopAutoRefresh();
+    }
+  }, []);
+
   React.useImperativeHandle(
     ref,
     () => ({
-      reportCover: (covered: boolean) => bannerRef.current?.setCovered(covered),
-      stopAutoRefresh: () => bannerRef.current?.stopAutoRefresh(),
-      resumeAutoRefresh: () => bannerRef.current?.resumeAutoRefresh(),
+      reportCover: (covered: boolean) => {
+        intent.current.covered = covered;
+        bannerRef.current?.setCovered(covered);
+      },
+      stopAutoRefresh: () => {
+        intent.current.stopped = true;
+        bannerRef.current?.stopAutoRefresh();
+      },
+      resumeAutoRefresh: () => {
+        intent.current.stopped = false;
+        bannerRef.current?.resumeAutoRefresh();
+      },
     }),
     []
   );
@@ -149,7 +176,12 @@ export const AudienzzBanner = React.forwardRef<
         onAdLoaded={onAdLoaded}
         onAdFailedToLoad={onAdFailedToLoad}
         ref={(instance) => {
+          const isNew = instance != null && instance !== bannerRef.current;
           bannerRef.current = instance;
+          // A newly created native child inherits the slot's standing intent.
+          if (isNew) {
+            applyIntent();
+          }
         }}
       />
     </View>

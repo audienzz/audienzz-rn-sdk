@@ -72,12 +72,7 @@ describe('managed RemoteBanner integration', () => {
     expect(natives(tree)[0]!.props.pageKey).toBe(activated[0]!.id);
   });
 
-  // Contract corrected after this review: the screen name IS the page identity by default, because
-  // minting a fresh id per mount broke repeat reports and made the adapter and wrapper disagree.
-  // Per-instance identity is opt-in on both sides — see 'separates two routes only when both sides
-  // opt in' in managedBanner.test.tsx.
-  // eslint-disable-next-line jest/no-disabled-tests
-  it.skip('gives two routes with the same screen name different page ids', () => {
+  it('gives two routes with the same screen name different page ids', () => {
     render(
       <AudienzzPage name="article">
         <AudienzzBanner adConfigId="46" slotKey="s" />

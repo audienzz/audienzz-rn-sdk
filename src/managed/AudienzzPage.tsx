@@ -16,8 +16,12 @@
 
 import React from 'react';
 import {
-  createPage,
+  activateManagedPage,
+  claimManagedPage,
+  createManagedPage,
   createPageInstance,
+  forgetManagedActivation,
+  releaseManagedPage,
   type AudienzzPageHandle,
 } from '../pageRegistry';
 import { Audienzz } from '../RNAudienzz';
@@ -82,11 +86,23 @@ export function AudienzzPage({
   children,
 }: AudienzzPageProps): React.ReactElement {
   // Resolved during render, so a child sees it in the same commit. A rebuild never changes it.
+  // Unique by default. Two article routes must own their banners separately without the publisher
+  // configuring matching ids in two places; the adapter defers to this handle.
   const page = React.useMemo<AudienzzPageHandle>(
-    () => (id == null ? createPage(name) : createPageInstance(id, name)),
+    () => (id == null ? createManagedPage(name) : createPageInstance(id, name)),
     [id, name]
   );
   const [isActive, setIsActive] = React.useState(false);
+
+  // Layout effects run before passive effects, and NavigationContainer calls onStateChange from a
+  // passive one — so the claim is in place before the adapter looks for it, whichever mounts first.
+  React.useLayoutEffect(() => {
+    if (!active) {
+      return undefined;
+    }
+    claimManagedPage(page);
+    return () => releaseManagedPage(page);
+  }, [active, page]);
 
   React.useEffect(() => {
     if (!active) {
@@ -94,12 +110,13 @@ export function AudienzzPage({
       // active page: otherwise a banner added to it afterwards is created as if it were on the
       // foreground page, and the tab can never be re-activated when the reader comes back.
       setIsActive(false);
+      forgetManagedActivation(page);
       return;
     }
     // Reporting the page is a side effect and belongs in an effect. A managed banner does not
     // create its ad until `isActive` turns true, so the page is always reported before its ads
     // exist — the ordering contract holds without putting navigation work into render.
-    Audienzz.activatePage(page);
+    activateManagedPage(page, (p) => Audienzz.activatePage(p));
     setIsActive(true);
   }, [active, page]);
 

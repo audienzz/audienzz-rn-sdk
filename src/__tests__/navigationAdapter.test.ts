@@ -2,6 +2,7 @@ import {
   audienzzOnNavigationStateChange,
   resetAudienzzNavigationTracking,
 } from '../managed/navigation';
+import * as registry from '../pageRegistry';
 import { Audienzz } from '../RNAudienzz';
 
 jest.mock('react-native', () => ({
@@ -15,6 +16,7 @@ describe('React Navigation adapter', () => {
 
   beforeEach(() => {
     resetAudienzzNavigationTracking();
+    registry.resetManagedPagesForTesting();
     activated = [];
     jest
       .spyOn(Audienzz, 'activatePage')
@@ -27,28 +29,17 @@ describe('React Navigation adapter', () => {
     routes,
   });
 
-  it('reports the focused route, identified by its screen name', () => {
-    // The name is the identity by default, so this adapter, AudienzzPage and the legacy
-    // pageImpression(name) all agree about which page a banner is on.
+  it('reports the focused route, identified by its instance', () => {
+    // Per route instance, always: this adapter belongs to the managed integration, where two
+    // article routes must own their banners separately with nothing to configure.
     audienzzOnNavigationStateChange(stack({ key: 'Article-a', name: 'Article' }));
-    expect(activated).toEqual([{ id: 'Article', name: 'Article' }]);
+    expect(activated).toEqual([{ id: 'Article-a', name: 'Article' }]);
   });
 
-  it('separates two article routes only when per-instance identity is opted into', () => {
+  it('separates two article routes that share a screen name', () => {
     audienzzOnNavigationStateChange(stack({ key: 'Article-a', name: 'Article' }));
     audienzzOnNavigationStateChange(
       stack({ key: 'Article-a', name: 'Article' }, { key: 'Article-b', name: 'Article' })
-    );
-    expect(activated.map((p) => p.id)).toEqual(['Article', 'Article']);
-
-    activated.length = 0;
-    resetAudienzzNavigationTracking();
-    audienzzOnNavigationStateChange(stack({ key: 'Article-a', name: 'Article' }), {
-      perInstance: true,
-    });
-    audienzzOnNavigationStateChange(
-      stack({ key: 'Article-a', name: 'Article' }, { key: 'Article-b', name: 'Article' }),
-      { perInstance: true }
     );
     expect(activated.map((p) => p.id)).toEqual(['Article-a', 'Article-b']);
     expect(activated.map((p) => p.name)).toEqual(['Article', 'Article']);
@@ -60,7 +51,7 @@ describe('React Navigation adapter', () => {
       stack({ key: 'Article-a', name: 'Article' }, { key: 'Settings-x', name: 'Settings' })
     );
     expect(activated).toHaveLength(2);
-    expect(activated[1]).toEqual({ id: 'Settings', name: 'Settings' });
+    expect(activated[1]).toEqual({ id: 'Settings-x', name: 'Settings' });
   });
 
   it('deduplicates repeated callbacks for the same focused route', () => {
@@ -77,7 +68,7 @@ describe('React Navigation adapter', () => {
       stack({ key: 'Home-h', name: 'Home' }, { key: 'Article-a', name: 'Article' })
     );
     audienzzOnNavigationStateChange(stack({ key: 'Home-h', name: 'Home' }));
-    expect(activated.map((p) => p.id)).toEqual(['Home', 'Article', 'Home']);
+    expect(activated.map((p) => p.id)).toEqual(['Home-h', 'Article-a', 'Home-h']);
   });
 
   it('reports the deepest focused route in a nested navigator', () => {
@@ -97,7 +88,7 @@ describe('React Navigation adapter', () => {
         },
       ],
     });
-    expect(activated).toEqual([{ id: 'Saved', name: 'Saved' }]);
+    expect(activated).toEqual([{ id: 'Saved-s', name: 'Saved' }]);
   });
 
   it('does not suppress an explicit report by the app', () => {
@@ -105,7 +96,7 @@ describe('React Navigation adapter', () => {
     audienzzOnNavigationStateChange(stack({ key: 'Article-a', name: 'Article' }));
     Audienzz.activatePage({ id: 'Dialog-1', name: 'Paywall' });
     audienzzOnNavigationStateChange(stack({ key: 'Article-a', name: 'Article' }));
-    expect(activated.map((p) => p.id)).toEqual(['Article', 'Dialog-1']);
+    expect(activated.map((p) => p.id)).toEqual(['Article-a', 'Dialog-1']);
   });
 
   it('ignores an empty or undefined state', () => {

@@ -62,6 +62,80 @@ export function createPage(name: string): AudienzzPageHandle {
   return { id: name, name };
 }
 
+let managedSeq = 0;
+
+/**
+ * A uniquely owned page instance, for the managed integration.
+ *
+ * The managed components use this rather than `createPage` so that two article routes own their
+ * banners separately without the publisher configuring matching ids in two places — which would
+ * defeat the point of providing a managed integration.
+ *
+ * `Audienzz.pageImpression(name)` keeps name identity, because reporting a screen again must match
+ * the banners already on it. Compatibility lives at the old API boundary, not by weakening the new
+ * one.
+ */
+export function createManagedPage(name: string): AudienzzPageHandle {
+  managedSeq += 1;
+  return { id: `${name}#${managedSeq}`, name };
+}
+
+/**
+ * The managed integration's single activation owner.
+ *
+ * The adapter and the wrapper are two reporters of one navigation. Sharing an id stopped them
+ * disagreeing, but both still called `activatePage`, and two page impressions are two real
+ * transitions — one navigation bought two replacement auctions. This deduplicates the MANAGED path
+ * only; `Audienzz.activatePage` and `pageImpression` are untouched, so a deliberate repeat report
+ * from app code still works.
+ */
+let lastManagedActivation: AudienzzPageHandle | null = null;
+
+export function activateManagedPage(
+  page: AudienzzPageHandle,
+  activate: (page: AudienzzPageHandle) => void
+): void {
+  if (
+    lastManagedActivation != null &&
+    lastManagedActivation.id === page.id &&
+    lastManagedActivation.name === page.name
+  ) {
+    return;
+  }
+  lastManagedActivation = page;
+  activate(page);
+}
+
+/** Forget a managed activation when its page goes away, so a return is a new visit. */
+export function forgetManagedActivation(page: AudienzzPageHandle): void {
+  if (lastManagedActivation?.id === page.id) {
+    lastManagedActivation = null;
+  }
+}
+
+/** Which wrapper, if any, owns a screen name — so the adapter can defer to it. */
+const claimedByName = new Map<string, AudienzzPageHandle>();
+
+export function claimManagedPage(page: AudienzzPageHandle): void {
+  claimedByName.set(page.name, page);
+}
+
+export function releaseManagedPage(page: AudienzzPageHandle): void {
+  if (claimedByName.get(page.name)?.id === page.id) {
+    claimedByName.delete(page.name);
+  }
+}
+
+export function claimedManagedPage(name: string): AudienzzPageHandle | null {
+  return claimedByName.get(name) ?? null;
+}
+
+/** Test hook: forget managed activation and claim bookkeeping. */
+export function resetManagedPagesForTesting(): void {
+  lastManagedActivation = null;
+  claimedByName.clear();
+}
+
 /**
  * A page identified by route instance rather than by name, so two routes that share a screen name
  * own their banners separately.

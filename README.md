@@ -367,26 +367,21 @@ function ArticleScreen() {
 }
 ```
 
-By default the **screen name is the page identity**, and every component agrees on that: the
-adapter, `AudienzzPage` and `Audienzz.pageImpression(name)` all produce the same id for the same
-name. Reporting a screen again therefore matches the banners already on it and refreshes them.
+`AudienzzPage` and the navigation adapter give **each route instance its own page identity**, so
+two article screens both named `article` own their banners separately with nothing to configure.
+They resolve the *same* handle for the same screen, and only one activation is reported per
+navigation.
+
+`Audienzz.pageImpression(name)` keeps **name identity**, so reporting a screen again still matches
+the banners already on it and refreshes them. Compatibility lives at that boundary; it does not
+weaken the managed contract.
 
 `AudienzzBanner` identifies a slot by `(page, slotKey)` — an `adConfigId` is not unique, the same
 placement can appear twice on one screen — and binds explicitly to the page it is rendered inside,
 not to whichever page was activated most recently.
 
-**Two routes with the same name, owned separately?** Opt in on *both* sides, or they will disagree
-about who owns a banner:
-
-```tsx
-<NavigationContainer
-  onStateChange={(s) => audienzzOnNavigationStateChange(s, { perInstance: true })}
->
-…
-function ArticleScreen({ route }) {
-  return <AudienzzPage name="article" id={route.key}>…</AudienzzPage>;
-}
-```
+`<AudienzzPage id="…">` is available when a host wants to choose the identity itself — a custom
+router with its own stable per-instance key. It is not needed for the default setup.
 
 For a tab navigator, pass focus so a pre-mounted tab does not claim the active page:
 

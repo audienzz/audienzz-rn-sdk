@@ -70,10 +70,10 @@ describe('managed RemoteBanner integration', () => {
     expect(natives(tree)[0]!.props.pageKey).toBe(activated[0]!.id);
   });
 
-  it('treats the screen name as the page identity by default', () => {
-    // An earlier revision minted a fresh id per mount. That broke the long-standing contract:
-    // reporting the same screen again released its banners instead of refreshing them, and it made
-    // the navigation adapter and this wrapper disagree about who owned a page.
+  it('gives two managed routes with one screen name separate pages', () => {
+    // Unique by default for MANAGED pages. Legacy pageImpression(name) keeps name identity so a
+    // repeat report still refreshes rather than releases — compatibility is preserved at the old
+    // API boundary, not by weakening this one.
     render(
       <AudienzzPage name="article">
         <AudienzzBanner adConfigId="46" slotKey="s" />
@@ -84,10 +84,11 @@ describe('managed RemoteBanner integration', () => {
         <AudienzzBanner adConfigId="46" slotKey="s" />
       </AudienzzPage>
     );
-    expect(activated.map((p) => p.id)).toEqual(['article', 'article']);
+    expect(activated.map((p) => p.name)).toEqual(['article', 'article']);
+    expect(activated[0]!.id).not.toBe(activated[1]!.id);
   });
 
-  it('separates two routes only when both sides opt in', () => {
+  it('accepts an explicit id from a custom router', () => {
     const tree = render(
       <AudienzzPage name="article" id="Article-a">
         <AudienzzBanner adConfigId="46" slotKey="s" />
