@@ -118,3 +118,8 @@ export { AudienzzBanner } from './managed/AudienzzBanner';
 export type { AudienzzBannerProps } from './managed/AudienzzBanner';
 export { createPage } from './pageRegistry';
 export type { AudienzzPageHandle } from './pageRegistry';
+export {
+  audienzzOnNavigationStateChange,
+  resetAudienzzNavigationTracking,
+} from './managed/navigation';
+export type { AudienzzNavigationState } from './managed/navigation';
