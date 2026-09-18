@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ScrollView, Text, TouchableOpacity, View, Platform, StyleSheet, SafeAreaView } from 'react-native';
 import RNAudienzz from 'audienzz';
-import { RNTargeting } from 'audienzz';
+import { Audienzz, RNTargeting, createPage } from 'audienzz';
 import { LOREM } from './constants';
 import ErrorHandlingExample from './components/ErrorHandlingExample';
 import OriginalBannerAPIExample from './components/OriginalBannerAPIExample';
@@ -27,8 +27,21 @@ export default function App() {
   const [initialized, setInitialized] = React.useState(false);
   const [screen, setScreen] = React.useState<'main' | 'test' | 'sticky' | 'smartRefresh' | 'legacy' | 'reloadTabs'>('main');
 
+  // Navigate. Reporting the page here — in the navigation ACTION — is the whole point: the
+  // destination's banners read the current page while they are being constructed, and an effect
+  // runs after that commit. A parent effect therefore bound every banner to the page the reader had
+  // just left. React offers no earlier parent hook: effects and layout effects both run child-first.
+  //
+  // For screens built with <AudienzzPage>/<AudienzzBanner> this is handled for you; this example
+  // still uses the low-level components in places, which is why it reports explicitly.
+  const goTo = React.useCallback((next: typeof screen) => {
+    Audienzz.activatePage(createPage(next));
+    setScreen(next);
+  }, []);
+
   React.useEffect(() => {
-    // Report each ad-bearing screen explicitly via pageImpression (see the effect below).
+    // Pages are reported by `goTo` at the navigation action, and the first one right after
+    // initialization — never from render, layout or a parent effect.
     // Opt into smart-refresh v2 (directional viewport gate) instead of the legacy 20% gate,
     // and blank the slot during a screen-resume reload — parity with the native iOS/Android SDKs.
     // Both override backend config for the session; call before creating banners.
@@ -43,6 +56,9 @@ export default function App() {
         .then((value) => {
           console.log('[SDK] Initialized with remote config:', JSON.stringify(value, null, 2));
           RNTargeting().addGlobalTargeting('TEST', '1');
+          // The first page, reported BEFORE the first ad-bearing screen renders. Nothing has been
+          // rendered yet because `initialized` still gates the whole tree.
+          Audienzz.activatePage(createPage('main'));
           setInitialized(true);
         })
         .catch((error) => {
@@ -70,17 +86,12 @@ export default function App() {
                               }
                           `);
           RNTargeting().addGlobalTargeting('TEST', '1');
+          Audienzz.activatePage(createPage('main'));
           setInitialized(true);
         });
     }
   }, []);
 
-  // Report the active screen by route key for per-route page-impression analytics.
-  React.useEffect(() => {
-    if (initialized) {
-      RNAudienzz().pageImpression(screen);
-    }
-  }, [screen, initialized]);
 
   if (!initialized) {
     return (
@@ -93,14 +104,14 @@ export default function App() {
   }
 
   if (screen === 'test') {
-    return <TestScreenExample onBack={() => setScreen('main')} />;
+    return <TestScreenExample onBack={() => goTo('main')} />;
   }
 
   if (screen === 'sticky') {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.mainContainer}>
-          <TouchableOpacity style={styles.backButton} onPress={() => setScreen('main')}>
+          <TouchableOpacity style={styles.backButton} onPress={() => goTo('main')}>
             <Text style={styles.backButtonText}>← Back</Text>
           </TouchableOpacity>
           <StickyAdExample />
@@ -112,7 +123,7 @@ export default function App() {
   if (screen === 'smartRefresh') {
     return (
       <View style={styles.mainContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => setScreen('main')}>
+        <TouchableOpacity style={styles.backButton} onPress={() => goTo('main')}>
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
         <SmartRefreshBannerExample />
@@ -121,16 +132,16 @@ export default function App() {
   }
 
   if (screen === 'legacy') {
-    return <LegacyOriginalView_v0_3_8 onBack={() => setScreen('main')} />;
+    return <LegacyOriginalView_v0_3_8 onBack={() => goTo('main')} />;
   }
 
   if (screen === 'reloadTabs') {
-    return <ReloadTabsExample onBack={() => setScreen('main')} />;
+    return <ReloadTabsExample onBack={() => goTo('main')} />;
   }
 
   return REMOTE_CONFIG_ENABLED
-    ? RemoteView(() => setScreen('test'), () => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'), () => setScreen('reloadTabs'))
-    : OriginalView(() => setScreen('test'), () => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'), () => setScreen('reloadTabs'));
+    ? RemoteView(() => goTo('test'), () => goTo('sticky'), () => goTo('smartRefresh'), () => goTo('legacy'), () => goTo('reloadTabs'))
+    : OriginalView(() => goTo('test'), () => goTo('sticky'), () => goTo('smartRefresh'), () => goTo('legacy'), () => goTo('reloadTabs'));
 }
 
 function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void, onOpenReloadTabs: () => void) {
