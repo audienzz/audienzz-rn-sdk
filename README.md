@@ -655,13 +655,13 @@ If adaptive banners are enabled in the remote configuration, and you don't provi
 
 #### When the auction starts
 
-By default a `RemoteConfigBanner` auctions as soon as it mounts, wherever the slot sits. Two optional props change that, each resolving **prop → ad config → SDK default**:
+By default a `RemoteConfigBanner` waits until the slot comes within the prefetch margin before auctioning. Two optional props change that, each resolving **prop → ad config → SDK default**:
 
 ```jsx
 <RemoteConfigBanner
   adConfigId="YOUR_CONFIG_ID"
-  lazyLoad                  // wait until the slot approaches the viewport
-  prefetchMargin={600}      // …starting 600 dp/pt ahead (default 200)
+  lazyLoad={false}          // auction on mount, wherever the slot sits
+  prefetchMargin={600}      // or stay lazy and start 600 dp/pt ahead (default 200)
 />
 ```
 
@@ -675,7 +675,7 @@ Omit a prop to use the ad config's `lazyLoad` / `prefetchDistanceDp`, which lets
 | Name               | Description                                                | Required | Type                                                    |
 | ------------------ | ---------------------------------------------------------- | :------: | ------------------------------------------------------- |
 | `adConfigId`       | Remote configuration ID for the ad unit.                   | **YES**  | string                                                  |
-| `lazyLoad`         | Defer the auction until the slot approaches the viewport. Omitted = ad config, then eager. |    No    | boolean                        |
+| `lazyLoad`         | Defer the auction until the slot approaches the viewport. Omitted = ad config, then lazy. |    No    | boolean                        |
 | `prefetchMargin`   | How far ahead of the viewport the auction starts (dp/pt). Only applies while `lazyLoad` is on. Omitted = ad config, then 200. |    No    | number |
 | `onAdLoaded`       | Callback when ad is loaded. Returns ad size.               |    No    | onAdLoaded?(size: AdSize): void |
 | `onAdFailedToLoad` | Callback when ad fails to load.                            |    No    | onAdFailedToLoad?(error: {message: string}): void       |
