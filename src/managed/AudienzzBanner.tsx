@@ -51,6 +51,25 @@ export interface AudienzzBannerProps {
 }
 
 /**
+ * Publisher controls for a managed banner, reached through a ref.
+ *
+ * Both are durable and independent of geometry: a scroll, a page impression or a return to the
+ * foreground undoes neither.
+ */
+export interface AudienzzBannerHandle {
+  /**
+   * Report a cover the SDK cannot infer — a pointer-transparent veil, a painted overlay. Current
+   * state, not an event: pass `false` when the cover goes away. Arbitrary overlays are **not**
+   * claimed to be detectable without this.
+   */
+  reportCover(covered: boolean): void;
+  /** Durable publisher pause. Only `resumeAutoRefresh` clears it. */
+  stopAutoRefresh(): void;
+  /** Clears the pause set by `stopAutoRefresh`. */
+  resumeAutoRefresh(): void;
+}
+
+/**
  * A RemoteBanner that owns its own lifetime.
  *
  * The publisher places it and does nothing else: no `load()`, no refresh timer, no reload after a
@@ -62,7 +81,10 @@ export interface AudienzzBannerProps {
  * learns which page instance owns it during its own render, rather than reading whichever page a
  * parent effect happened to report last.
  */
-export function AudienzzBanner({
+export const AudienzzBanner = React.forwardRef<
+  AudienzzBannerHandle,
+  AudienzzBannerProps
+>(function AudienzzBanner({
   adConfigId,
   slotKey,
   placeholderHeight = 250,
@@ -71,8 +93,19 @@ export function AudienzzBanner({
   style,
   onAdLoaded,
   onAdFailedToLoad,
-}: AudienzzBannerProps): React.ReactElement {
+}, ref) {
   const context = useAudienzzPage();
+  const bannerRef = React.useRef<RemoteConfigBanner | null>(null);
+
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      reportCover: (covered: boolean) => bannerRef.current?.setCovered(covered),
+      stopAutoRefresh: () => bannerRef.current?.stopAutoRefresh(),
+      resumeAutoRefresh: () => bannerRef.current?.resumeAutoRefresh(),
+    }),
+    []
+  );
 
   if (context == null && __DEV__) {
     console.warn(
@@ -115,10 +148,13 @@ export function AudienzzBanner({
         style={styles.fill}
         onAdLoaded={onAdLoaded}
         onAdFailedToLoad={onAdFailedToLoad}
+        ref={(instance) => {
+          bannerRef.current = instance;
+        }}
       />
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   slot: { width: '100%' },

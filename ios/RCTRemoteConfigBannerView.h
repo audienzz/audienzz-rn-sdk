@@ -36,5 +36,6 @@
 - (void)reloadIfVisible;
 - (void)stopAutoRefresh;
 - (void)resumeAutoRefresh;
+- (void)setCovered:(BOOL)covered;
 
 @end

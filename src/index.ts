@@ -115,7 +115,10 @@ export type {
   AudienzzPageContextValue,
 } from './managed/AudienzzPage';
 export { AudienzzBanner } from './managed/AudienzzBanner';
-export type { AudienzzBannerProps } from './managed/AudienzzBanner';
+export type {
+  AudienzzBannerProps,
+  AudienzzBannerHandle,
+} from './managed/AudienzzBanner';
 export { createPage } from './pageRegistry';
 export type { AudienzzPageHandle } from './pageRegistry';
 export {

@@ -165,6 +165,16 @@
   [self.auRemoteConfigBannerView resumeAutoRefresh];
 }
 
+/// A cover the SDK cannot infer — a pointer-transparent veil, a painted overlay. Current state, not
+/// an event, and separate from the publisher pause: clearing one must not clear the other.
+- (void)setCovered:(BOOL)covered {
+  if (covered) {
+    [self.auRemoteConfigBannerView pauseSmartRefresh];
+  } else {
+    [self.auRemoteConfigBannerView resumeSmartRefresh];
+  }
+}
+
 #pragma mark - Event Handlers
 
 - (void)setOnAdLoaded:(RCTBubblingEventBlock)onAdLoaded {

@@ -101,6 +101,20 @@ export class RemoteConfigBanner extends Component<
     /**
      * Resumes auto-refresh for this banner ad
      */
+    /**
+     * Report a cover the SDK cannot infer — a pointer-transparent veil, a painted overlay.
+     * Current state, not an event: call it with `false` when the cover goes away. Independent of
+     * `stopAutoRefresh`: clearing one does not clear the other.
+     */
+    setCovered = (covered: boolean) => {
+        UIManager.dispatchViewManagerCommand(
+            findNodeHandle(this.nativeRef),
+            // @ts-ignore
+            UIManager.getViewManagerConfig(COMPONENT_NAME).Commands.setCovered,
+            [covered]
+        );
+    };
+
     resumeAutoRefresh = () => {
         UIManager.dispatchViewManagerCommand(
             findNodeHandle(this.nativeRef),

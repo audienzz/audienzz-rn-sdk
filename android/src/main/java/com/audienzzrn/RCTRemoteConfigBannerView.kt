@@ -108,6 +108,20 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
     remoteConfigBannerView?.resumeAutoRefresh()
   }
 
+  /**
+   * A cover the SDK cannot infer — a pointer-transparent veil, a painted overlay. Current state,
+   * not an event, and separate from the publisher pause: clearing one must not clear the other.
+   */
+  fun setCovered(covered: Boolean) {
+    // onPause/onResume are the VISIBILITY pair on AudienzzRemoteBannerView; they clear only the
+    // visibility reason, so a publisher pause or a released page survives.
+    if (covered) {
+      remoteConfigBannerView?.onPause()
+    } else {
+      remoteConfigBannerView?.onResume()
+    }
+  }
+
   fun loadAd() {
     val id = configId ?: return
 

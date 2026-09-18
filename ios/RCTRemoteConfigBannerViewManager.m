@@ -58,6 +58,16 @@ RCT_EXPORT_METHOD(stopAutoRefresh:(nonnull NSNumber *)reactTag) {
     });
 }
 
+RCT_EXPORT_METHOD(setCovered:(nonnull NSNumber *)reactTag covered:(BOOL)covered) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        RCTUIManager *uiManager = self.bridge.uiManager;
+        UIView *view = [uiManager viewForReactTag:reactTag];
+        if ([view isKindOfClass:[RCTRemoteConfigBannerView class]]) {
+            [(RCTRemoteConfigBannerView *)view setCovered:covered];
+        }
+    });
+}
+
 RCT_EXPORT_METHOD(resumeAutoRefresh:(nonnull NSNumber *)reactTag) {
     dispatch_async(dispatch_get_main_queue(), ^{
         RCTUIManager *uiManager = self.bridge.uiManager;

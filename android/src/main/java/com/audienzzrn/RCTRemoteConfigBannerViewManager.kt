@@ -62,13 +62,19 @@ class RCTRemoteConfigBannerViewManager : SimpleViewManager<RCTRemoteConfigBanner
       0 -> view.stopAutoRefresh()
       1 -> view.resumeAutoRefresh()
       2 -> view.reloadIfVisible()
+      3 -> view.setCovered(args?.getBoolean(0) ?: false)
     }
   }
 
   // Command names are resolved by name on the JS side (getViewManagerConfig().Commands.<name>),
   // so the numeric ids only need to be stable within this manager.
   override fun getCommandsMap(): Map<String, Int> {
-    return mapOf("stopAutoRefresh" to 0, "resumeAutoRefresh" to 1, "reload" to 2)
+    return mapOf(
+      "stopAutoRefresh" to 0,
+      "resumeAutoRefresh" to 1,
+      "reload" to 2,
+      "setCovered" to 3,
+    )
   }
 
   override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
