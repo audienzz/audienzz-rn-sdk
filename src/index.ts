@@ -122,6 +122,7 @@ export type {
 export { createPage } from './pageRegistry';
 export type { AudienzzPageHandle } from './pageRegistry';
 export {
+  audienzzOnNavigationReady,
   audienzzOnNavigationStateChange,
   resetAudienzzNavigationTracking,
 } from './managed/navigation';

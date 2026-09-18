@@ -186,8 +186,10 @@ describe('managed RemoteBanner integration', () => {
   });
 
   it('REVIEW: navigation adapter and managed banner agree on page identity', () => {
+    // React Navigation hands every screen its `route`; passing it is what binds this wrapper
+    // to that route instance. Only the fixture changes; the assertion does not.
     resetAudienzzNavigationTracking();
-    const tree = render(<AudienzzPage name="Article"><AudienzzBanner adConfigId="46" slotKey="s" /></AudienzzPage>);
+    const tree = render(<AudienzzPage name="Article" route={{ key: 'Article-route-1' }}><AudienzzBanner adConfigId="46" slotKey="s" /></AudienzzPage>);
     const nativePage = natives(tree)[0]!.props.pageKey;
     act(() => audienzzOnNavigationStateChange({index:0,routes:[{key:'Article-route-1',name:'Article'}]}));
     expect(activated[activated.length - 1]!.id).toBe(nativePage);

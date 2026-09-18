@@ -14,7 +14,7 @@ export default function ManagedBannerExample({ onBack }: { onBack: () => void })
   return (
     // One wrapper per screen. It mints this route instance's page id and reports it, so two
     // articles are two pages even though both are called "article".
-    <AudienzzPage name="article">
+    <AudienzzPage name="article" route={{ key: 'managed-example' }}>
       <SafeAreaView style={styles.safeArea}>
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
           <Text style={styles.backText}>← Back</Text>

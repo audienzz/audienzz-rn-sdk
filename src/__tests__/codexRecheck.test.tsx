@@ -57,7 +57,8 @@ describe('managed banner publisher controls', () => {
     const ref = React.createRef<AudienzzBannerHandle>();
     act(() => {
       renderer.create(
-        <AudienzzPage name="article">
+        // Route supplied so the wrapper and the adapter bind to the same instance.
+        <AudienzzPage name="article" route={{ key: 'article-route' }}>
           <AudienzzBanner ref={ref} adConfigId="118" slotKey="one" />
         </AudienzzPage>,
         { createNodeMock: () => ({}) }

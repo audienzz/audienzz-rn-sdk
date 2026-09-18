@@ -339,26 +339,38 @@ Wire navigation once, place a banner, and write nothing else. No `load()`, no `T
 after a page impression or an app resume, no disposal.
 
 ```tsx
+import { createNavigationContainerRef } from '@react-navigation/native';
 import {
-  Audienzz,
   AudienzzBanner,
   AudienzzPage,
+  audienzzOnNavigationReady,
   audienzzOnNavigationStateChange,
 } from 'audienzz';
 
+const navigationRef = createNavigationContainerRef();
+
 export default function App() {
   return (
-    // One adapter. Covers nested navigators and ad-free destinations — reporting those is
-    // what releases the previous page's banners.
-    <NavigationContainer onStateChange={audienzzOnNavigationStateChange}>
+    <NavigationContainer
+      ref={navigationRef}
+      // Both callbacks. React Navigation does not emit `onStateChange` for the first
+      // render, so without `onReady` the opening screen is never reported.
+      onReady={() => audienzzOnNavigationReady(navigationRef.getRootState())}
+      // Covers nested navigators and ad-free destinations — reporting those is what
+      // releases the previous page's banners.
+      onStateChange={audienzzOnNavigationStateChange}
+    >
       <Stack.Navigator>{/* … */}</Stack.Navigator>
     </NavigationContainer>
   );
 }
 
-function ArticleScreen() {
+function ArticleScreen({ route }) {
   return (
-    <AudienzzPage name="article">
+    // Pass the `route` React Navigation gives your screen. That is what binds this page to
+    // that route instance, so returning to a retained screen reactivates the banners that
+    // are actually on it.
+    <AudienzzPage name="article" route={route}>
       <ArticleBody />
       {/* Reserves its height immediately and loads as it nears the viewport. */}
       <AudienzzBanner adConfigId="118" slotKey="in-content-1" placeholderHeight={250} />
@@ -388,9 +400,9 @@ For a tab navigator, pass focus so a pre-mounted tab does not claim the active p
 ```tsx
 import { useIsFocused } from '@react-navigation/native';
 
-function FeedScreen() {
+function FeedScreen({ route }) {
   return (
-    <AudienzzPage name="feed" active={useIsFocused()}>
+    <AudienzzPage name="feed" route={route} active={useIsFocused()}>
       <AudienzzBanner adConfigId="118" slotKey="feed-top" />
     </AudienzzPage>
   );

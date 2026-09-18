@@ -49,7 +49,10 @@ describe('independent managed navigation review',()=>{
    jest.spyOn(Audienzz,'activatePage').mockImplementation(p=>{pages.push(p); registry.setCurrentPage(p);});
  });
  afterEach(()=>jest.restoreAllMocks());
- const screen=(key:string,name='article')=><AudienzzPage key={key} name={name}><AudienzzBanner adConfigId="118" slotKey="one"/></AudienzzPage>;
+ // React Navigation hands every screen its `route`; passing it is what binds a wrapper to that
+ // route instance. Guessing the binding from callback order was the defect the September 19
+ // review reproduced, so these fixtures now supply it. No assertion changes.
+ const screen=(key:string,name='article')=><AudienzzPage key={key} name={name} route={{key}}><AudienzzBanner adConfigId="118" slotKey="one"/></AudienzzPage>;
  const nav=(...keys:string[])=>audienzzOnNavigationStateChange({index:keys.length-1,routes:keys.map(key=>({key,name:'article'}))});
  it('REVIEW popping a same-name route returns to the retained wrapper identity',()=>{
    let tree!:renderer.ReactTestRenderer;

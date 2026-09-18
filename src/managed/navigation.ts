@@ -16,8 +16,8 @@
 
 import {
   activateManagedPage,
-  bindRoute,
   createPageInstance,
+  routeOwner,
 } from '../pageRegistry';
 import { Audienzz } from '../RNAudienzz';
 
@@ -78,13 +78,32 @@ export function audienzzOnNavigationStateChange(
     return;
   }
   lastReportedRouteKey = route.key;
-  // Bound to the ROUTE INSTANCE, not matched by screen name. The wrapper that just mounted is the
-  // authority on which page this is; after that the binding is what returns to the right owner when
-  // the reader pops back to a retained route. A name map could not do either: a second wrapper with
-  // the same name overwrote the first, and an analytics name that differs from the router's screen
-  // name never matched at all. Without a wrapper, route.key is the identity.
-  const page = bindRoute(route.key, createPageInstance(route.key, route.name));
+  // Whoever owns this route instance. A wrapper that passed its `route` prop has bound itself; an
+  // ad-free destination, or a screen whose content has not mounted yet, falls back to route.key.
+  // Nothing is inferred from callback order — that is what bound an ad-free Settings screen to the
+  // article wrapper that happened to mount most recently.
+  const page = routeOwner(route.key, createPageInstance(route.key, route.name));
   activateManagedPage(page, (p) => Audienzz.activatePage(p));
+}
+
+/**
+ * Report the navigator's INITIAL route.
+ *
+ * React Navigation does not call `onStateChange` for the first render — this is documented — so
+ * wiring only that left the opening screen unreported, and the first thing the adapter ever saw was
+ * the destination the reader navigated to. Wire it alongside:
+ *
+ * ```tsx
+ * <NavigationContainer
+ *   onReady={() => audienzzOnNavigationReady(navigationRef.getRootState())}
+ *   onStateChange={audienzzOnNavigationStateChange}
+ * >
+ * ```
+ */
+export function audienzzOnNavigationReady(
+  state: AudienzzNavigationState | undefined
+): void {
+  audienzzOnNavigationStateChange(state);
 }
 
 /** Test/host-restart hook: forget what this adapter last reported. */

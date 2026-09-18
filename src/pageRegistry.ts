@@ -114,24 +114,50 @@ export function forgetManagedActivation(page: AudienzzPageHandle): void {
 }
 
 /**
- * The most recently mounted managed page that has not yet been bound to a navigation route.
+ * Which handle owns a navigation route instance.
  *
- * Deliberately NOT keyed by screen name. A name map cannot distinguish two retained routes that
- * share one — the second wrapper overwrote the first, and popping back to the first then found
- * nothing and fell back to a route-key handle its banner did not belong to. It also fails outright
- * when the analytics name differs from the router's screen name, which is a legitimate thing to
- * want.
+ * Bound EXPLICITLY — a wrapper that knows its route key registers itself — rather than inferred
+ * from callback order. Two earlier attempts guessed: a screen-name map could not tell two retained
+ * article routes apart, and a single "most recently mounted" claim was consumed by whichever route
+ * was reported next, which for React Navigation is often an ad-free destination, because it does
+ * not emit an initial state change at all. Both silently bound the wrong owner.
  */
-let pendingClaim: AudienzzPageHandle | null = null;
+const routeBindings = new Map<string, AudienzzPageHandle>();
 
-export function claimManagedPage(page: AudienzzPageHandle): void {
-  pendingClaim = page;
+/** The route the adapter most recently activated, so a late wrapper can repair its binding. */
+let activeRouteKey: string | null = null;
+
+/** Whether the navigation adapter is in use at all, so a missing `route` prop can be flagged. */
+export function hasNavigationAdapterReported(): boolean {
+  return activeRouteKey != null;
 }
 
-export function releaseManagedPage(page: AudienzzPageHandle): void {
-  if (pendingClaim?.id === page.id) {
-    pendingClaim = null;
+/**
+ * A wrapper declares which route instance it owns.
+ *
+ * This overwrites a fallback binding the adapter may have made when it reported the route before
+ * this screen's content mounted, so a later return resolves the banner's actual owner rather than
+ * the fallback. No re-activation is needed here: the wrapper binds in a layout effect and activates
+ * in a passive one, so its own activation always follows this.
+ */
+export function bindWrapperToRoute(
+  routeKey: string,
+  page: AudienzzPageHandle
+): void {
+  routeBindings.set(routeKey, page);
+}
+
+export function unbindWrapperFromRoute(
+  routeKey: string,
+  page: AudienzzPageHandle
+): void {
+  if (routeBindings.get(routeKey)?.id === page.id) {
+    routeBindings.delete(routeKey);
   }
+}
+
+/** Forget every binding this handle holds, wherever it was registered. */
+export function releaseManagedPage(page: AudienzzPageHandle): void {
   for (const [key, bound] of routeBindings) {
     if (bound.id === page.id) {
       routeBindings.delete(key);
@@ -140,33 +166,21 @@ export function releaseManagedPage(page: AudienzzPageHandle): void {
 }
 
 /**
- * Which handle owns a navigation route instance.
- *
- * Bound once, when that route is first focused and a wrapper has just claimed, and reused on every
- * later return — which is what makes popping back to a retained route reactivate the page its
- * banners actually belong to.
+ * The handle that owns [routeKey], or [fallback] when no wrapper has claimed it — an ad-free
+ * destination, or a screen whose content has not mounted yet.
  */
-const routeBindings = new Map<string, AudienzzPageHandle>();
-
-export function bindRoute(
+export function routeOwner(
   routeKey: string,
   fallback: AudienzzPageHandle
 ): AudienzzPageHandle {
-  const existing = routeBindings.get(routeKey);
-  if (existing != null) {
-    return existing;
-  }
-  const claimed = pendingClaim;
-  const page = claimed ?? fallback;
-  pendingClaim = null;
-  routeBindings.set(routeKey, page);
-  return page;
+  activeRouteKey = routeKey;
+  return routeBindings.get(routeKey) ?? fallback;
 }
 
-/** Test hook: forget managed activation, claims and route bindings. */
+/** Test hook: forget managed activation and route bindings. */
 export function resetManagedPagesForTesting(): void {
   lastManagedActivation = null;
-  pendingClaim = null;
+  activeRouteKey = null;
   routeBindings.clear();
 }
 

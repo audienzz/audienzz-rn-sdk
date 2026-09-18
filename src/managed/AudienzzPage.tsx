@@ -17,11 +17,13 @@
 import React from 'react';
 import {
   activateManagedPage,
-  claimManagedPage,
+  bindWrapperToRoute,
   createManagedPage,
   createPageInstance,
   forgetManagedActivation,
   releaseManagedPage,
+  hasNavigationAdapterReported,
+  unbindWrapperFromRoute,
   type AudienzzPageHandle,
 } from '../pageRegistry';
 import { Audienzz } from '../RNAudienzz';
@@ -59,6 +61,19 @@ export interface AudienzzPageProps {
    */
   id?: string;
   /**
+   * The navigation route this screen is, so the SDK can bind this page to it.
+   *
+   * React Navigation hands every screen a `route` prop — pass it straight through. That is what
+   * ties this wrapper to the route the adapter reports, so returning to a retained screen
+   * reactivates the banners that are actually on it. Without it the binding would have to be
+   * guessed from callback order, which is wrong whenever a screen's content mounts before or after
+   * the navigation event — including at startup, where React Navigation emits no initial state
+   * change at all.
+   *
+   * Omit it only when you are not using the navigation adapter.
+   */
+  route?: { key: string };
+  /**
    * Whether this page currently owns the screen. Defaults to `true`, which is correct for a plain
    * stack where mounting *is* navigating. With a tab or nested navigator, pass focus — e.g. React
    * Navigation's `useIsFocused()` — so a pre-mounted screen does not claim the active page.
@@ -83,6 +98,7 @@ export interface AudienzzPageProps {
 export function AudienzzPage({
   name,
   id,
+  route,
   active = true,
   children,
 }: AudienzzPageProps): React.ReactElement {
@@ -95,15 +111,30 @@ export function AudienzzPage({
   );
   const [isActive, setIsActive] = React.useState(false);
 
-  // Layout effects run before passive effects, and NavigationContainer calls onStateChange from a
-  // passive one — so the claim is in place before the adapter looks for it, whichever mounts first.
+  if (__DEV__ && route == null && id == null && hasNavigationAdapterReported()) {
+    // Not a style preference: without one of these there is nothing tying this wrapper to a route,
+    // so the adapter and this page would each own a different identity and release each other's
+    // banners. Guessing the binding from callback order is what this replaced.
+    console.warn(
+      `[Audienzz] <AudienzzPage name="${name}"> is used with the navigation adapter but was given ` +
+        'neither `route` nor `id`. Pass the `route` prop React Navigation hands your screen: ' +
+        '<AudienzzPage name="…" route={route}>. Without it this page and the adapter cannot agree ' +
+        'on which route owns this screen\'s banners.'
+    );
+  }
+
+  // Bound to the route INSTANCE, not to whatever the adapter reports next. A layout effect so the
+  // binding exists before NavigationContainer's passive effect calls onStateChange; and if the
+  // adapter got there first with a fallback identity, binding repairs it.
   React.useLayoutEffect(() => {
-    if (!active) {
+    if (route == null) {
       return undefined;
     }
-    claimManagedPage(page);
-    return () => releaseManagedPage(page);
-  }, [active, page]);
+    bindWrapperToRoute(route.key, page);
+    return () => unbindWrapperFromRoute(route.key, page);
+  }, [route, page]);
+
+  React.useLayoutEffect(() => () => releaseManagedPage(page), [page]);
 
   React.useEffect(() => {
     if (!active) {
