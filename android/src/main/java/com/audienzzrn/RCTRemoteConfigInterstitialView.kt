@@ -38,9 +38,7 @@ class RCTRemoteConfigInterstitialView(context: Context) : RCTOriginalView(contex
     if (disposed) return
     val config = adConfigId?.takeIf { it.isNotBlank() }?.let { it to manualControl }
     if (config == appliedConfig) return
-    generation++ // Invalidate callbacks before destroy, which can complete pending work.
-    remoteInterstitial?.destroy()
-    remoteInterstitial = null
+    releaseOwner("replaced")
     appliedConfig = config
     presentationPhase = false
     if (config == null) return
@@ -65,7 +63,11 @@ class RCTRemoteConfigInterstitialView(context: Context) : RCTOriginalView(contex
             -1, reason, "Audienzz")
         }
         override fun onLifecycleEvent(event: Map<String, Any?>) {
-          if (!current()) return
+          // A discard is emitted during teardown, after the generation bump that silences load and
+          // presentation callbacks. Gating it away swallowed exactly the event this teardown
+          // should surface, so it is allowed through on its own terms.
+          val isDiscard = event["event"] == "discardedWithoutImpression"
+          if (!current() && !isDiscard) return
           when (event["event"]) {
             "loadRequested" -> presentationPhase = false
             "loaded", "showAttempted", "showFailed" -> presentationPhase = true
@@ -104,9 +106,23 @@ class RCTRemoteConfigInterstitialView(context: Context) : RCTOriginalView(contex
 
   fun dispose() {
     if (disposed) return
+    releaseOwner("disposed")
     disposed = true
+  }
+
+  /**
+   * Releases the placement owner, recording why: a prop change that swaps placements is a
+   * replacement, an unmount is a disposal. Only the reported reason differs.
+   *
+   * The generation bump stops load and presentation callbacks reaching JS as spurious failures —
+   * every one of them is generation-gated. But destroy() is also what reports inventory discarded
+   * without an impression, and gating that away swallowed exactly the event this teardown should
+   * surface, so the discard is forwarded directly instead.
+   */
+  private fun releaseOwner(reason: String) {
+    val owner = remoteInterstitial
     generation++
-    remoteInterstitial?.destroy()
     remoteInterstitial = null
+    owner?.destroy(reason)
   }
 }

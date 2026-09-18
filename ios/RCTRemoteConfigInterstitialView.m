@@ -30,13 +30,37 @@
 - (void)didSetProps:(NSArray<NSString *> *)changedProps { [self createAd]; }
 
 - (void)releaseOwner {
+  [self releaseOwnerWithReason:@"disposed"];
+}
+
+/// `reason` records why held inventory is being released: a prop change that swaps placements is a
+/// replacement, an unmount is a disposal. Only the reported reason differs.
+- (void)releaseOwnerWithReason:(NSString *)reason {
+  AURemoteConfigInterstitial *owner = self.auRemoteConfigInterstitial;
+  if (owner == nil) {
+    _generation++;
+    _loading = NO;
+    _presenting = NO;
+    return;
+  }
+  RCTBubblingEventBlock lifecycle = self.onLifecycleEvent;
+  // Bumping first stops load/presentation callbacks reaching JS as spurious failures: every one of
+  // those blocks is generation-gated.
   _generation++;
   _loading = NO;
   _presenting = NO;
-  self.auRemoteConfigInterstitial.delegate = nil;
-  self.auRemoteConfigInterstitial.onPresentationError = nil;
-  self.auRemoteConfigInterstitial.onLifecycleEvent = nil;
-  [self.auRemoteConfigInterstitial destroy];
+  owner.delegate = nil;
+  owner.onPresentationError = nil;
+  // But destroy() is also what reports inventory discarded without an impression, and clearing
+  // this callback before destroying swallowed exactly the event this teardown should surface. An
+  // ungated forwarder is installed across the call and removed straight after.
+  owner.onLifecycleEvent = ^(NSDictionary *event) {
+    if (lifecycle) lifecycle(event);
+  };
+  // destroyWithReason:, not destroy: — Swift exports `destroy(reason:)` with the argument label
+  // folded into the selector. Verified against the generated AudienzziOSSDK-Swift.h.
+  [owner destroyWithReason:reason];
+  owner.onLifecycleEvent = nil;
   self.auRemoteConfigInterstitial = nil;
 }
 
@@ -44,7 +68,7 @@
   if (_disposed) return;
   if ((_appliedConfig == self.adConfigId || [_appliedConfig isEqualToString:self.adConfigId]) &&
       _appliedManualControl == self.manualControl) return;
-  [self releaseOwner];
+  [self releaseOwnerWithReason:@"replaced"];
   _appliedConfig = [self.adConfigId copy];
   _appliedManualControl = self.manualControl;
   if (self.adConfigId.length == 0) return;

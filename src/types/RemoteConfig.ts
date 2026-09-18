@@ -35,6 +35,22 @@ export interface RemoteConfigInterstitialProps
   onAdLoaded?(): void;
   onAdFailedToLoad?(error: AdError & { domain?: string }): void;
   onAdFailedToShow?(error: AdError & { domain?: string }): void;
+  /**
+   * Native interstitial lifecycle, correlated by `loadId`.
+   *
+   * `event` is one of loadRequested, loaded, loadFailed, showAttempted, presented, showFailed,
+   * impression, dismissed, opportunitySkipped, disposeDeferred, disposed, or
+   * `discardedWithoutImpression`.
+   *
+   * `discardedWithoutImpression` fires at most once per load, when inventory that loaded
+   * successfully is released before it records an impression. `reason` then distinguishes
+   * `expired`, `disposed`, `replaced`, `presentationFailed` and `dismissedWithoutImpression`.
+   * It never fires for a load that failed, or for inventory that was shown and counted.
+   *
+   * It is a diagnostic, not a billing record: it does not replace Ad Manager's responses-served or
+   * AdX render-rate reporting, which are measured server-side across demand sources the SDK cannot
+   * see. A process killed while inventory is held emits nothing, so these counts are a lower bound.
+   */
   onLifecycleEvent?(event: {
     event: string;
     reason?: string | null;

@@ -97,3 +97,23 @@ describe('native module method names', () => {
     expect(miscased).toEqual([]);
   });
 });
+
+/**
+ * Objective-C call sites into the Swift SDK must use the selector Swift actually generates.
+ *
+ * `@objc func destroy(reason:)` is exported as `destroyWithReason:` — the argument label is folded
+ * into the selector — so `[owner destroy:reason]` compiles against nothing and is an unrecognized
+ * selector at runtime. This is the same failure mode as the GDPR method-name casing bug: the
+ * bridge and the SDK disagree about a name, and no type checker sees it.
+ */
+describe('Objective-C selectors into the Swift SDK', () => {
+  const source = readFileSync(
+    join(__dirname, '..', '..', 'ios', 'RCTRemoteConfigInterstitialView.m'),
+    'utf8'
+  );
+
+  it('releases the interstitial owner with the generated selector', () => {
+    expect(source).toContain('destroyWithReason:');
+    expect(source).not.toMatch(/\[\s*owner\s+destroy\s*:/);
+  });
+});
