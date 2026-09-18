@@ -326,50 +326,99 @@ consent is missing, or when your publisher config turns it off:
 The SDK ties ad events to the screen the user is on: reporting an ad-bearing screen fires a
 `pageImpression` and starts a fresh page-impression id that groups every ad event on that visit.
 
-You report screens **explicitly** by their navigation route — call `pageImpression(name)` on each
-ad-bearing screen (there is no automatic tracking; the same call is used on every Audienzz SDK):
+### GAM prerequisite
 
-```js
-import { Audienzz } from 'audienzz';
+When the SDK owns refresh, the **GAM ad unit's own refresh rate must be unset**. Two refresh owners
+cannot be reconciled from the app: Google's server-configured refresh runs independently of the
+SDK's scheduler, and no publisher lifecycle code can compensate for it. Check this per ad unit
+before enabling smart refresh.
 
-Audienzz.initialize('YOUR_COMPANY_ID', false);
+### The managed integration (recommended)
 
-// Report the active screen on every navigation to an ad-bearing screen.
-Audienzz.pageImpression('home');
+Wire navigation once, place a banner, and write nothing else. No `load()`, no `Timer`, no reload
+after a page impression or an app resume, no disposal.
+
+```tsx
+import {
+  Audienzz,
+  AudienzzBanner,
+  AudienzzPage,
+  audienzzOnNavigationStateChange,
+} from 'audienzz';
+
+export default function App() {
+  return (
+    // One adapter. Covers nested navigators and ad-free destinations — reporting those is
+    // what releases the previous page's banners.
+    <NavigationContainer onStateChange={audienzzOnNavigationStateChange}>
+      <Stack.Navigator>{/* … */}</Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+function ArticleScreen() {
+  return (
+    <AudienzzPage name="article">
+      <ArticleBody />
+      {/* Reserves its height immediately and loads as it nears the viewport. */}
+      <AudienzzBanner adConfigId="118" slotKey="in-content-1" placeholderHeight={250} />
+    </AudienzzPage>
+  );
+}
 ```
 
-With React Navigation, report from the navigator's `state`/`focus` instead of each screen:
+`AudienzzPage` mints one page identity per route instance, so two article screens own their banners
+separately even though both are named `article`. `AudienzzBanner` identifies a slot by
+`(page instance, slotKey)` — an `adConfigId` is not unique, the same placement can appear twice on
+one screen.
 
-```js
-import { Audienzz } from 'audienzz';
+For a tab navigator, pass focus so a pre-mounted tab does not claim the active page:
 
-<NavigationContainer
-  onStateChange={(state) => {
-    const route = state?.routes[state.index]?.name;
-    if (route) Audienzz.pageImpression(route);
-  }}
->
-  {/* ... */}
-</NavigationContainer>
+```tsx
+import { useIsFocused } from '@react-navigation/native';
+
+function FeedScreen() {
+  return (
+    <AudienzzPage name="feed" active={useIsFocused()}>
+      <AudienzzBanner adConfigId="118" slotKey="feed-top" />
+    </AudienzzPage>
+  );
+}
 ```
+
+**Custom router?** One contract: mint a handle per route instance and activate it when that route
+becomes visible.
+
+```ts
+const page = createPage('article');   // once per route instance
+Audienzz.activatePage(page);          // when it becomes visible
+```
+
+Activate the destination on every transition, including to screens with no ads. Activating a page is
+what deactivates the previous one.
+
+### Reporting screens without the managed components
+
+If you render `RemoteConfigBanner` yourself, you own the ordering: **report the page, then render
+its banners.** A banner captures its page when it is constructed, so report from the navigation
+action — the router callback, the tab handler — and never from a parent effect.
+
+```ts
+// In the navigation handler, before the destination renders.
+Audienzz.activatePage(createPage('article'));
+```
+
+React effects run after commit, child first, so a report from a parent `useEffect` lands *after* the
+destination's banners have already captured the previous page — permanently, because the binding is
+a class field. `useLayoutEffect` does not help; layout effects run child-first too. That is the
+defect `AudienzzPage` exists to remove, and it is why moving navigation side effects into render is
+not the answer either.
 
 Notes:
-- The screen name is any stable per-screen string (your route name works well). It's the screen
-  identity in analytics.
-
-#### Reload on screen resume
-
-`pageImpression(name)` also reloads banners: every mounted banner that is currently on screen
-fetches a fresh creative under the new page impression, matching the native SDKs. This works even
-for banners kept mounted across tabs (a hidden tab's banner is skipped, so it doesn't burn an
-auction). Banners that unmount on navigation reload naturally on remount.
-
-```js
-import { Audienzz } from 'audienzz';
-
-// On returning to a tab/route, report it — its on-screen banners reload immediately.
-Audienzz.pageImpression('feed');
-```
+- `pageImpression(name)` mints a handle for you. Two calls with the same name are two pages.
+- A page impression is the whole transition: native releases every banner that is not on the
+  incoming page and re-auctions the ones that are. **Do not also reload manually** — that gives one
+  transition two owners and two auctions, the second discarding the creative the first just fetched.
 
 Two optional session-wide toggles tune this behavior (call **before** creating banners):
 
