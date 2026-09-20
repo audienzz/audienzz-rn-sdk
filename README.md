@@ -1,5 +1,24 @@
 # Audienzz React Native SDK
 
+> ### Release sequence (read before shipping this branch)
+>
+> This bridge calls native APIs that are **not in any published release yet** —
+> `pageImpression`, per-view `setScreen`, and the interstitial
+> `prefetch` / `show` / `prefetchAndShow` contract. The pins in `android/build.gradle`
+> (`com.audienzz:sdk:0.2.2`) and `audienzz.podspec` (`AudienzziOSSDK ~> 0.3.2`) name the
+> **currently published** versions, which do not provide them. Ship in this order:
+>
+> 1. Release the native SDKs (iOS and Android) carrying these APIs.
+> 2. Re-pin `android/build.gradle`, `audienzz.podspec` and `example/ios/Podfile` to those
+>    versions, and bump `package.json`.
+> 3. Build and run **those exact combinations** — a local `:path` / `mavenLocal` build
+>    proves the source compiles together, not that a published artefact contains the API.
+> 4. Publish this package.
+>
+> To verify locally in the meantime, point `example/ios/Podfile` at the iOS checkout with
+> `:path` and publish the Android SDK to `mavenLocal`, then **restore both pins** before
+> committing.
+
 **Audienzz React Native SDK** is a React Native wrapper around the native Android/iOS Audienzz SDKs (Original and Rendering APIs).
 
 ## Installation
