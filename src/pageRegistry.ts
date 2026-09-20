@@ -95,11 +95,10 @@ export function activateManagedPage(
   page: AudienzzPageHandle,
   activate: (page: AudienzzPageHandle) => void
 ): void {
-  if (
-    lastManagedActivation != null &&
-    lastManagedActivation.id === page.id &&
-    lastManagedActivation.name === page.name
-  ) {
+  // Compared by id alone: the id identifies the VISIT. A wrapper that mounts after the adapter
+  // already reported its route is the same visit, even if it prefers a different analytics name —
+  // counting it again reported one navigation as two page impressions.
+  if (lastManagedActivation != null && lastManagedActivation.id === page.id) {
     return;
   }
   lastManagedActivation = page;
@@ -124,12 +123,34 @@ export function forgetManagedActivation(page: AudienzzPageHandle): void {
  */
 const routeBindings = new Map<string, AudienzzPageHandle>();
 
-/** The route the adapter most recently activated, so a late wrapper can repair its binding. */
-let activeRouteKey: string | null = null;
+/**
+ * The route the navigation adapter currently reports as focused.
+ *
+ * FOCUS, not ownership: a wrapper may legitimately bind its identity to a route it does not
+ * currently own the screen for — delayed content that finishes loading after the reader has
+ * already moved on. Conflating the two let a retained outgoing screen reactivate itself simply by
+ * mounting.
+ */
+let focusedRouteKey: string | null = null;
+
+const focusListeners = new Set<() => void>();
 
 /** Whether the navigation adapter is in use at all, so a missing `route` prop can be flagged. */
 export function hasNavigationAdapterReported(): boolean {
-  return activeRouteKey != null;
+  return focusedRouteKey != null;
+}
+
+/** True when [routeKey] is the route the adapter currently reports as focused. */
+export function isRouteFocused(routeKey: string): boolean {
+  return focusedRouteKey === routeKey;
+}
+
+/** Notifies wrappers when focus moves, so a retained screen can stand down and a returning one up. */
+export function subscribeRouteFocus(listener: () => void): () => void {
+  focusListeners.add(listener);
+  return () => {
+    focusListeners.delete(listener);
+  };
 }
 
 /**
@@ -173,14 +194,20 @@ export function routeOwner(
   routeKey: string,
   fallback: AudienzzPageHandle
 ): AudienzzPageHandle {
-  activeRouteKey = routeKey;
+  const changed = focusedRouteKey !== routeKey;
+  focusedRouteKey = routeKey;
+  if (changed) {
+    for (const listener of focusListeners) {
+      listener();
+    }
+  }
   return routeBindings.get(routeKey) ?? fallback;
 }
 
 /** Test hook: forget managed activation and route bindings. */
 export function resetManagedPagesForTesting(): void {
   lastManagedActivation = null;
-  activeRouteKey = null;
+  focusedRouteKey = null;
   routeBindings.clear();
 }
 

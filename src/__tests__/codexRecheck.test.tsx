@@ -47,6 +47,9 @@ describe('managed banner publisher controls', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Focus and route bindings are process-wide; without this a route focused by an earlier case
+    // leaks in and this file's mounts activate against stale state.
+    registry.resetManagedPagesForTesting();
     jest
       .spyOn(Audienzz, 'activatePage')
       .mockImplementation((page) => registry.setCurrentPage(page));

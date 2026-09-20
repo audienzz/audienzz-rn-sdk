@@ -395,18 +395,18 @@ not to whichever page was activated most recently.
 `<AudienzzPage id="…">` is available when a host wants to choose the identity itself — a custom
 router with its own stable per-instance key. It is not needed for the default setup.
 
-For a tab navigator, pass focus so a pre-mounted tab does not claim the active page:
+**Tabs and retained screens need nothing extra.** With `route` supplied, focus is the adapter's to
+decide: a screen is active only while its route is the one being reported. A pre-mounted tab, and a
+screen whose content finishes loading after the reader has already moved on, both stay dormant and
+become active when focus returns.
+
+`active` is there for a host that has its own reason to stand a page down — an interstitial
+covering the screen, a wizard step that is mounted but not yet reached:
 
 ```tsx
-import { useIsFocused } from '@react-navigation/native';
-
-function FeedScreen({ route }) {
-  return (
-    <AudienzzPage name="feed" route={route} active={useIsFocused()}>
-      <AudienzzBanner adConfigId="118" slotKey="feed-top" />
-    </AudienzzPage>
-  );
-}
+<AudienzzPage name="feed" route={route} active={!isPaywallShowing}>
+  <AudienzzBanner adConfigId="118" slotKey="feed-top" />
+</AudienzzPage>
 ```
 
 **Custom router?** One contract: mint a handle per route instance and activate it when that route

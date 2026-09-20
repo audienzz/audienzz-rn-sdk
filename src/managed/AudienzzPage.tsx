@@ -23,6 +23,8 @@ import {
   forgetManagedActivation,
   releaseManagedPage,
   hasNavigationAdapterReported,
+  isRouteFocused,
+  subscribeRouteFocus,
   unbindWrapperFromRoute,
   type AudienzzPageHandle,
 } from '../pageRegistry';
@@ -74,9 +76,16 @@ export interface AudienzzPageProps {
    */
   route?: { key: string };
   /**
-   * Whether this page currently owns the screen. Defaults to `true`, which is correct for a plain
-   * stack where mounting *is* navigating. With a tab or nested navigator, pass focus — e.g. React
-   * Navigation's `useIsFocused()` — so a pre-mounted screen does not claim the active page.
+   * An extra condition on top of navigation focus. Defaults to `true`.
+   *
+   * When [route] is supplied and the navigation adapter is in use, focus is the adapter's to
+   * decide — a screen is active when its route is the one being reported, so a retained screen
+   * whose content mounts after the reader has moved on does NOT reactivate itself, and neither
+   * does a pre-mounted tab. You do not need `useIsFocused()` for that.
+   *
+   * Set it when the host has its own reason to stand a page down — an interstitial covering the
+   * screen, a wizard step that is mounted but not yet reached — or when there is no adapter and
+   * this wrapper owns the decision itself.
    */
   active?: boolean;
   children?: React.ReactNode;
@@ -102,14 +111,40 @@ export function AudienzzPage({
   active = true,
   children,
 }: AudienzzPageProps): React.ReactElement {
-  // Resolved during render, so a child sees it in the same commit. A rebuild never changes it.
-  // Unique by default. Two article routes must own their banners separately without the publisher
-  // configuring matching ids in two places; the adapter defers to this handle.
-  const page = React.useMemo<AudienzzPageHandle>(
-    () => (id == null ? createManagedPage(name) : createPageInstance(id, name)),
-    [id, name]
-  );
+  // Identity. With a route it is DERIVED from the route key, so this wrapper and the adapter
+  // compute the same id without coordinating — which is what stops a wrapper that mounts after its
+  // route was already reported from manufacturing a second visit for it.
+  const page = React.useMemo<AudienzzPageHandle>(() => {
+    if (id != null) {
+      return createPageInstance(id, name);
+    }
+    if (route != null) {
+      return createPageInstance(route.key, name);
+    }
+    return createManagedPage(name);
+  }, [id, route, name]);
   const [isActive, setIsActive] = React.useState(false);
+
+  // Focus, re-read whenever the adapter moves it. Ownership and focus are different questions:
+  // delayed content can legitimately bind its identity to a route the reader has already left, and
+  // treating mounting as focus let a retained outgoing screen reactivate itself.
+  const [focusTick, setFocusTick] = React.useState(0);
+  React.useLayoutEffect(() => {
+    if (route == null) {
+      // A page with no route is not adapter-managed, so another route gaining focus says nothing
+      // about it. Subscribing anyway made every such page re-activate on every navigation and
+      // steal the current page from whichever screen the reader was actually on.
+      return undefined;
+    }
+    return subscribeRouteFocus(() => setFocusTick((tick) => tick + 1));
+  }, [route]);
+
+  // With an adapter in use, the adapter decides which route is current; this wrapper only says
+  // whether it is willing. Without one — a standalone screen, or the window before
+  // `audienzzOnNavigationReady` — the wrapper owns the decision as before.
+  const focused =
+    route == null || !hasNavigationAdapterReported() || isRouteFocused(route.key);
+  const shouldBeActive = active && focused;
 
   if (__DEV__ && route == null && id == null && hasNavigationAdapterReported()) {
     // Not a style preference: without one of these there is nothing tying this wrapper to a route,
@@ -137,10 +172,11 @@ export function AudienzzPage({
   React.useLayoutEffect(() => () => releaseManagedPage(page), [page]);
 
   React.useEffect(() => {
-    if (!active) {
-      // Revoked, not sticky. A retained tab that loses focus must stop reporting itself as the
-      // active page: otherwise a banner added to it afterwards is created as if it were on the
-      // foreground page, and the tab can never be re-activated when the reader comes back.
+    if (!shouldBeActive) {
+      // Revoked, not sticky. A screen that is not focused — a retained tab, or a stack screen the
+      // reader has navigated away from — must stop reporting itself as the active page: otherwise
+      // a banner added to it afterwards is created as if it were on the foreground page, and it
+      // can never be re-activated when the reader comes back.
       setIsActive(false);
       forgetManagedActivation(page);
       return;
@@ -150,7 +186,9 @@ export function AudienzzPage({
     // exist — the ordering contract holds without putting navigation work into render.
     activateManagedPage(page, (p) => Audienzz.activatePage(p));
     setIsActive(true);
-  }, [active, page]);
+    // focusTick participates so this re-runs when the adapter moves focus onto or off this route.
+    // It is pinned for a routeless page, which never subscribes.
+  }, [shouldBeActive, page, focusTick]);
 
   const value = React.useMemo<AudienzzPageContextValue>(
     () => ({ page, isActive }),
