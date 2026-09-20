@@ -71,9 +71,12 @@ describe('independent managed navigation review',()=>{
  it('REVIEW analytics name may differ from the router screen name',()=>{
    let tree!:renderer.ReactTestRenderer;
    act(()=>{tree=renderer.create(screen('a','article-detail'),{createNodeMock:()=>({})});});
-   const first=pages[0]!;
+   // Dormant until the adapter names the route: a routed wrapper does not decide its own focus.
+   expect(pages).toHaveLength(0);
    act(()=>nav('a'));
-   expect(pages).toEqual([first]);
+   // One visit, carrying the WRAPPER's analytics name rather than the router's screen name and
+   // rather than a second identity minted for the same route.
+   expect(pages).toEqual([{id:'a',name:'article-detail'}]);
    act(()=>tree.unmount());
  });
 });

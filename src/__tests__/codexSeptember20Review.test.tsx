@@ -72,8 +72,12 @@ describe('explicit route focus review',()=>{
  });
  it('control initial wrapper then ready deduplicates and restores ownership on return',()=>{
    act(()=>{tree=renderer.create(screen('a'),{createNodeMock:()=>({})});});
-   const first=pages[0]!;
+   // The wrapper mounts first but does not claim focus; readiness is what opens the visit, and it
+   // opens exactly one, under the wrapper's own identity rather than a fallback.
+   expect(pages).toHaveLength(0);
    act(()=>audienzzOnNavigationReady(state('a')));
+   const first=pages[0]!;
+   expect(first.id).toBe('a');
    expect(pages).toHaveLength(1);
    act(()=>audienzzOnNavigationStateChange(state('a','settings')));
    expect(pages.at(-1)!.id).toBe('settings');

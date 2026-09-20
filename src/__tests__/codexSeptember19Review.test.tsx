@@ -57,16 +57,20 @@ describe('route binding lifecycle review',()=>{
  const nav=(...keys:string[])=>audienzzOnNavigationStateChange({index:keys.length-1,routes:keys.map(key=>({key,name:key==='settings'?'Settings':'Article'}))});
  it('initial wrapper must not claim the first ad-free destination',()=>{
    act(()=>{tree=renderer.create(screen('a'),{createNodeMock:()=>({})});});
-   const first=pages[0]!; expect(pages).toHaveLength(1);
-   // README wires only onStateChange; React Navigation does not emit it on initial render.
+   expect(pages).toHaveLength(0);
+   // README wires only onStateChange; React Navigation does not emit it on initial render, which
+   // is why onReady exists. Here the first thing the adapter ever sees is an ad-free destination:
+   // the article wrapper's handle must not be handed to it.
    act(()=>nav('a','settings'));
-   expect(pages).toHaveLength(2);
-   expect(pages.at(-1)!.id).not.toBe(first.id);
+   expect(pages).toHaveLength(1);
+   expect(pages.at(-1)!.id).toBe('settings');
    expect(pages.at(-1)!.name).toBe('Settings');
  });
- it('initial retained route returns to its owner without an invented initial state event',()=>{
+ it('a retained initial route returns to its own wrapper identity',()=>{
    act(()=>{tree=renderer.create(<>{screen('a')}</>,{createNodeMock:()=>({})});});
+   act(()=>nav('a'));
    const first=pages[0]!;
+   expect(first.id).toBe('a');
    act(()=>tree!.update(<>{screen('a')}{screen('b')}</>));
    act(()=>nav('a','b'));
    expect(pages).toHaveLength(2);

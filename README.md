@@ -400,6 +400,16 @@ decide: a screen is active only while its route is the one being reported. A pre
 screen whose content finishes loading after the reader has already moved on, both stay dormant and
 become active when focus returns.
 
+Passing `route` **hands focus to the adapter**, including at startup: the page stays dormant — no
+page impression, no ad — until the adapter names that route. That is why both callbacks above are
+required. `onReady` is what reports the opening screen; wire only `onStateChange` and a navigator
+that pre-mounts its tabs (`lazy: false`) opens the app with every screen still waiting.
+
+If you are **not** using the adapter, do not pass `route`. Use `id` (or neither) and the wrapper
+decides its own focus from `active`, as a standalone screen does. The two ownership modes are
+deliberately distinct: a routed page that guessed it was focused whenever nothing had reported yet
+would report a visit for every pre-mounted tab during startup.
+
 `active` is there for a host that has its own reason to stand a page down — an interstitial
 covering the screen, a wizard step that is mounted but not yet reached:
 

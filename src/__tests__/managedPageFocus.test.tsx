@@ -108,4 +108,19 @@ describe('managed page focus', () => {
     expect(activated.map((p) => p.id)).toEqual(['a', 'b', 'a']);
     expect(natives().map((n) => n.props.pageKey)).toContain('a');
   });
+
+  it('a routed page stays dormant until the adapter names it, and never on mount alone', () => {
+    act(() => {
+      tree = renderer.create(<>{screen('a')}{screen('b')}</>, {
+        createNodeMock: () => ({}),
+      });
+    });
+    // No adapter report yet: unknown focus is not focus.
+    expect(activated).toHaveLength(0);
+    expect(natives()).toHaveLength(0);
+
+    act(() => nav('a'));
+    expect(activated.map((p) => p.id)).toEqual(['a']);
+    expect(natives().map((n) => n.props.pageKey)).toEqual(['a']);
+  });
 });

@@ -72,16 +72,23 @@ export interface AudienzzPageProps {
    * the navigation event — including at startup, where React Navigation emits no initial state
    * change at all.
    *
-   * Omit it only when you are not using the navigation adapter.
+   * **Passing `route` hands focus to the adapter.** This page stays dormant — no page impression,
+   * no ad — until the adapter names this route as the focused one, so a navigator that pre-mounts
+   * every tab does not open an ad on each of them while the app starts. That means you must wire
+   * BOTH `onReady` and `onStateChange`; `onReady` is what reports the opening screen.
+   *
+   * If you are NOT using the adapter, do not pass `route` — pass `id` (or nothing) instead and this
+   * wrapper decides its own focus from the `active` prop, as before. The two ownership modes are
+   * deliberately distinct rather than one guessing at the other.
    */
   route?: { key: string };
   /**
    * An extra condition on top of navigation focus. Defaults to `true`.
    *
-   * When [route] is supplied and the navigation adapter is in use, focus is the adapter's to
-   * decide — a screen is active when its route is the one being reported, so a retained screen
-   * whose content mounts after the reader has moved on does NOT reactivate itself, and neither
-   * does a pre-mounted tab. You do not need `useIsFocused()` for that.
+   * When [route] is supplied, focus is the adapter's to decide — a screen is active when its route
+   * is the one being reported, so a retained screen whose content mounts after the reader has moved
+   * on does NOT reactivate itself, and neither does a pre-mounted tab before the navigator is
+   * ready. You do not need `useIsFocused()` for that.
    *
    * Set it when the host has its own reason to stand a page down — an interstitial covering the
    * screen, a wizard step that is mounted but not yet reached — or when there is no adapter and
@@ -123,7 +130,11 @@ export function AudienzzPage({
     }
     return createManagedPage(name);
   }, [id, route, name]);
-  const [isActive, setIsActive] = React.useState(false);
+  // Which page this wrapper has actually reported. A boolean would stay true across a page swap
+  // and let a banner be created for the new page before that page was reported.
+  const [activated, setActivated] = React.useState<AudienzzPageHandle | null>(
+    null
+  );
 
   // Focus, re-read whenever the adapter moves it. Ownership and focus are different questions:
   // delayed content can legitimately bind its identity to a route the reader has already left, and
@@ -139,11 +150,11 @@ export function AudienzzPage({
     return subscribeRouteFocus(() => setFocusTick((tick) => tick + 1));
   }, [route]);
 
-  // With an adapter in use, the adapter decides which route is current; this wrapper only says
-  // whether it is willing. Without one — a standalone screen, or the window before
-  // `audienzzOnNavigationReady` — the wrapper owns the decision as before.
-  const focused =
-    route == null || !hasNavigationAdapterReported() || isRouteFocused(route.key);
+  // A routed page is focused only when the adapter says so. Unknown focus is NOT focus: treating
+  // the window before `audienzzOnNavigationReady` as active meant every pre-mounted tab reported a
+  // visit and created a native banner at startup, and the readiness callback then had to undo it.
+  // A routeless page is not adapter-managed and decides for itself, exactly as before.
+  const focused = route == null || isRouteFocused(route.key);
   const shouldBeActive = active && focused;
 
   if (__DEV__ && route == null && id == null && hasNavigationAdapterReported()) {
@@ -177,7 +188,7 @@ export function AudienzzPage({
       // reader has navigated away from — must stop reporting itself as the active page: otherwise
       // a banner added to it afterwards is created as if it were on the foreground page, and it
       // can never be re-activated when the reader comes back.
-      setIsActive(false);
+      setActivated(null);
       forgetManagedActivation(page);
       return;
     }
@@ -185,10 +196,16 @@ export function AudienzzPage({
     // create its ad until `isActive` turns true, so the page is always reported before its ads
     // exist — the ordering contract holds without putting navigation work into render.
     activateManagedPage(page, (p) => Audienzz.activatePage(p));
-    setIsActive(true);
+    setActivated(page);
     // focusTick participates so this re-runs when the adapter moves focus onto or off this route.
     // It is pinned for a routeless page, which never subscribes.
   }, [shouldBeActive, page, focusTick]);
+
+  // Read at RENDER time, both ways. Descendants must see focus withdrawn in the same commit that
+  // withdrew it — waiting for the effect above to clear a cached flag left one render in which a
+  // banner could still be created for a screen the reader had already left. Activation stays
+  // effect-gated in the other direction, so a page is never reported after its ads exist.
+  const isActive = shouldBeActive && activated != null && activated.id === page.id;
 
   const value = React.useMemo<AudienzzPageContextValue>(
     () => ({ page, isActive }),

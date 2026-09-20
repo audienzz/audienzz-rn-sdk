@@ -8,7 +8,7 @@ import {
 } from '../managed/AudienzzBanner';
 import { Audienzz } from '../RNAudienzz';
 import * as registry from '../pageRegistry';
-import {audienzzOnNavigationStateChange,resetAudienzzNavigationTracking} from '../managed/navigation';
+import {audienzzOnNavigationReady,audienzzOnNavigationStateChange,resetAudienzzNavigationTracking} from '../managed/navigation';
 
 jest.mock('react-native', () => ({
   Platform: { select: (o: any) => o.default },
@@ -58,6 +58,16 @@ describe('managed banner publisher controls', () => {
 
   function mount() {
     const ref = React.createRef<AudienzzBannerHandle>();
+    // A routed page takes its focus from the adapter, so the navigator has to have reported this
+    // route before there is a banner to control at all. That is the supported integration; these
+    // cases are about the controls, not about who decides focus.
+    resetAudienzzNavigationTracking();
+    act(() =>
+      audienzzOnNavigationReady({
+        index: 0,
+        routes: [{ key: 'article-route', name: 'article' }],
+      })
+    );
     act(() => {
       renderer.create(
         // Route supplied so the wrapper and the adapter bind to the same instance.
@@ -113,7 +123,8 @@ describe('managed banner publisher controls', () => {
     expect(dispatch).toHaveBeenCalledWith(42,0,[]);
   });
   it('RECHECK wrapper plus adapter reports a single activation', () => {
-    resetAudienzzNavigationTracking();
+    // mount() already reports this route through onReady; a subsequent state change naming the
+    // same route is the same visit and must not buy a second page impression.
     mount();
     act(()=>audienzzOnNavigationStateChange({index:0,routes:[{key:'article-route',name:'article'}]}));
     expect(Audienzz.activatePage).toHaveBeenCalledTimes(1);
