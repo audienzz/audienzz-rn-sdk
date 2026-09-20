@@ -26,6 +26,10 @@ import {
 import type { OriginalBannerProps, AdError, AdSize } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 import { getCurrentPage, pageKeyOf } from '../../pageRegistry';
+import {
+  AudienzzPageContext,
+  type AudienzzPageContextValue,
+} from '../../managed/AudienzzPage';
 
 const ComponentName = 'RCTOriginalBannerView';
 const NativeComponent = requireNativeComponent<any>(ComponentName);
@@ -41,23 +45,38 @@ export class OriginalBanner extends Component<
 > {
   private nativeComponentRef: React.RefObject<any>;
 
-  constructor(props: OriginalBannerProps) {
-    super(props);
+  static contextType = AudienzzPageContext;
+
+  constructor(
+    props: OriginalBannerProps,
+    context?: AudienzzPageContextValue | null
+  ) {
+    super(props, context);
     this.nativeComponentRef = createRef();
     this.state = {
       isBannerVisible: props.isReserved ?? false,
     };
+    // Inside an <AudienzzPage>, that page owns this slot, whichever banner API is used. Reading
+    // the module-global "current page" instead bound every retained tab's banner to whichever tab
+    // had been reported most recently, so after a tab switch NONE of them matched the tab they
+    // were actually on and the coordinator released them all.
+    //
+    // Outside a page wrapper this falls back to the page the app last reported, which is the
+    // long-standing low-level contract.
+    this.pageKey = context?.page
+      ? pageKeyOf(context.page)
+      : pageKeyOf(getCurrentPage());
   }
 
   /**
-   * The page that was current when this banner mounted. Travels to native as
-   * the `pageKey` prop so the page coordinator can match this ad to its screen
-   * by value — host identity can't, since every RN ad shares one host.
+   * The page this banner belongs to. Travels to native as the `pageKey` prop so the page
+   * coordinator can match this ad to its screen by value — host identity can't, since every RN ad
+   * shares one host.
    *
    * `null` means the app never called `pageImpression` before rendering this
    * ad, which native reports as an integration error.
    */
-  private readonly pageKey = pageKeyOf(getCurrentPage());
+  private readonly pageKey: string | null;
 
   /**
    * A page impression is handled ENTIRELY by native for original-API banners:

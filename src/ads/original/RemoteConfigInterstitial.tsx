@@ -27,13 +27,31 @@ import { LINKING_ERROR } from '../../constants';
 const ComponentName = 'RNRemoteConfigInterstitial';
 const NativeComponent = requireNativeComponent<any>(ComponentName);
 
+/**
+ * Three verbs, and the verb decides whether anything is presented.
+ *
+ * | Before | Now |
+ * | --- | --- |
+ * | `preload()` | `prefetch()` |
+ * | `showAtOpportunity(eligible)` | `show(eligible)` |
+ * | `show()` | `show()` — same call, still "this is an opportunity" |
+ * | `manualControl={false}` (loads and presents on mount) | unchanged, and it is `prefetchAndShow()` |
+ */
 export interface RemoteConfigInterstitialHandle {
-  /** Legacy explicit show. In manual mode, equivalent to showAtOpportunity(true). */
-  show(): void;
-  /** In manualControl mode, retain one ad without displaying it. */
-  preload(): void;
-  /** Try this opportunity once. Check publisher frequency caps before passing true. */
-  showAtOpportunity(eligible: boolean): void;
+  /** Obtain and retain one ad without displaying it. Never presents. */
+  prefetch(): void;
+  /**
+   * Present as soon as the load completes, or present inventory already in hand. The only call
+   * that presents something you did not explicitly time.
+   */
+  prefetchAndShow(): void;
+  /**
+   * Present ready inventory at this opportunity. Pass your current frequency-cap decision as
+   * [eligible] (default `true`). If nothing is ready or the opportunity is ruled out, that is
+   * reported through `onLifecycleEvent` as `opportunitySkipped` and NOTHING is scheduled — the
+   * reader will not be interrupted later, somewhere else.
+   */
+  show(eligible?: boolean): void;
   /** Release this owner permanently. Remount to use a new owner. */
   dispose(): void;
 }
@@ -60,10 +78,9 @@ export const RemoteConfigInterstitial = forwardRef<
         }
       };
       return {
-        show: () => dispatch('show'),
-        preload: () => dispatch('preload'),
-        showAtOpportunity: (eligible: boolean) =>
-          dispatch('showAtOpportunity', [eligible]),
+        prefetch: () => dispatch('prefetch'),
+        prefetchAndShow: () => dispatch('prefetchAndShow'),
+        show: (eligible = true) => dispatch('show', [eligible]),
         dispose: () => dispatch('dispose'),
       };
     },

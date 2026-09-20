@@ -39,36 +39,22 @@ RCT_EXPORT_VIEW_PROPERTY(onAdOpened, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdClosed, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdFailedToLoad, RCTBubblingEventBlock)
 
-RCT_EXPORT_METHOD(load : (nonnull NSNumber *)reactTag) {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    RCTUIManager *uiManager = self.bridge.uiManager;
-    UIView *view = [uiManager viewForReactTag:reactTag];
-    if ([view isKindOfClass:[RCTRemoteConfigInterstitialView class]]) {
-      [(RCTRemoteConfigInterstitialView *)view load];
-    }
-  });
-}
-
-RCT_EXPORT_METHOD(show : (nonnull NSNumber *)reactTag) {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    RCTUIManager *uiManager = self.bridge.uiManager;
-    UIView *view = [uiManager viewForReactTag:reactTag];
-    if ([view isKindOfClass:[RCTRemoteConfigInterstitialView class]]) {
-      [(RCTRemoteConfigInterstitialView *)view show];
-    }
-  });
-}
-
-RCT_EXPORT_METHOD(preload : (nonnull NSNumber *)reactTag) {
+RCT_EXPORT_METHOD(prefetch : (nonnull NSNumber *)reactTag) {
   [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *manager, NSDictionary<NSNumber *, UIView *> *registry) {
     UIView *view = registry[reactTag];
-    if ([view isKindOfClass:[RCTRemoteConfigInterstitialView class]]) [(RCTRemoteConfigInterstitialView *)view preload];
+    if ([view isKindOfClass:[RCTRemoteConfigInterstitialView class]]) [(RCTRemoteConfigInterstitialView *)view prefetch];
   }];
 }
-RCT_EXPORT_METHOD(showAtOpportunity : (nonnull NSNumber *)reactTag eligible : (BOOL)eligible) {
+RCT_EXPORT_METHOD(prefetchAndShow : (nonnull NSNumber *)reactTag) {
   [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *manager, NSDictionary<NSNumber *, UIView *> *registry) {
     UIView *view = registry[reactTag];
-    if ([view isKindOfClass:[RCTRemoteConfigInterstitialView class]]) [(RCTRemoteConfigInterstitialView *)view showAtOpportunity:eligible];
+    if ([view isKindOfClass:[RCTRemoteConfigInterstitialView class]]) [(RCTRemoteConfigInterstitialView *)view prefetchAndShow];
+  }];
+}
+RCT_EXPORT_METHOD(show : (nonnull NSNumber *)reactTag eligible : (BOOL)eligible) {
+  [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *manager, NSDictionary<NSNumber *, UIView *> *registry) {
+    UIView *view = registry[reactTag];
+    if ([view isKindOfClass:[RCTRemoteConfigInterstitialView class]]) [(RCTRemoteConfigInterstitialView *)view show:eligible];
   }];
 }
 RCT_EXPORT_METHOD(dispose : (nonnull NSNumber *)reactTag) {

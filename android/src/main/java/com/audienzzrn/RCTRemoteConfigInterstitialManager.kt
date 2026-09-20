@@ -16,12 +16,14 @@ class RCTRemoteConfigInterstitialManager : SimpleViewManager<RCTRemoteConfigInte
     view.dispose()
     super.onDropViewInstance(view)
   }
-  override fun getCommandsMap() = mapOf("show" to 0, "preload" to 1, "showAtOpportunity" to 2, "dispose" to 3)
+  override fun getCommandsMap() =
+    mapOf("prefetch" to 0, "prefetchAndShow" to 1, "show" to 2, "dispose" to 3)
   override fun receiveCommand(view: RCTRemoteConfigInterstitialView, commandId: Int, args: ReadableArray?) {
     when (commandId) {
-      0 -> view.show()
-      1 -> view.preload()
-      2 -> view.showAtOpportunity(args?.let { it.size() > 0 && it.getBoolean(0) } ?: false)
+      0 -> view.prefetch()
+      1 -> view.prefetchAndShow()
+      // Default true: `show()` with no argument is "I have decided this is an opportunity".
+      2 -> view.show(args?.let { if (it.size() > 0) it.getBoolean(0) else true } ?: true)
       3 -> view.dispose()
     }
   }

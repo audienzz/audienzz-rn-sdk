@@ -1,7 +1,11 @@
 import * as React from 'react';
 import { ScrollView, Text, TouchableOpacity, View, Platform, StyleSheet, SafeAreaView } from 'react-native';
 import RNAudienzz from 'audienzz';
-import { Audienzz, RNTargeting, createPage } from 'audienzz';
+import {
+  RNTargeting,
+  audienzzOnNavigationReady,
+  audienzzOnNavigationStateChange,
+} from 'audienzz';
 import { LOREM } from './constants';
 import ErrorHandlingExample from './components/ErrorHandlingExample';
 import OriginalBannerAPIExample from './components/OriginalBannerAPIExample';
@@ -15,29 +19,49 @@ import SmartRefreshBannerExample from './components/SmartRefreshBannerExample';
 import LegacyOriginalView_v0_3_8 from './components/LegacyOriginalView_v0_3_8';
 import TestScreenExample from './components/TestScreenExample';
 import ReloadTabsExample from './components/ReloadTabsExample';
+import ManagedBannerExample from './components/ManagedBannerExample';
 
-// Remote config ad units (IDs 118, 192, 267) are only provisioned for iOS on
-// the dev backend — Android returns HTTP 404 for publisher 81.  Use the direct
-// OriginalBanner flow on Android so the initial screen always shows live ads.
-const REMOTE_CONFIG_ENABLED = Platform.OS === 'ios';
-const REMOTE_CONFIG_URL = 'https://api.adnz.co/api/ws-sdk-config/public/v1';
+// Remote config ad units 118, 192 and 267 belong to publisher 81, which exists on the DEV backend
+// only: `GET https://api.adnz.co/api/ws-sdk-config/public/v1/publishers/81` answers 404 and its
+// `/ad-configs` is empty, while the dev host returns the publisher and all three units. That is an
+// environment difference, not a platform one — the previous `Platform.OS === 'ios'` gate and its
+// "Android returns 404" note were wrong, and the iOS path was reading a cached config rather than a
+// live one. Pointing at dev gives BOTH platforms the same RemoteBanner flow with real, provisioned
+// placements; no ids are invented here.
+//
+// To exercise remote config against production instead, use a publisher that is provisioned there
+// (for example publisher 35 with units 46/47/48) — publisher 81 has no production configuration.
+const REMOTE_CONFIG_ENABLED = true;
+const REMOTE_CONFIG_URL = 'https://dev-api.adnz.co/api/ws-sdk-config/public/v1';
 const PUBLISHER_ID = '81';
 
 export default function App() {
   const [initialized, setInitialized] = React.useState(false);
-  const [screen, setScreen] = React.useState<'main' | 'test' | 'sticky' | 'smartRefresh' | 'legacy' | 'reloadTabs'>('main');
+  const [screen, setScreen] = React.useState<'main' | 'test' | 'sticky' | 'smartRefresh' | 'legacy' | 'reloadTabs' | 'managed'>('main');
 
-  // Navigate. Reporting the page here — in the navigation ACTION — is the whole point: the
-  // destination's banners read the current page while they are being constructed, and an effect
-  // runs after that commit. A parent effect therefore bound every banner to the page the reader had
-  // just left. React offers no earlier parent hook: effects and layout effects both run child-first.
+  // This app has a hand-rolled router rather than React Navigation, so it drives the SDK's
+  // navigation adapter itself. The adapter takes a React-Navigation-shaped state; a custom router
+  // only has to describe which route is focused, and `<AudienzzPage route={{ key }}>` on a screen
+  // then binds to that same key.
   //
-  // For screens built with <AudienzzPage>/<AudienzzBanner> this is handled for you; this example
-  // still uses the low-level components in places, which is why it reports explicitly.
-  const goTo = React.useCallback((next: typeof screen) => {
-    Audienzz.activatePage(createPage(next));
-    setScreen(next);
+  // Reporting in the navigation ACTION is the whole point: the destination's low-level banners read
+  // the current page while they are being constructed, and an effect runs after that commit. A
+  // parent effect therefore bound every banner to the page the reader had just left. React offers
+  // no earlier parent hook — effects and layout effects both run child-first.
+  const report = React.useCallback((route: string) => {
+    audienzzOnNavigationStateChange({
+      index: 0,
+      routes: [{ key: route, name: route }],
+    });
   }, []);
+
+  const goTo = React.useCallback(
+    (next: typeof screen) => {
+      report(next);
+      setScreen(next);
+    },
+    [report]
+  );
 
   React.useEffect(() => {
     // Pages are reported by `goTo` at the navigation action, and the first one right after
@@ -56,9 +80,13 @@ export default function App() {
         .then((value) => {
           console.log('[SDK] Initialized with remote config:', JSON.stringify(value, null, 2));
           RNTargeting().addGlobalTargeting('TEST', '1');
-          // The first page, reported BEFORE the first ad-bearing screen renders. Nothing has been
-          // rendered yet because `initialized` still gates the whole tree.
-          Audienzz.activatePage(createPage('main'));
+          // The opening route, reported BEFORE the first ad-bearing screen renders. Nothing has
+          // been rendered yet because `initialized` still gates the whole tree. With React
+          // Navigation this is what `onReady` is for — it emits no initial state change.
+          audienzzOnNavigationReady({
+            index: 0,
+            routes: [{ key: 'main', name: 'main' }],
+          });
           setInitialized(true);
         })
         .catch((error) => {
@@ -86,7 +114,10 @@ export default function App() {
                               }
                           `);
           RNTargeting().addGlobalTargeting('TEST', '1');
-          Audienzz.activatePage(createPage('main'));
+          audienzzOnNavigationReady({
+            index: 0,
+            routes: [{ key: 'main', name: 'main' }],
+          });
           setInitialized(true);
         });
     }
@@ -139,12 +170,16 @@ export default function App() {
     return <ReloadTabsExample onBack={() => goTo('main')} />;
   }
 
+  if (screen === 'managed') {
+    return <ManagedBannerExample onBack={() => goTo('main')} />;
+  }
+
   return REMOTE_CONFIG_ENABLED
-    ? RemoteView(() => goTo('test'), () => goTo('sticky'), () => goTo('smartRefresh'), () => goTo('legacy'), () => goTo('reloadTabs'))
-    : OriginalView(() => goTo('test'), () => goTo('sticky'), () => goTo('smartRefresh'), () => goTo('legacy'), () => goTo('reloadTabs'));
+    ? RemoteView(() => goTo('test'), () => goTo('sticky'), () => goTo('smartRefresh'), () => goTo('legacy'), () => goTo('reloadTabs'), () => goTo('managed'))
+    : OriginalView(() => goTo('test'), () => goTo('sticky'), () => goTo('smartRefresh'), () => goTo('legacy'), () => goTo('reloadTabs'), () => goTo('managed'));
 }
 
-function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void, onOpenReloadTabs: () => void) {
+function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void, onOpenReloadTabs: () => void, onOpenManaged: () => void) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
@@ -152,6 +187,11 @@ function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmar
           style={styles.mainContainer}
           contentContainerStyle={styles.scrollviewcontentContainerStyle}
         >
+          <Text style={styles.bigText}>MANAGED BANNER (recommended)</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenManaged}>
+            <Text style={styles.navButtonText}>Open Managed Banner Example →</Text>
+          </TouchableOpacity>
+          <View style={styles.height30} />
           <Text style={styles.bigText}>TEST SCREEN</Text>
           <TouchableOpacity style={styles.navButton} onPress={onOpenTest}>
             <Text style={styles.navButtonText}>Open Test Screen →</Text>
@@ -186,7 +226,7 @@ function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmar
   );
 }
 
-function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void, onOpenReloadTabs: () => void) {
+function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void, onOpenReloadTabs: () => void, onOpenManaged: () => void) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
@@ -194,6 +234,11 @@ function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSm
           style={styles.mainContainer}
           contentContainerStyle={styles.scrollviewcontentContainerStyle}
         >
+          <Text style={styles.bigText}>MANAGED BANNER (recommended)</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenManaged}>
+            <Text style={styles.navButtonText}>Open Managed Banner Example →</Text>
+          </TouchableOpacity>
+          <View style={styles.height30} />
           <Text style={styles.bigText}>TEST SCREEN</Text>
           <TouchableOpacity style={styles.navButton} onPress={onOpenTest}>
             <Text style={styles.navButtonText}>Open Test Screen →</Text>

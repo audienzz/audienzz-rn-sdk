@@ -74,12 +74,20 @@ export default function RemoteConfigExample() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Interstitial (ID: 267)</Text>
         <ActionButton
-          labelButton="Preload Interstitial"
-          onPress={() => interstitial.current?.preload()}
+          labelButton="Prefetch Interstitial"
+          onPress={() => interstitial.current?.prefetch()}
         />
         <ActionButton
-          labelButton="Try Eligible Opportunity"
-          onPress={() => interstitial.current?.showAtOpportunity(true)}
+          labelButton="Show At This Opportunity"
+          onPress={() => interstitial.current?.show(true)}
+        />
+        <ActionButton
+          labelButton="Show When It Arrives (prefetchAndShow)"
+          onPress={() => interstitial.current?.prefetchAndShow()}
+        />
+        <ActionButton
+          labelButton="Try An Ineligible Opportunity"
+          onPress={() => interstitial.current?.show(false)}
         />
       </View>
 

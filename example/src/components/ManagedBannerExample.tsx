@@ -12,9 +12,14 @@ import { LOREM } from '../constants';
  */
 export default function ManagedBannerExample({ onBack }: { onBack: () => void }) {
   return (
-    // One wrapper per screen. It mints this route instance's page id and reports it, so two
-    // articles are two pages even though both are called "article".
-    <AudienzzPage name="article" route={{ key: 'managed-example' }}>
+    // One wrapper per screen. `route` is the key this app's router reported for this screen (see
+    // App.tsx, which drives `audienzzOnNavigationStateChange`), so the wrapper and the adapter
+    // agree on the identity without either guessing. With React Navigation you pass the `route`
+    // prop it hands your screen instead.
+    //
+    // The wrapper reports the page and owns it, so two articles are two pages even though both are
+    // called "article".
+    <AudienzzPage name="article" route={{ key: 'managed' }}>
       <SafeAreaView style={styles.safeArea}>
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
           <Text style={styles.backText}>← Back</Text>

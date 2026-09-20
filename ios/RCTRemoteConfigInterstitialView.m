@@ -90,7 +90,9 @@
     if ([event[@"event"] isEqual:@"showAttempted"]) self->_presenting = YES;
     if (self.onLifecycleEvent) self.onLifecycleEvent(event);
   };
-  if (!self.manualControl) [self load];
+  // manualControl == NO means "prefetch and show as soon as this component mounts": the convenience
+  // form, spelled out rather than hidden behind a load that sometimes presents.
+  if (!self.manualControl) [self prefetchAndShow];
 }
 
 - (NSDictionary *)errorPayload:(NSError *)error {
@@ -101,10 +103,10 @@
   return [self reactViewController] ?: self.window.rootViewController;
 }
 
-- (void)load { if (!self.manualControl) [self startLoad:NO]; }
-- (void)preload { if (self.manualControl) [self startLoad:YES]; }
+- (void)prefetch { [self startLoad:NO]; }
+- (void)prefetchAndShow { [self startLoad:YES]; }
 
-- (void)startLoad:(BOOL)preload {
+- (void)startLoad:(BOOL)showWhenLoaded {
   if (_disposed || _loading || _presenting || self.auRemoteConfigInterstitial.isReady) return;
   if (!self.auRemoteConfigInterstitial) {
     if (self.onAdFailedToLoad) self.onAdFailedToLoad(@{@"code": @(-1), @"message": @"adConfigId is required", @"domain": @"Audienzz"});
@@ -122,14 +124,22 @@
       if (self.onAdFailedToLoad) self.onAdFailedToLoad([self errorPayload:error]);
     } else if (self.onAdLoaded) self.onAdLoaded(@{});
   };
-  if (preload) [self.auRemoteConfigInterstitial preloadWithCompletion:completion];
-  else [self.auRemoteConfigInterstitial loadWithCompletion:completion];
+  if (showWhenLoaded) {
+    UIViewController *controller = [self presentationController];
+    if (!controller) {
+      self->_loading = NO;
+      if (self.onAdFailedToLoad) self.onAdFailedToLoad(@{@"code": @(-1), @"message": @"No view controller to present from", @"domain": @"Audienzz"});
+      return;
+    }
+    [self.auRemoteConfigInterstitial prefetchAndShowWithCompletionFrom:controller completion:completion];
+  } else {
+    [self.auRemoteConfigInterstitial prefetchWithCompletion:completion];
+  }
 }
 
-- (void)showAtOpportunity:(BOOL)eligible {
-  if (!_disposed && self.manualControl) [self showOnce:eligible];
+- (void)show:(BOOL)eligible {
+  if (!_disposed) [self showOnce:eligible];
 }
-- (void)show { if (!_disposed) [self showOnce:YES]; }
 
 - (void)showOnce:(BOOL)eligible {
   UIViewController *controller = [self presentationController];
@@ -137,7 +147,7 @@
     if (self.onLifecycleEvent) self.onLifecycleEvent(@{@"event": @"opportunitySkipped", @"reason": @"inactive", @"configId": self.adConfigId ?: @""});
     return;
   }
-  [self.auRemoteConfigInterstitial showAtOpportunityFrom:controller eligible:eligible];
+  [self.auRemoteConfigInterstitial showFrom:controller eligible:eligible];
 }
 
 - (void)dispose {

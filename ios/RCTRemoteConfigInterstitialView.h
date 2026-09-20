@@ -32,9 +32,8 @@
 @property(nonatomic, copy) RCTBubblingEventBlock onAdClosed;
 @property(nonatomic, copy) RCTBubblingEventBlock onAdImpression;
 @property(nonatomic, copy) RCTBubblingEventBlock onLifecycleEvent;
-- (void)load;
-- (void)show;
-- (void)preload;
-- (void)showAtOpportunity:(BOOL)eligible;
+- (void)prefetch;
+- (void)prefetchAndShow;
+- (void)show:(BOOL)eligible;
 - (void)dispose;
 @end

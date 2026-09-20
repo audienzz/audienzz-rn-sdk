@@ -14,7 +14,7 @@ jest.mock('react-native', () => {
     findNodeHandle: jest.fn(() => 42),
     UIManager: {
       getViewManagerConfig: jest.fn(() => ({
-        Commands: { show: 0, preload: 1, showAtOpportunity: 2, dispose: 3 },
+        Commands: { prefetch: 0, prefetchAndShow: 1, show: 2, dispose: 3 },
       })),
       dispatchViewManagerCommand: jest.fn(),
     },
@@ -58,16 +58,19 @@ describe('RemoteConfigInterstitial commands', () => {
   });
 
   it('routes all commands and preserves the current eligibility value', () => {
-    ref.current!.preload();
-    ref.current!.showAtOpportunity(false);
-    ref.current!.showAtOpportunity(true);
+    ref.current!.prefetch();
+    ref.current!.show(false);
+    ref.current!.show(true);
+    // No argument means "I have decided this is an opportunity".
     ref.current!.show();
+    ref.current!.prefetchAndShow();
     ref.current!.dispose();
     expect(dispatch.mock.calls).toEqual([
-      [42, 1, []],
+      [42, 0, []],
       [42, 2, [false]],
       [42, 2, [true]],
-      [42, 0, []],
+      [42, 2, [true]],
+      [42, 1, []],
       [42, 3, []],
     ]);
   });
@@ -84,7 +87,7 @@ describe('RemoteConfigInterstitial commands', () => {
         />
       )
     );
-    ref.current!.showAtOpportunity(true);
+    ref.current!.show(true);
     act(() => {
       tree.root
         .findByType('MockInterstitial' as any)
@@ -129,7 +132,7 @@ describe('RemoteConfigInterstitial commands', () => {
 
   it('does not dispatch without an attached native view', () => {
     (findNodeHandle as jest.Mock).mockReturnValueOnce(null);
-    ref.current!.preload();
+    ref.current!.prefetch();
     expect(dispatch).not.toHaveBeenCalled();
   });
 
@@ -142,7 +145,7 @@ describe('RemoteConfigInterstitial commands', () => {
         <RemoteConfigInterstitial ref={ref} adConfigId="267" manualControl />
       )
     );
-    ref.current!.showAtOpportunity(false);
-    expect(dispatch).toHaveBeenCalledWith(42, 'showAtOpportunity', [false]);
+    ref.current!.show(false);
+    expect(dispatch).toHaveBeenCalledWith(42, 'show', [false]);
   });
 });

@@ -42,7 +42,14 @@ export interface AudienzzPageContextValue {
   readonly isActive: boolean;
 }
 
-const PageContext = React.createContext<AudienzzPageContextValue | null>(null);
+/**
+ * Exported so a class component can read it through `static contextType` — `OriginalBanner` does,
+ * because a banner placed inside an `AudienzzPage` belongs to that page whatever API it uses.
+ */
+export const AudienzzPageContext =
+  React.createContext<AudienzzPageContextValue | null>(null);
+
+const PageContext = AudienzzPageContext;
 
 /** The page a component is rendered inside, or `null` outside any `AudienzzPage`. */
 export function useAudienzzPage(): AudienzzPageContextValue | null {

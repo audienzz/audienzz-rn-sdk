@@ -77,20 +77,22 @@ class RCTRemoteConfigInterstitialView(context: Context) : RCTOriginalView(contex
         }
       }
     )
-    if (!manualControl) remoteInterstitial?.loadAd()
+    // manualControl == false means "prefetch and show as soon as this component mounts": the
+    // convenience form, spelled out rather than hidden behind a load that sometimes presents.
+    if (!manualControl) remoteInterstitial?.prefetchAndShow()
   }
 
-  fun preload() {
-    if (disposed || !manualControl) return
-    remoteInterstitial?.preload()
+  fun prefetch() {
+    if (disposed) return
+    remoteInterstitial?.prefetch()
   }
 
-  fun showAtOpportunity(eligible: Boolean) {
-    if (disposed || !manualControl) return
-    showOnce(eligible)
+  fun prefetchAndShow() {
+    if (disposed) return
+    remoteInterstitial?.prefetchAndShow()
   }
 
-  fun show() { if (!disposed) showOnce(true) }
+  fun show(eligible: Boolean) { if (!disposed) showOnce(eligible) }
 
   private fun showOnce(eligible: Boolean) {
     val activity = (context as ReactContext).currentActivity
@@ -101,7 +103,7 @@ class RCTRemoteConfigInterstitialView(context: Context) : RCTOriginalView(contex
       })
       return
     }
-    remoteInterstitial?.showAtOpportunity(activity, eligible)
+    remoteInterstitial?.show(activity, eligible)
   }
 
   fun dispose() {

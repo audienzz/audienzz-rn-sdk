@@ -774,7 +774,15 @@ Omit a prop to use the ad config's `lazyLoad` / `prefetchDistanceDp`, which lets
 
 ### Interstitial Ad (Remote Config)
 
-Use one persistent `RemoteConfigInterstitial` with `manualControl` to preload inventory and present only at a publisher-approved transition. Keep it mounted above transient routes until dismissal. Do not remount it to retry a missed opportunity.
+Use one persistent `RemoteConfigInterstitial` with `manualControl` to prefetch inventory and present only at a publisher-approved transition. Keep it mounted above transient routes until dismissal. Do not remount it to retry a missed opportunity.
+
+Three verbs, and the verb decides whether anything is presented:
+
+| Method | What it does |
+| --- | --- |
+| `prefetch()` | Obtains and retains one ad. Never presents. |
+| `show(eligible?)` | Presents ready inventory at this opportunity, or reports why it could not. Never schedules a presentation for later. `eligible` defaults to `true`. |
+| `prefetchAndShow()` | Presents when the load completes, or presents inventory already in hand. |
 
 ```tsx
 import React, { useRef } from 'react';
@@ -798,30 +806,39 @@ function InterstitialPlacement({ eligible }: { eligible: boolean }) {
         onAdImpression={() => console.log('Impression')}
         onLifecycleEvent={(event) => console.log('Interstitial lifecycle', event)}
       />
-      <Button title="Preload" onPress={() => ad.current?.preload()} />
-      <Button title="Continue" onPress={() => ad.current?.showAtOpportunity(eligible)} />
+      <Button title="Prefetch" onPress={() => ad.current?.prefetch()} />
+      <Button title="Continue" onPress={() => ad.current?.show(eligible)} />
     </>
   );
 }
 ```
 
-In your app, preload ahead of a natural transition. Pass current frequency-cap and placement eligibility into `showAtOpportunity`; the SDK does not calculate publisher frequency caps. Continue normal navigation if no ad appears. Do not call show from `onAdLoaded` or automatically replay a skipped opportunity.
+In your app, prefetch ahead of a natural transition. Pass current frequency-cap and placement eligibility into `show`; the SDK does not calculate publisher frequency caps. Continue normal navigation if no ad appears. Do not call `show` from `onAdLoaded` — if you want the ad presented as soon as it arrives, say so with `prefetchAndShow()` — and do not automatically replay a skipped opportunity.
 
 | API | Behavior |
 | --- | --- |
 | `manualControl` | Opt in; mounting does not load or show. Keep this and `adConfigId` stable. Changing either releases the previous owner. |
-| `preload()` | Load one ad. Repeated calls while loading, ready, or presenting do not request another ad. |
-| `showAtOpportunity(eligible)` | Check native readiness, foreground state and managed presentation ownership once. A skip retains ready inventory and never queues a later show. Requires manual mode. |
+| `prefetch()` | Obtain and retain one ad; never presents. A call made while a load is in flight joins it, and one made with valid inventory in hand reuses it — neither spends another request. |
+| `show(eligible?)` | Check native readiness, foreground state and managed presentation ownership once. A skip retains ready inventory and never queues a later show. `eligible` defaults to `true`. |
+| `prefetchAndShow()` | Present as soon as the load completes, or present inventory already in hand, under the same guards as `show`. The only command that presents something you did not explicitly time. |
 | `dispose()` | Release this owner permanently; subsequent commands are ignored. Unmount also releases it. |
-| `show()` | Legacy command. Uses the same native opportunity checks with eligibility `true`; prefer the explicit eligibility API. |
 | `onAdFailedToLoad` / `onAdFailedToShow` | Separate failures; payload contains `code`, `message` and, when available, `domain`. |
 | `onLifecycleEvent` | Native diagnostics, including `opportunitySkipped` and its reason, load/presentation events and available load/response IDs. |
 
+#### Migrating from `preload` / `showAtOpportunity`
+
+| Before | Now |
+| --- | --- |
+| `preload()` | `prefetch()` |
+| `showAtOpportunity(eligible)` | `show(eligible)` |
+| `show()` | `show()` — unchanged; it still means "I have decided this is an opportunity" |
+| `manualControl={false}` | unchanged; it is `prefetchAndShow()` on mount, now spelled that way internally |
+
 Commands return `void` because the React Native bridge is asynchronous. Observe `onAdOpened`, `onAdFailedToShow`, `onAdImpression`, and lifecycle events for outcomes. A command is not proof of an impression. An unmounted/disposed component stops receiving callbacks, even if a fullscreen ad is still closing.
 
-Without `manualControl`, the existing mount-to-load-and-show behavior remains. The new flow applies to **RemoteConfigInterstitial**; the lower-level Original and Rendering interstitial components retain their existing APIs. Native presentation exclusion covers SDK-managed remote interstitials, not unrelated fullscreen ads presented outside this API.
+Without `manualControl`, mounting performs `prefetchAndShow()` — the same behaviour as before, now named for what it does. The new flow applies to **RemoteConfigInterstitial**; the lower-level Original and Rendering interstitial components retain their existing APIs. Native presentation exclusion covers SDK-managed remote interstitials, not unrelated fullscreen ads presented outside this API.
 
-**Release dependency:** these commands require the native SDK changes for `preload` / `showAtOpportunity`. Publish those native versions and update bridge pins before release; the currently pinned published versions cannot provide this API.
+**Release dependency:** these commands require the native SDK changes for `prefetch` / `show` / `prefetchAndShow`. Publish those native versions and update bridge pins before release; the currently pinned published versions (`AudienzziOSSDK ~> 0.3.2`, `com.audienzz:sdk:0.2.2`) cannot provide this API.
 
 ## Sticky Ad Wrapper
 
