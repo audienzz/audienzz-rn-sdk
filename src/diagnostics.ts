@@ -53,6 +53,20 @@ export function isDiagnosticsEnabled(): boolean {
   return enabled;
 }
 
+/**
+ * Log an action the PERSON took, into the same stream as the SDK's own decisions.
+ *
+ * Exported for example and QA apps. A captured log then reads back as a sequence — "navigated to
+ * settings", then what the SDK did about it — instead of needing someone to remember what they
+ * tapped and in what order. It is a no-op unless diagnostics are on, like everything else here.
+ */
+export function logAppAction(
+  action: string,
+  fields: Record<string, unknown> = {}
+): void {
+  logDiagnostic('app', action, fields);
+}
+
 export function logDiagnostic(
   subsystem: string,
   event: string,

@@ -6,6 +6,7 @@ import {
   RNTargeting,
   audienzzOnNavigationReady,
   audienzzOnNavigationStateChange,
+  logAppAction,
 } from 'audienzz';
 import { LOREM } from './constants';
 import ErrorHandlingExample from './components/ErrorHandlingExample';
@@ -21,6 +22,7 @@ import LegacyOriginalView_v0_3_8 from './components/LegacyOriginalView_v0_3_8';
 import TestScreenExample from './components/TestScreenExample';
 import ReloadTabsExample from './components/ReloadTabsExample';
 import ManagedBannerExample from './components/ManagedBannerExample';
+import ManagedFlowsExample from './components/ManagedFlowsExample';
 
 // Remote config ad units 118, 192 and 267 belong to publisher 81, which exists on the DEV backend
 // only: `GET https://api.adnz.co/api/ws-sdk-config/public/v1/publishers/81` answers 404 and its
@@ -38,7 +40,7 @@ const PUBLISHER_ID = '81';
 
 export default function App() {
   const [initialized, setInitialized] = React.useState(false);
-  const [screen, setScreen] = React.useState<'main' | 'test' | 'sticky' | 'smartRefresh' | 'legacy' | 'reloadTabs' | 'managed'>('main');
+  const [screen, setScreen] = React.useState<'main' | 'test' | 'sticky' | 'smartRefresh' | 'legacy' | 'reloadTabs' | 'managed' | 'managedFlows'>('main');
 
   // This app has a hand-rolled router rather than React Navigation, so it drives the SDK's
   // navigation adapter itself. The adapter takes a React-Navigation-shaped state; a custom router
@@ -50,6 +52,7 @@ export default function App() {
   // parent effect therefore bound every banner to the page the reader had just left. React offers
   // no earlier parent hook — effects and layout effects both run child-first.
   const report = React.useCallback((route: string) => {
+    logAppAction('navigate', { to: route });
     audienzzOnNavigationStateChange({
       index: 0,
       routes: [{ key: route, name: route }],
@@ -180,12 +183,16 @@ export default function App() {
     return <ManagedBannerExample onBack={() => goTo('main')} />;
   }
 
+  if (screen === 'managedFlows') {
+    return <ManagedFlowsExample onBack={() => goTo('main')} />;
+  }
+
   return REMOTE_CONFIG_ENABLED
-    ? RemoteView(() => goTo('test'), () => goTo('sticky'), () => goTo('smartRefresh'), () => goTo('legacy'), () => goTo('reloadTabs'), () => goTo('managed'))
-    : OriginalView(() => goTo('test'), () => goTo('sticky'), () => goTo('smartRefresh'), () => goTo('legacy'), () => goTo('reloadTabs'), () => goTo('managed'));
+    ? RemoteView(() => goTo('test'), () => goTo('sticky'), () => goTo('smartRefresh'), () => goTo('legacy'), () => goTo('reloadTabs'), () => goTo('managed'), () => goTo('managedFlows'))
+    : OriginalView(() => goTo('test'), () => goTo('sticky'), () => goTo('smartRefresh'), () => goTo('legacy'), () => goTo('reloadTabs'), () => goTo('managed'), () => goTo('managedFlows'));
 }
 
-function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void, onOpenReloadTabs: () => void, onOpenManaged: () => void) {
+function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void, onOpenReloadTabs: () => void, onOpenManaged: () => void, onOpenManagedFlows: () => void) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
@@ -196,6 +203,11 @@ function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmar
           <Text style={styles.bigText}>MANAGED BANNER (recommended)</Text>
           <TouchableOpacity style={styles.navButton} onPress={onOpenManaged}>
             <Text style={styles.navButtonText}>Open Managed Banner Example →</Text>
+          </TouchableOpacity>
+          <View style={styles.height30} />
+          <Text style={styles.bigText}>MANAGED TEST FLOWS</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenManagedFlows}>
+            <Text style={styles.navButtonText}>Open Managed Flows (A→B→A, tabs, cover, delay) →</Text>
           </TouchableOpacity>
           <View style={styles.height30} />
           <Text style={styles.bigText}>TEST SCREEN</Text>
@@ -232,7 +244,7 @@ function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmar
   );
 }
 
-function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void, onOpenReloadTabs: () => void, onOpenManaged: () => void) {
+function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void, onOpenReloadTabs: () => void, onOpenManaged: () => void, onOpenManagedFlows: () => void) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
@@ -243,6 +255,11 @@ function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSm
           <Text style={styles.bigText}>MANAGED BANNER (recommended)</Text>
           <TouchableOpacity style={styles.navButton} onPress={onOpenManaged}>
             <Text style={styles.navButtonText}>Open Managed Banner Example →</Text>
+          </TouchableOpacity>
+          <View style={styles.height30} />
+          <Text style={styles.bigText}>MANAGED TEST FLOWS</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenManagedFlows}>
+            <Text style={styles.navButtonText}>Open Managed Flows (A→B→A, tabs, cover, delay) →</Text>
           </TouchableOpacity>
           <View style={styles.height30} />
           <Text style={styles.bigText}>TEST SCREEN</Text>

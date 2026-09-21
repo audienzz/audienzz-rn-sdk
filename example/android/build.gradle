@@ -19,3 +19,20 @@ buildscript {
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+// Local-native testing: resolve `com.audienzz:sdk` from the Maven repository you published to with
+// `./gradlew :Audienzz:publishToMavenLocal` in the android-sdk checkout.
+//
+// The library module declares its own repositories, but the APP resolves the transitive dependency
+// against these — so adding it there alone left `:app:debugRuntimeClasspath` unable to find the
+// local build. This lives in the EXAMPLE, which ships to nobody; the npm package's own
+// android/build.gradle still names the published pin by default.
+//
+// Driven by `audienzzNativeVersion` in gradle.properties; see LOCAL_TESTING.md.
+if (hasProperty("audienzzNativeVersion")) {
+  allprojects {
+    repositories {
+      mavenLocal()
+    }
+  }
+}
