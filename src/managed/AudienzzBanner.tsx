@@ -17,6 +17,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
+import { logDiagnostic } from '../diagnostics';
 import { RemoteConfigBanner } from '../ads/original/RemoteConfigBanner';
 import type { AdSize } from '../types';
 import { useAudienzzPage } from './AudienzzPage';
@@ -150,8 +151,24 @@ export const AudienzzBanner = React.forwardRef<
     // Page not active yet: reserve the space, create nothing. A pre-mounted tab that the reader has
     // not opened must not buy an ad, and an ad created before its page is reported would be swept
     // as belonging to the previous page.
+    logDiagnostic('slot', 'hold', {
+      slot: slotKey,
+      config: adConfigId,
+      page: context?.page.id,
+      reason: context == null ? 'noPage' : 'pageNotActive',
+    });
     return <View style={reserved} />;
   }
+
+  // The ownership question, answered where the native view is actually created: which page this
+  // slot belongs to. A slot whose page is not the one the reader is on is the shape of every
+  // "my banner never loads" report.
+  logDiagnostic('slot', 'create', {
+    slot: slotKey,
+    config: adConfigId,
+    page: context.page.id,
+    lazy: lazyLoad,
+  });
 
   return (
     <View style={reserved}>

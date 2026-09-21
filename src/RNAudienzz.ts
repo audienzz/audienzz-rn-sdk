@@ -1,3 +1,4 @@
+import { setDiagnosticsEnabledLocally } from './diagnostics';
 import NativeModulesCombined from './NativeRNAudienzzModule';
 import type { RNAudienzzModule, AudienzzInitStatus } from './types';
 import {
@@ -46,6 +47,23 @@ class RNAudienzzClass implements RNAudienzzModule {
    */
   setAppVolume(volume: number): void {
     NativeModulesCombined.AudienzzModule.setAppVolume(volume);
+  }
+
+  /**
+   * Emit one greppable `AUDZ …` line per decision the SDK makes about a slot: which page became
+   * current, which page a slot belongs to, when an auction started, and why one did not.
+   *
+   * Off by default. Turn it on when you need a log you can capture on a device and hand to
+   * someone else. This switches on the JS side *and* both native SDKs, which emit the same line
+   * format, so one capture covers the whole stack — the JS decision (focus, slot creation) and
+   * the native consequence (auction, refresh block) appear in one stream.
+   *
+   * Collect with `npx react-native log-ios` / `log-android`, `adb logcat -s AUDZ` or the Xcode
+   * console; route it elsewhere with `setDiagnosticsSink`.
+   */
+  setDiagnosticsEnabled(enabled: boolean): void {
+    setDiagnosticsEnabledLocally(enabled);
+    NativeModulesCombined.AudienzzModule.setDiagnosticsEnabled(enabled);
   }
 
   /**

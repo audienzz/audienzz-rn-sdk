@@ -2,6 +2,7 @@ import * as React from 'react';
 import { ScrollView, Text, TouchableOpacity, View, Platform, StyleSheet, SafeAreaView } from 'react-native';
 import RNAudienzz from 'audienzz';
 import {
+  Audienzz,
   RNTargeting,
   audienzzOnNavigationReady,
   audienzzOnNavigationStateChange,
@@ -69,6 +70,11 @@ export default function App() {
     // Opt into smart-refresh v2 (directional viewport gate) instead of the legacy 20% gate,
     // and blank the slot during a screen-resume reload — parity with the native iOS/Android SDKs.
     // Both override backend config for the session; call before creating banners.
+    // One greppable AUDZ line per slot decision, on the JS side and in both native SDKs.
+    // Capture with `npx react-native log-ios` / `log-android` (or `adb logcat -s AUDZ`) and grep
+    // AUDZ. On by default HERE because this app exists to be tested and have its log read back;
+    // in a real app it is off unless you ask for it.
+    Audienzz.setDiagnosticsEnabled(true);
     RNAudienzz().setSmartRefreshV2Enabled(true);
     RNAudienzz().setBlankOnScreenReload(true);
     if (REMOTE_CONFIG_ENABLED) {

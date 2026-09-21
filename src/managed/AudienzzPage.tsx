@@ -28,6 +28,7 @@ import {
   unbindWrapperFromRoute,
   type AudienzzPageHandle,
 } from '../pageRegistry';
+import { logDiagnostic } from '../diagnostics';
 import { Audienzz } from '../RNAudienzz';
 
 /**
@@ -195,6 +196,14 @@ export function AudienzzPage({
       // reader has navigated away from — must stop reporting itself as the active page: otherwise
       // a banner added to it afterwards is created as if it were on the foreground page, and it
       // can never be re-activated when the reader comes back.
+      // The reason matters more than the fact: "not focused" is the adapter having moved on,
+      // "host" is the app's own `active={false}`. Reading a log back, those two look identical
+      // without this.
+      logDiagnostic('page', 'standDown', {
+        id: page.id,
+        name: page.name,
+        reason: !focused ? 'notFocused' : 'host',
+      });
       setActivated(null);
       forgetManagedActivation(page);
       return;
@@ -202,6 +211,12 @@ export function AudienzzPage({
     // Reporting the page is a side effect and belongs in an effect. A managed banner does not
     // create its ad until `isActive` turns true, so the page is always reported before its ads
     // exist — the ordering contract holds without putting navigation work into render.
+    logDiagnostic('page', 'activate', {
+      id: page.id,
+      name: page.name,
+      route: route?.key,
+      hostActive: active,
+    });
     activateManagedPage(page, (p) => Audienzz.activatePage(p));
     setActivated(page);
     // focusTick participates so this re-runs when the adapter moves focus onto or off this route.

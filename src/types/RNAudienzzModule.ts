@@ -21,6 +21,8 @@ export interface RNAudienzzModule {
    * Force smart-refresh v2 on/off, overriding the backend `smartRefreshV2` config for the session.
    * v2 uses the directional viewport gate; v1 uses the legacy ≥20%-visible gate. Omit to defer to backend.
    */
+  /** Mirror the JS diagnostics switch into the native SDK. See `Audienzz.setDiagnosticsEnabled`. */
+  setDiagnosticsEnabled(enabled: boolean): void;
   setSmartRefreshV2Enabled(enabled: boolean): void;
 
   /**

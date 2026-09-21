@@ -67,6 +67,7 @@ export { DEFAULT_REFRESH_TIME_SECONDS, DEFAULT_PREFETCH_DISTANCE_DP };
 export { default, Audienzz, RNAudienzz } from './RNAudienzz';
 export { Targeting, RNTargeting } from './RNTargeting';
 export { AdSizes } from './constants';
+export { setDiagnosticsSink, isDiagnosticsEnabled } from './diagnostics';
 export { AudienzzStickyAdWrapper } from './components/AudienzzStickyAdWrapper';
 export type { AudienzzStickyAdWrapperProps } from './components/AudienzzStickyAdWrapper';
 

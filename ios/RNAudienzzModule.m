@@ -95,6 +95,11 @@ RCT_EXPORT_METHOD(setPublisherPpid: (nullable NSString *)ppid) {
   [[PPIDManager shared] setPublisherPPID:ppid];
 }
 
+// One greppable AUDZ line per slot decision; see AUDiagnostics.
+RCT_EXPORT_METHOD(setDiagnosticsEnabled: (BOOL)enabled) {
+  [[Audienzz shared] setDiagnosticsEnabled:enabled];
+}
+
 // Force smart-refresh v2 on/off, overriding the backend smartRefreshV2 config for the session.
 // v2 uses the directional viewport gate; v1 uses the legacy >=20%-visible gate.
 RCT_EXPORT_METHOD(setSmartRefreshV2Enabled: (BOOL)enabled) {

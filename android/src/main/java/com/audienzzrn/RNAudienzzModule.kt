@@ -85,6 +85,12 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
     AudienzzPrebidMobile.setSchainObject(schain)
   }
 
+  /** One greppable AUDZ line per slot decision; see AudienzzDiagnostics. */
+  @ReactMethod
+  fun setDiagnosticsEnabled(enabled: Boolean) {
+    AudienzzPrebidMobile.diagnosticsEnabled = enabled
+  }
+
   /**
    * Force smart-refresh v2 on/off, overriding the backend `smartRefreshV2` config for the session.
    * v2 uses the directional viewport gate; v1 uses the legacy >=20%-visible gate.
