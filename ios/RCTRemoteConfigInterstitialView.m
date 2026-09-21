@@ -107,11 +107,16 @@
 - (void)prefetchAndShow { [self startLoad:YES]; }
 
 - (void)startLoad:(BOOL)showWhenLoaded {
-  if (_disposed || _loading || _presenting || self.auRemoteConfigInterstitial.isReady) return;
+  if (_disposed) return;
   if (!self.auRemoteConfigInterstitial) {
     if (self.onAdFailedToLoad) self.onAdFailedToLoad(@{@"code": @(-1), @"message": @"adConfigId is required", @"domain": @"Audienzz"});
     return;
   }
+  // Deliberately NOT short-circuited on ready / loading / presenting. Native owns those
+  // decisions: a ready owner answers a prefetchAndShow by presenting immediately, a load in
+  // flight is joined (and a presentation may be added to it), and a rejected call reports its
+  // own failure. Returning here threw the request away — `prefetchAndShow()` on a ready or
+  // loading owner did nothing at all, silently.
   _loading = YES;
   self.auRemoteConfigInterstitial.presentationViewController = [self presentationController];
   NSUInteger token = _generation;
