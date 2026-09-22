@@ -8,7 +8,8 @@
 > (`com.audienzz:sdk:0.2.2`) and `audienzz.podspec` (`AudienzziOSSDK ~> 0.3.2`) name the
 > **currently published** versions, which do not provide them. Ship in this order:
 >
-> 1. Release the native SDKs (iOS and Android) carrying these APIs.
+> 1. Release the native SDKs (iOS and Android) carrying these APIs — their version constants are
+>    already bumped to **iOS 0.3.3 / Android 0.2.3**, so those are the versions to re-pin to.
 > 2. Re-pin `android/build.gradle`, `audienzz.podspec` and `example/ios/Podfile` to those
 >    versions, and bump `package.json`.
 > 3. Build and run **those exact combinations** — a local `:path` / `mavenLocal` build
@@ -18,6 +19,94 @@
 > To verify locally in the meantime, point `example/ios/Podfile` at the iOS checkout with
 > `:path` and publish the Android SDK to `mavenLocal`, then **restore both pins** before
 > committing.
+
+## Quick integration (remote config + `pageImpression`)
+
+The recommended path: your ad units come from the Audienzz publisher config, and you tell the SDK
+which screen is current. Four steps.
+
+### 1. Install
+
+```sh
+npm install audienzz          # or: yarn add audienzz
+cd ios && pod install
+```
+
+Add your GAM/AdMob app ID to `Info.plist` (`GADApplicationIdentifier`) and
+`AndroidManifest.xml` (`com.google.android.gms.ads.APPLICATION_ID`).
+
+### 2. Initialize once, at app startup
+
+```tsx
+import { Audienzz, audienzzOnNavigationReady } from 'audienzz';
+
+useEffect(() => {
+  Audienzz.initializeRemote(
+    'https://api.adnz.co/api/ws-sdk-config/public/v1/',
+    'YOUR_PUBLISHER_ID',           // provided by Audienzz
+  ).then(() => {
+    // The opening route, reported before the first ad-bearing screen renders.
+    // React Navigation emits no initial state change, which is what `onReady` is for.
+    audienzzOnNavigationReady({ index: 0, routes: [{ key: 'home', name: 'home' }] });
+    setInitialized(true);
+  });
+}, []);
+```
+
+Gate your ad-bearing tree on `initialized` so the opening route is reported first.
+
+Run your CMP **before** this and forward the result through `Targeting` — see [Consent](#consent).
+
+### 3. Report every screen
+
+Wire the navigation adapter once, and the SDK follows your router:
+
+```tsx
+import { audienzzOnNavigationReady, audienzzOnNavigationStateChange } from 'audienzz';
+
+<NavigationContainer
+  onReady={() => audienzzOnNavigationReady(navigationRef.getRootState())}
+  onStateChange={(state) => audienzzOnNavigationStateChange(state)}
+>
+```
+
+Without a router, report each screen yourself:
+
+```tsx
+Audienzz.pageImpression('article');
+```
+
+This is the one thing the SDK cannot do for you: it groups a visit's ad events, and it is what
+releases the *previous* screen's banners. **Report ad-free screens too** — skipping them leaves the
+previous screen's banners auctioning for a screen nobody is looking at.
+
+### 4. Place ads
+
+```tsx
+import { RemoteConfigBanner, RemoteConfigInterstitial } from 'audienzz';
+
+<RemoteConfigBanner adConfigId="YOUR_CONFIG_ID" style={{ height: 250 }} />
+```
+
+Interstitial — three verbs, and the distinction between them is deliberate:
+
+```tsx
+const interstitial = useRef<RemoteConfigInterstitialHandle>(null);
+
+interstitial.current?.prefetch();          // obtain and retain one ad; never presents
+interstitial.current?.show(true);          // present what is in hand, or skip — never later
+interstitial.current?.prefetchAndShow();   // the one call that presents something you did not time
+
+<RemoteConfigInterstitial ref={interstitial} manualControl adConfigId="YOUR_CONFIG_ID" />
+```
+
+### That's it
+
+You do not have to wait for initialization before rendering ad components. An auction that would
+start before the native SDK is ready is deferred and taken as soon as it is — so a banner mounted
+during launch fills normally rather than losing its one request.
+
+---
 
 **Audienzz React Native SDK** is a React Native wrapper around the native Android/iOS Audienzz SDKs (Original and Rendering APIs).
 
