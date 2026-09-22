@@ -15,6 +15,8 @@ import org.audienzz.mobile.AudienzzRemoteBannerView
 
 class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
 
+  val requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext()
+
   private var configId: String? = null
   private var loadedConfigId: String? = null
   private var adWidth: Int? = null
@@ -162,6 +164,7 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
     bannerView.prefetchMarginDpOverride = prefetchMargin
 
     addView(bannerView)
+    bannerView.requestContext = requestContext
     remoteConfigBannerView = bannerView
     // Must precede the config-driven load inside AudienzzRemoteBannerView, which is where the ad
     // joins the current page. setScreen stores it as a pending key until the handler exists.

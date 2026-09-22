@@ -32,7 +32,9 @@
 }
 @end
 
-@implementation RCTOriginalBannerView
+@implementation RCTOriginalBannerView {
+  AUAdRequestContext *_requestContext;
+}
 
 - (void)setAutoRefreshPeriodMillis:(NSNumber *)value {
   _autoRefreshPeriodMillis = [value floatValue];
@@ -175,6 +177,8 @@
       }
   
   _auBannerView = [[AUBannerView alloc] initWithConfigId:self.auConfigID adSize:adSize adFormats:[AUConverter convertToAUAdFormats:self.adFormats] isLazyLoad:self.isLazyLoad];
+  if (!_requestContext) _requestContext = [AUAdRequestContext new];
+  self.auBannerView.requestContext = _requestContext;
   
   [self.videoParameters setPlacement:[AUConverter convertToAUPlacement:_videoPlacement]];
   

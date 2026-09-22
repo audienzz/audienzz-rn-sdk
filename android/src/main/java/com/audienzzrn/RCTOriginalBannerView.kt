@@ -29,6 +29,8 @@ import org.audienzz.mobile.AudienzzBannerAdUnit
 import org.audienzz.mobile.original.AudienzzAdViewHandler
 
 class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
+  val requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext()
+
   private var sizes: Array<AudienzzAdSize> = arrayOf()
   private var receivedSize: AdSize = AdSize(1,1)
   private var autoRefreshPeriodMillis: Int? = null

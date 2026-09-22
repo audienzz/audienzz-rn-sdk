@@ -12,6 +12,7 @@ import org.audienzz.mobile.AudienzzRemoteConfigInterstitial
 class RCTRemoteConfigInterstitialView(context: Context) : RCTOriginalView(context) {
   internal var interstitialFactory: (Context, String, AudienzzRemoteConfigInterstitial.Events) -> AudienzzRemoteConfigInterstitial =
     { host, config, events -> AudienzzRemoteConfigInterstitial(host, config, events) }
+  private val requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext()
   private var adConfigId: String? = null
   private var manualControl = false
   private var appliedConfig: Pair<String, Boolean>? = null
@@ -79,6 +80,7 @@ class RCTRemoteConfigInterstitialView(context: Context) : RCTOriginalView(contex
     )
     // manualControl == false means "prefetch and show as soon as this component mounts": the
     // convenience form, spelled out rather than hidden behind a load that sometimes presents.
+    remoteInterstitial?.requestContext = requestContext
     if (!manualControl) remoteInterstitial?.prefetchAndShow()
   }
 

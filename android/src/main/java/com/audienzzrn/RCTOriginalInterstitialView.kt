@@ -76,6 +76,8 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
 
   /// What the current interstitial was built for. A prop change that does not change it reuses the
   /// ad already held rather than buying another one.
+  val requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext()
+
   private var loadedIdentity: String? = null
 
   override fun createAd() {
@@ -97,6 +99,7 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
     val handler = AudienzzInterstitialAdHandler(
       auInterstitialView!!,
       adUnitID,
+      requestContext,
     )
 
     if (pbAdSlot != null) {

@@ -19,6 +19,7 @@
 #import <React/UIView+React.h>
 
 @implementation RCTRemoteConfigInterstitialView {
+  AUAdRequestContext *_requestContext;
   NSString *_appliedConfig;
   BOOL _appliedManualControl;
   BOOL _disposed;
@@ -73,6 +74,8 @@
   _appliedManualControl = self.manualControl;
   if (self.adConfigId.length == 0) return;
   self.auRemoteConfigInterstitial = [[AURemoteConfigInterstitial alloc] initWithAdConfigId:self.adConfigId];
+  if (!_requestContext) _requestContext = [AUAdRequestContext new];
+  self.auRemoteConfigInterstitial.requestContext = _requestContext;
   self.auRemoteConfigInterstitial.delegate = self;
   NSUInteger token = _generation;
   __weak typeof(self) weakSelf = self;

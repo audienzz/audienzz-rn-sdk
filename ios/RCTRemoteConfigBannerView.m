@@ -30,6 +30,7 @@
 @end
 
 @implementation RCTRemoteConfigBannerView {
+  AUAdRequestContext *_requestContext;
   RCTBubblingEventBlock _onAdLoaded;
   RCTBubblingEventBlock _onAdFailedToLoad;
   RCTBubblingEventBlock _onAdClicked;
@@ -106,6 +107,8 @@
   if (self.auRemoteConfigBannerView == nil) {
     self.auRemoteConfigBannerView =
         [[AURemoteConfigBannerView alloc] initWithAdConfigId:self.adConfigId];
+    if (!_requestContext) _requestContext = [AUAdRequestContext new];
+    self.auRemoteConfigBannerView.requestContext = _requestContext;
     self.loadedAdConfigId = self.adConfigId;
   }
 

@@ -290,6 +290,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
       val handler = AudienzzAdViewHandler(
         adView = adView,
         adUnit = auBannerView,
+        requestContext = reactViewGroup.requestContext,
       )
       // Retain the handler on the view so the reload command (pageImpression
       // broadcast) can force a fresh auction via handler.reloadAd().
