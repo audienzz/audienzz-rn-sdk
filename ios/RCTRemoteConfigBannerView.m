@@ -83,6 +83,10 @@
 }
 
 - (void)internalCreateAd {
+  if (self.auRemoteConfigBannerView && !_requestContext.hasBannerRequestBudget) {
+    dispatch_semaphore_signal(self.semaphore);
+    return;
+  }
   if (!self.adConfigId) {
     RCTLogError(@"[RCTRemoteConfigBannerView] adConfigId is required");
     if (self->_onAdFailedToLoad) {

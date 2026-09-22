@@ -176,6 +176,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
   }
 
   private fun requestAd(reactViewGroup: RCTOriginalBannerView) {
+    if (!reactViewGroup.requestContext.hasBannerRequestBudget) return
     val adView = initAdView(reactViewGroup)
     val isLazyLoad = reactViewGroup.isLazyLoad
     val isAdaptive = reactViewGroup.isAdaptive

@@ -134,6 +134,10 @@
 }
 
 - (void)internalCreateAd {
+  if (_auBannerView && !_requestContext.hasBannerRequestBudget) {
+    dispatch_semaphore_signal(self.semaphore);
+    return;
+  }
   [super internalCreateAd];
   GAMRequest *request = [GAMRequest request];
   

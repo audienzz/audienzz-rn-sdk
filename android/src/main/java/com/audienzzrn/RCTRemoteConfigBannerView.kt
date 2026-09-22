@@ -122,6 +122,7 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
   }
 
   fun loadAd() {
+    if (remoteConfigBannerView != null && !requestContext.hasBannerRequestBudget) return
     val id = configId ?: return
 
     // The delivery settings are part of the identity of a load, not incidental to it: a publisher
