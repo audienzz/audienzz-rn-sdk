@@ -231,7 +231,7 @@ function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmar
           </TouchableOpacity>
           <View style={styles.height30} />
           <Text style={styles.bigText}>REMOTE CONFIG</Text>
-          <RemoteConfigExample />
+          <RemoteConfigExample onOpenTestScreen={onOpenTest} />
           <View style={styles.height30} />
           <Text style={styles.bigText}>LEGACY (v0.3.8)</Text>
           <TouchableOpacity style={styles.navButton} onPress={onOpenLegacy}>

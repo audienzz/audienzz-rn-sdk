@@ -7,8 +7,24 @@ import {
 } from 'audienzz';
 import ActionButton from './ActionButton';
 
-export default function RemoteConfigExample() {
+export default function RemoteConfigExample({
+  onOpenTestScreen,
+}: {
+  onOpenTestScreen?: () => void;
+}) {
   const interstitial = React.useRef<RemoteConfigInterstitialHandle>(null);
+  // One line that always says where the ad is. Callbacks alone leave the state in the log; a
+  // reader has to reconstruct it from scrollback and cannot see that `prefetch` finished WITHOUT
+  // presenting — which is the guarantee the three separate buttons exist to demonstrate.
+  const [status, setStatus] = React.useState('not loaded');
+
+  // One under every ad slot, matching the native examples: the screen-navigation test is about
+  // what happens to THAT banner when you leave and come back, so the button has to be reachable
+  // while the slot it concerns is on screen.
+  const navButton = (label: string) =>
+    onOpenTestScreen ? (
+      <ActionButton labelButton={label} onPress={onOpenTestScreen} />
+    ) : null;
 
   return (
     <ScrollView
@@ -34,6 +50,7 @@ export default function RemoteConfigExample() {
             }}
           />
         </View>
+        {navButton('Open test screen (from fixed banner) →')}
       </View>
 
       <View style={styles.section}>
@@ -69,25 +86,40 @@ export default function RemoteConfigExample() {
             }}
           />
         </View>
+        {navButton('Open test screen (from adaptive banner) →')}
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Interstitial (ID: 267)</Text>
+        <Text style={styles.status}>{status}</Text>
         <ActionButton
-          labelButton="Prefetch Interstitial"
-          onPress={() => interstitial.current?.prefetch()}
+          labelButton="Prefetch"
+          onPress={() => {
+            setStatus('loading…');
+            interstitial.current?.prefetch();
+          }}
         />
         <ActionButton
-          labelButton="Show At This Opportunity"
-          onPress={() => interstitial.current?.show(true)}
+          labelButton="Show"
+          onPress={() => {
+            // Reported rather than silently queued: `show` takes an opportunity or skips it.
+            setStatus('show requested — presents only if inventory is ready');
+            interstitial.current?.show(true);
+          }}
         />
         <ActionButton
-          labelButton="Show When It Arrives (prefetchAndShow)"
-          onPress={() => interstitial.current?.prefetchAndShow()}
+          labelButton="Prefetch and show"
+          onPress={() => {
+            setStatus('loading… (will show when ready)');
+            interstitial.current?.prefetchAndShow();
+          }}
         />
         <ActionButton
           labelButton="Try An Ineligible Opportunity"
-          onPress={() => interstitial.current?.show(false)}
+          onPress={() => {
+            setStatus('ineligible opportunity — must be skipped');
+            interstitial.current?.show(false);
+          }}
         />
       </View>
 
@@ -97,24 +129,37 @@ export default function RemoteConfigExample() {
         manualControl
         adConfigId="267"
         onAdLoaded={() => {
+          // After a plain `prefetch` this is where it stops: ready, and nothing on screen.
+          setStatus('ready to show');
           console.log('[RemoteConfig] Interstitial loaded successfully');
         }}
         onAdFailedToLoad={(error) => {
+          setStatus(`load failed: ${String(error)}`);
           console.log('[RemoteConfig] Interstitial failed to load:', error);
         }}
-        onAdFailedToShow={(error) =>
-          console.log('[RemoteConfig] Presentation failed:', error)
-        }
-        onLifecycleEvent={(event) =>
-          console.log('[RemoteConfig] Lifecycle:', event)
-        }
+        onAdFailedToShow={(error) => {
+          setStatus(`failed to show: ${String(error)}`);
+          console.log('[RemoteConfig] Presentation failed:', error);
+        }}
+        onLifecycleEvent={(event) => {
+          // Carries the skip reason when an opportunity is declined.
+          const name = (event as { event?: string })?.event;
+          if (name === 'opportunitySkipped') {
+            setStatus(`opportunity skipped: ${JSON.stringify(event)}`);
+          }
+          console.log('[RemoteConfig] Lifecycle:', event);
+        }}
         onAdOpened={() => {
+          setStatus('showing');
           console.log('[RemoteConfig] Interstitial opened');
         }}
         onAdClosed={() => {
+          // Inventory is spent on presentation, so the slot really is empty again.
+          setStatus('closed — not loaded');
           console.log('[RemoteConfig] Interstitial closed');
         }}
         onAdClicked={() => {
+          setStatus('clicked');
           console.log('[RemoteConfig] Interstitial clicked');
         }}
       />
@@ -162,6 +207,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 8,
     minHeight: 100,
+  },
+  status: {
+    fontFamily: 'monospace',
+    fontSize: 14,
+    color: '#616161',
+    padding: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 4,
   },
   adaptiveBannerContainer: {
     width: '100%',
