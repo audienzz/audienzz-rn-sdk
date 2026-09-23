@@ -39,35 +39,12 @@ function nativeProps(element: React.ReactElement): Record<string, unknown> {
   return native.props as Record<string, unknown>;
 }
 
-describe('RemoteConfigBanner delivery defaults', () => {
-  it('imposes no lazy-load default of its own', () => {
+describe('RemoteConfigBanner delivery settings', () => {
+  it('sends no lazy-load or margin prop: both come from the ad config', () => {
     const props = nativeProps(<RemoteConfigBanner adConfigId="118" />);
-    // Undefined is the contract: it means "unset", so the native SDK applies
-    // the ad config and then its own default. A JS-side default would pin the
-    // behaviour here and silently diverge from iOS/Android.
-    expect(props.lazyLoad).toBeUndefined();
-    expect(props.prefetchMargin).toBeUndefined();
-  });
-
-  it('forwards an explicit eager choice', () => {
-    const props = nativeProps(
-      <RemoteConfigBanner adConfigId="118" lazyLoad={false} />
-    );
-    expect(props.lazyLoad).toBe(false);
-  });
-
-  it('forwards an explicit lazy choice with a margin', () => {
-    const props = nativeProps(
-      <RemoteConfigBanner adConfigId="118" lazyLoad prefetchMargin={600} />
-    );
-    expect(props.lazyLoad).toBe(true);
-    expect(props.prefetchMargin).toBe(600);
-  });
-
-  it('forwards a margin of zero rather than dropping it', () => {
-    const props = nativeProps(
-      <RemoteConfigBanner adConfigId="118" lazyLoad prefetchMargin={0} />
-    );
-    expect(props.prefetchMargin).toBe(0);
+    // Backend-driven only: the native SDK applies the ad config's `lazyLoad` and
+    // `prefetchDistanceDp`, then its own defaults. Nothing on the JS side may pin them.
+    expect(props).not.toHaveProperty('lazyLoad');
+    expect(props).not.toHaveProperty('prefetchMargin');
   });
 });

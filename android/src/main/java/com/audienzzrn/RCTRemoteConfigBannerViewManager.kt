@@ -25,18 +25,6 @@ class RCTRemoteConfigBannerViewManager : SimpleViewManager<RCTRemoteConfigBanner
     view.updateConfigId(value)
   }
 
-  @ReactProp(name = "lazyLoad")
-  fun setLazyLoad(view: RCTRemoteConfigBannerView, value: Boolean?) {
-    view.updateLazyLoad(value)
-  }
-
-  // defaultInt is the value React Native passes when the prop is absent, so a negative sentinel is
-  // what distinguishes "not set" from a deliberate 0 (load only at exact visibility).
-  @ReactProp(name = "prefetchMargin", defaultInt = -1)
-  fun setPrefetchMargin(view: RCTRemoteConfigBannerView, value: Int) {
-    view.updatePrefetchMargin(value.takeIf { it >= 0 })
-  }
-
   @ReactProp(name = "adWidth", defaultInt = 0)
   fun setAdWidth(view: RCTRemoteConfigBannerView, value: Int) {
     view.updateAdWidth(value)

@@ -855,19 +855,9 @@ If adaptive banners are enabled in the remote configuration, and you don't provi
 
 #### When the auction starts
 
-By default a `RemoteConfigBanner` waits until the slot comes within the prefetch margin before auctioning. Two optional props change that, each resolving **prop → ad config → SDK default**:
+A `RemoteConfigBanner` waits until the slot comes within the prefetch margin before auctioning. Both settings come from the ad config only — `lazyLoad` (default `true`) and `prefetchDistanceDp` (default `200` dp/pt) — so a placement is tuned in the backend, behaves the same on every platform, and changes without an app release. There are no props for them.
 
-```jsx
-<RemoteConfigBanner
-  adConfigId="YOUR_CONFIG_ID"
-  lazyLoad={false}          // auction on mount, wherever the slot sits
-  prefetchMargin={600}      // or stay lazy and start 600 dp/pt ahead (default 200)
-/>
-```
-
-Omit a prop to use the ad config's `lazyLoad` / `prefetchDistanceDp`, which lets you tune a placement from the backend without an app release. Changing either prop remounts the banner, so keep them stable unless you mean to reload.
-
-> In a `FlatList`, `prefetchMargin` is usually the setting that matters: the ad component mounts many viewports ahead, so the margin — not the list — decides when the auction starts. If raising it does not move the auction earlier, raise the list's `windowSize` / `initialNumToRender` instead.
+> In a `FlatList`, the prefetch distance is usually the setting that matters: the ad component mounts many viewports ahead, so the margin — not the list — decides when the auction starts. If raising it in the ad config does not move the auction earlier, raise the list's `windowSize` / `initialNumToRender` instead.
 
 <details>
 <summary><span>Props:</span></summary>
@@ -875,8 +865,6 @@ Omit a prop to use the ad config's `lazyLoad` / `prefetchDistanceDp`, which lets
 | Name               | Description                                                | Required | Type                                                    |
 | ------------------ | ---------------------------------------------------------- | :------: | ------------------------------------------------------- |
 | `adConfigId`       | Remote configuration ID for the ad unit.                   | **YES**  | string                                                  |
-| `lazyLoad`         | Defer the auction until the slot approaches the viewport. Omitted = ad config, then lazy. |    No    | boolean                        |
-| `prefetchMargin`   | How far ahead of the viewport the auction starts (dp/pt). Only applies while `lazyLoad` is on. Omitted = ad config, then 200. |    No    | number |
 | `onAdLoaded`       | Callback when ad is loaded. Returns ad size.               |    No    | onAdLoaded?(size: AdSize): void |
 | `onAdFailedToLoad` | Callback when ad fails to load.                            |    No    | onAdFailedToLoad?(error: {message: string}): void       |
 | `onAdClicked`      | Callback when ad is clicked.                               |    No    | onAdClicked?(): void                                    |

@@ -40,20 +40,31 @@ const declaredProps = (() => {
 
 describe('RemoteConfigBanner native props', () => {
   it('declares the props this test knows the component relies on', () => {
-    expect(declaredProps).toEqual(expect.arrayContaining(['adConfigId', 'lazyLoad', 'prefetchMargin']));
+    expect(declaredProps).toEqual(expect.arrayContaining(['adConfigId', 'pageKey']));
   });
 
-  it.each(['adConfigId', 'lazyLoad', 'prefetchMargin', 'pageKey'])(
+  it.each(['adConfigId', 'pageKey'])(
     '"%s" is exported by the iOS view manager',
     (prop) => {
       expect(iosProps.has(prop)).toBe(true);
     }
   );
 
-  it.each(['adConfigId', 'lazyLoad', 'prefetchMargin', 'pageKey'])(
+  it.each(['adConfigId', 'pageKey'])(
     '"%s" is exported by the Android view manager',
     (prop) => {
       expect(androidProps.has(prop)).toBe(true);
+    }
+  );
+
+  // Backend-driven only: the ad config's `lazyLoad` / `prefetchDistanceDp` decide, on every
+  // platform. A prop here would let one app override a placement the backend tunes for all.
+  it.each(['lazyLoad', 'prefetchMargin'])(
+    '"%s" is not an app-side setting on either platform',
+    (prop) => {
+      expect(declaredProps).not.toContain(prop);
+      expect(iosProps.has(prop)).toBe(false);
+      expect(androidProps.has(prop)).toBe(false);
     }
   );
 

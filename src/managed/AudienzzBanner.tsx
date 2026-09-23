@@ -38,14 +38,6 @@ export interface AudienzzBannerProps {
    * expect to avoid a visible reflow.
    */
   placeholderHeight?: number;
-  /**
-   * Defer the auction until the slot approaches the viewport. Defaults to `true` here, unlike the
-   * low-level component, because this component owns the sized placeholder that makes deferral
-   * work. Pass `false` for a slot that is always on screen.
-   */
-  lazyLoad?: boolean;
-  /** How far ahead of the viewport the auction starts, in dp/pt. */
-  prefetchMargin?: number;
   style?: StyleProp<ViewStyle>;
   onAdLoaded?(size: AdSize): void;
   onAdFailedToLoad?(error: { message: string }): void;
@@ -89,8 +81,6 @@ export const AudienzzBanner = React.forwardRef<
   adConfigId,
   slotKey,
   placeholderHeight = 250,
-  lazyLoad = true,
-  prefetchMargin,
   style,
   onAdLoaded,
   onAdFailedToLoad,
@@ -167,7 +157,6 @@ export const AudienzzBanner = React.forwardRef<
     slot: slotKey,
     config: adConfigId,
     page: context.page.id,
-    lazy: lazyLoad,
   });
 
   return (
@@ -187,8 +176,6 @@ export const AudienzzBanner = React.forwardRef<
         // Explicit, not inherited. A banner added to a retained-but-unfocused screen would
         // otherwise capture the foreground page and be created as if it lived there.
         pageKey={context.page.id}
-        lazyLoad={lazyLoad}
-        prefetchMargin={prefetchMargin}
         style={styles.fill}
         onAdLoaded={onAdLoaded}
         onAdFailedToLoad={onAdFailedToLoad}

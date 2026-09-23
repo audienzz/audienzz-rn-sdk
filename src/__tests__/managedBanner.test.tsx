@@ -167,20 +167,16 @@ describe('managed RemoteBanner integration', () => {
     expect(natives(tree)[0]!.props.pageKey).toBe(before);
   });
 
-  it('defaults to lazy loading and forwards an explicit override', () => {
-    const lazy = render(
+  it('leaves lazy loading and the margin to the ad config', () => {
+    // Backend-driven only. A JS default here (it used to be `lazyLoad = true`) overrode a backend
+    // `lazyLoad: false` for every managed slot.
+    const tree = render(
       <AudienzzPage name="a">
         <AudienzzBanner adConfigId="46" slotKey="s" />
       </AudienzzPage>
     );
-    expect(natives(lazy)[0]!.props.lazyLoad).toBe(true);
-
-    const eager = render(
-      <AudienzzPage name="a">
-        <AudienzzBanner adConfigId="46" slotKey="s" lazyLoad={false} />
-      </AudienzzPage>
-    );
-    expect(natives(eager)[0]!.props.lazyLoad).toBe(false);
+    expect(natives(tree)[0]!.props).not.toHaveProperty('lazyLoad');
+    expect(natives(tree)[0]!.props).not.toHaveProperty('prefetchMargin');
   });
 
   it('a banner binds to its own page, not to whichever was activated last', () => {

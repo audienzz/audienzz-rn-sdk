@@ -59,7 +59,7 @@ describe('focus bootstrap and host lifecycle review',()=>{
    jest.spyOn(Audienzz,'activatePage').mockImplementation(p=>{pages.push(p);registry.setCurrentPage(p);});
  });
  afterEach(()=>{if(tree)act(()=>tree!.unmount());tree=undefined;jest.restoreAllMocks();});
- const screen=(key:string)=><AudienzzPage key={key} name={key} route={{key}}><AudienzzBanner adConfigId="118" slotKey="one" lazyLoad={false}/></AudienzzPage>;
+ const screen=(key:string)=><AudienzzPage key={key} name={key} route={{key}}><AudienzzBanner adConfigId="118" slotKey="one"/></AudienzzPage>;
  const state=(key:string)=>({index:0,routes:[{key,name:key}]});
  const natives=()=>tree!.root.findAllByType('MockRemoteConfigBanner' as any);
  it('pre-mounted tabs do not start ad owners before the initial focused route is known',()=>{
