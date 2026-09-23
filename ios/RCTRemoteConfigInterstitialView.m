@@ -56,13 +56,25 @@
   // this callback before destroying swallowed exactly the event this teardown should surface. An
   // ungated forwarder is installed across the call and removed straight after.
   owner.onLifecycleEvent = ^(NSDictionary *event) {
-    if (lifecycle) lifecycle(event);
+    // Teardown: whatever was held is being released, so nothing is ready any more.
+    if (lifecycle) lifecycle([RCTRemoteConfigInterstitialView event:event withReady:NO]);
   };
   // destroyWithReason:, not destroy: — Swift exports `destroy(reason:)` with the argument label
   // folded into the selector. Verified against the generated AudienzziOSSDK-Swift.h.
   [owner destroyWithReason:reason];
   owner.onLifecycleEvent = nil;
   self.auRemoteConfigInterstitial = nil;
+}
+
+/// Carry native's own readiness on every lifecycle event.
+///
+/// JS cannot query it — view commands return nothing — and re-deriving it from event names would
+/// duplicate native's rules (several showFailed paths treat held inventory differently) and drift
+/// from them. Native stores the ad before emitting `loaded`, so this is accurate at each event.
++ (NSDictionary *)event:(NSDictionary *)event withReady:(BOOL)ready {
+  NSMutableDictionary *payload = [event mutableCopy] ?: [NSMutableDictionary dictionary];
+  payload[@"ready"] = @(ready);
+  return payload;
 }
 
 - (void)createAd {
@@ -91,7 +103,10 @@
     typeof(self) self = weakSelf;
     if (!self || self->_disposed || token != self->_generation) return;
     if ([event[@"event"] isEqual:@"showAttempted"]) self->_presenting = YES;
-    if (self.onLifecycleEvent) self.onLifecycleEvent(event);
+    if (self.onLifecycleEvent) {
+      self.onLifecycleEvent([RCTRemoteConfigInterstitialView
+          event:event withReady:self.auRemoteConfigInterstitial.isReady]);
+    }
   };
   // manualControl == NO means "prefetch and show as soon as this component mounts": the convenience
   // form, spelled out rather than hidden behind a load that sometimes presents.
@@ -152,7 +167,11 @@
 - (void)showOnce:(BOOL)eligible {
   UIViewController *controller = [self presentationController];
   if (!controller) {
-    if (self.onLifecycleEvent) self.onLifecycleEvent(@{@"event": @"opportunitySkipped", @"reason": @"inactive", @"configId": self.adConfigId ?: @""});
+    if (self.onLifecycleEvent) {
+      self.onLifecycleEvent([RCTRemoteConfigInterstitialView
+          event:@{@"event": @"opportunitySkipped", @"reason": @"inactive", @"configId": self.adConfigId ?: @""}
+          withReady:self.auRemoteConfigInterstitial.isReady]);
+    }
     return;
   }
   [self.auRemoteConfigInterstitial showFrom:controller eligible:eligible];

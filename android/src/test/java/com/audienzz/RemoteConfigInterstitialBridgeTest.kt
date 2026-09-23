@@ -27,6 +27,7 @@ class RemoteConfigInterstitialBridgeTest {
   private lateinit var events: AudienzzRemoteConfigInterstitial.Events
   private lateinit var emitter: RCTEventEmitter
   private var creations = 0
+  private val nativeLifecyclePayloads = mutableListOf<Map<String, Any?>>()
 
   @Before fun setup() {
     mockkStatic(Arguments::class)
@@ -38,6 +39,8 @@ class RemoteConfigInterstitialBridgeTest {
     ad = mockk(relaxed = true)
     view = RCTRemoteConfigInterstitialView(context)
     view.interstitialFactory = { _, _, callbacks -> creations++; events = callbacks; ad }
+    // Keep the map the bridge BUILT — that is what the readiness assertions are about.
+    view.toJsMap = { payload -> nativeLifecyclePayloads += payload; JavaOnlyMap() }
     view.setAdConfigId("267")
     view.setManualControl(true)
     view.createAd()
@@ -49,20 +52,23 @@ class RemoteConfigInterstitialBridgeTest {
     view.setAdConfigId("267")
     view.createAd()
     org.junit.Assert.assertEquals(1, creations)
-    verify(exactly = 0) { ad.loadAd() }
-    verify(exactly = 0) { ad.destroy() }
-    view.preload()
-    verify(exactly = 1) { ad.preload() }
+    verify(exactly = 0) { ad.prefetch() }
+    verify(exactly = 0) { ad.prefetchAndShow() }
+    // any(): the bridge releases through destroy(reason). Checking the no-arg overload, as this
+    // used to, could never fail.
+    verify(exactly = 0) { ad.destroy(any()) }
+    view.prefetch()
+    verify(exactly = 1) { ad.prefetch() }
   }
 
   @Test fun `no Activity skips now without replay on loaded callback`() {
-    view.showAtOpportunity(true)
+    view.show(true)
     events.onLoaded()
-    verify(exactly = 0) { ad.showAtOpportunity(any(), any()) }
+    verify(exactly = 0) { ad.show(any(), any()) }
     verify(exactly = 1) { emitter.receiveEvent(any(), "onLifecycleEvent", any()) }
   }
 
-  @Test fun `manager supports numeric and string opportunity commands and passes eligibility`() {
+  @Test fun `manager supports numeric and string show commands and passes eligibility`() {
     val host = mockk<Activity>()
     every { context.currentActivity } returns host
     val args = mockk<ReadableArray>()
@@ -70,8 +76,8 @@ class RemoteConfigInterstitialBridgeTest {
     every { args.getBoolean(0) } returns false
     val manager = RCTRemoteConfigInterstitialManager()
     manager.receiveCommand(view, 2, args)
-    manager.receiveCommand(view, "showAtOpportunity", args)
-    verify(exactly = 2) { ad.showAtOpportunity(host, false) }
+    manager.receiveCommand(view, "show", args)
+    verify(exactly = 2) { ad.show(host, false) }
   }
 
   @Test fun `configuration change invalidates old callbacks before release`() {
@@ -80,7 +86,8 @@ class RemoteConfigInterstitialBridgeTest {
     view.createAd()
     stale.onLoaded()
     verify(exactly = 0) { emitter.receiveEvent(any(), "onAdLoaded", any()) }
-    verify(exactly = 1) { ad.destroy() }
+    // "replaced", not "disposed": it becomes the reason on discardedWithoutImpression.
+    verify(exactly = 1) { ad.destroy("replaced") }
     events.onLoaded()
     verify(exactly = 1) { emitter.receiveEvent(any(), "onAdLoaded", any()) }
   }
@@ -88,24 +95,31 @@ class RemoteConfigInterstitialBridgeTest {
   @Test fun `dispose is terminal and prevents stale callbacks and commands`() {
     view.dispose()
     events.onLoaded()
-    view.preload()
-    view.showAtOpportunity(true)
+    view.prefetch()
+    view.show(true)
     view.createAd()
-    verify(exactly = 1) { ad.destroy() }
-    verify(exactly = 0) { ad.preload() }
+    verify(exactly = 1) { ad.destroy("disposed") }
+    verify(exactly = 0) { ad.prefetch() }
     verify(exactly = 0) { emitter.receiveEvent(any(), any(), any()) }
     org.junit.Assert.assertEquals(1, creations)
   }
 
-  @Test fun `legacy mount loads once and manual commands cannot start a second flow`() {
+  @Test fun `legacy mount starts exactly one prefetch-and-show, and repeated mounts add none`() {
     view.setManualControl(false)
     view.createAd()
     view.createAd()
-    view.preload()
-    view.showAtOpportunity(true)
-    verify(exactly = 1) { ad.loadAd() }
-    verify(exactly = 0) { ad.preload() }
-    verify(exactly = 0) { ad.showAtOpportunity(any(), any()) }
+    verify(exactly = 1) { ad.prefetchAndShow() }
+  }
+
+  @Test fun `manual commands in legacy mode are forwarded, not dropped`() {
+    // This used to assert the opposite — that the bridge ignored them. Native now coalesces a
+    // second load into the one in flight, so a bridge that swallowed the command would only lose
+    // the caller's intent; that silent drop was the RN iOS bug fixed alongside the prefetch/show
+    // contract. Coalescing is native's job and is tested there.
+    view.setManualControl(false)
+    view.createAd()
+    view.prefetch()
+    verify(exactly = 1) { ad.prefetch() }
   }
   @Test fun `Google presentation failure reaches its own callback with original diagnostics`() {
     events.onFailedToShow(AdError(7, "cannot present", "Google"))
@@ -117,10 +131,39 @@ class RemoteConfigInterstitialBridgeTest {
     verify(exactly = 0) { emitter.receiveEvent(any(), "onAdFailedToLoad", any()) }
   }
 
+  @Test fun `a native lifecycle event carries native readiness`() {
+    // JS cannot query readiness — view commands return nothing — so isReady() in JS is built
+    // entirely from this flag.
+    every { ad.isReady } returns true
+    events.onLifecycleEvent(mapOf("event" to "loaded"))
+    org.junit.Assert.assertEquals(
+      listOf(mapOf("event" to "loaded", "ready" to true)),
+      nativeLifecyclePayloads,
+    )
+    verify(exactly = 1) { emitter.receiveEvent(any(), "onLifecycleEvent", any()) }
+  }
+
+  @Test fun `the reported readiness is native's, not inferred from the event name`() {
+    every { ad.isReady } returns false
+    events.onLifecycleEvent(mapOf("event" to "loaded"))
+    org.junit.Assert.assertEquals(false, nativeLifecyclePayloads.single()["ready"])
+  }
+
+  @Test fun `the bridge's own opportunitySkipped carries readiness too`() {
+    // No Activity: the bridge makes this event up itself, so it has to add the flag itself.
+    every { ad.isReady } returns true
+    view.show(true)
+    verify(exactly = 1) {
+      emitter.receiveEvent(any(), "onLifecycleEvent", match {
+        it?.getString("event") == "opportunitySkipped" && it.getBoolean("ready")
+      })
+    }
+  }
+
   @Test fun `dropping the native view releases its owner and ignores later callbacks`() {
     RCTRemoteConfigInterstitialManager().onDropViewInstance(view)
     events.onLoaded()
-    verify(exactly = 1) { ad.destroy() }
+    verify(exactly = 1) { ad.destroy("disposed") }
     verify(exactly = 0) { emitter.receiveEvent(any(), any(), any()) }
   }
 

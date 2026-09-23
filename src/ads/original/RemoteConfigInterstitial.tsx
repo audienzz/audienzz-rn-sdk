@@ -15,7 +15,7 @@
 
 */
 
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import {
   requireNativeComponent,
   UIManager,
@@ -52,16 +52,37 @@ export interface RemoteConfigInterstitialHandle {
    * reader will not be interrupted later, somewhere else.
    */
   show(eligible?: boolean): void;
+  /**
+   * Whether an ad is held and ready for [show] — the counterpart of native `isReady`.
+   *
+   * Synchronous, like native: it mirrors the readiness native reports on every lifecycle event,
+   * plus native's one-hour inventory lifetime. Advisory only — [show] is still the authority, and
+   * reports `opportunitySkipped` if the inventory went away in between.
+   */
+  isReady(): boolean;
   /** Release this owner permanently. Remount to use a new owner. */
   dispose(): void;
 }
+
+/** Native discards held inventory after an hour (iOS `3600` s, Android `3_600_000` ms). */
+const INVENTORY_LIFETIME_MS = 3_600_000;
 
 export const RemoteConfigInterstitial = forwardRef<
   RemoteConfigInterstitialHandle,
   RemoteConfigInterstitialProps
 >((props, ref) => {
   const nativeRef = useRef<any>(null);
+  // Mirrors native readiness. Not re-derived from event names: several native paths treat held
+  // inventory differently on the same event, so JS would drift from them. `since` is when it last
+  // became ready, for the lifetime check — native evaluates expiry lazily and emits nothing then.
+  const readiness = useRef({ ready: false, since: 0 });
   const config = UIManager.getViewManagerConfig(ComponentName);
+
+  // A new config means a new native owner holding nothing. Native's replacement teardown is not
+  // guaranteed to reach JS on every platform, so this does not wait for it.
+  useEffect(() => {
+    readiness.current = { ready: false, since: 0 };
+  }, [props.adConfigId]);
   if (config == null) throw new Error(LINKING_ERROR);
 
   useImperativeHandle(
@@ -81,7 +102,13 @@ export const RemoteConfigInterstitial = forwardRef<
         prefetch: () => dispatch('prefetch'),
         prefetchAndShow: () => dispatch('prefetchAndShow'),
         show: (eligible = true) => dispatch('show', [eligible]),
-        dispose: () => dispatch('dispose'),
+        isReady: () =>
+          readiness.current.ready &&
+          Date.now() - readiness.current.since < INVENTORY_LIFETIME_MS,
+        dispose: () => {
+          readiness.current = { ready: false, since: 0 };
+          dispatch('dispose');
+        },
       };
     },
     [config]
@@ -99,10 +126,18 @@ export const RemoteConfigInterstitial = forwardRef<
         props.onAdFailedToShow &&
         ((e: any) => props.onAdFailedToShow?.(e.nativeEvent))
       }
-      onLifecycleEvent={
-        props.onLifecycleEvent &&
-        ((e: any) => props.onLifecycleEvent?.(e.nativeEvent))
-      }
+      // Always attached, not only when the publisher subscribes: it is what feeds isReady().
+      onLifecycleEvent={(e: any) => {
+        const event = e.nativeEvent;
+        if (typeof event?.ready === 'boolean') {
+          const wasReady = readiness.current.ready;
+          readiness.current = {
+            ready: event.ready,
+            since: event.ready && !wasReady ? Date.now() : readiness.current.since,
+          };
+        }
+        props.onLifecycleEvent?.(event);
+      }}
     />
   );
 });

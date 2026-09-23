@@ -97,8 +97,15 @@ interstitial.current?.prefetch();          // obtain and retain one ad; never pr
 interstitial.current?.show(true);          // present what is in hand, or skip — never later
 interstitial.current?.prefetchAndShow();   // the one call that presents something you did not time
 
+interstitial.current?.isReady();           // is an ad held and ready for show()? synchronous
+
 <RemoteConfigInterstitial ref={interstitial} manualControl adConfigId="YOUR_CONFIG_ID" />
 ```
+
+`isReady()` mirrors the readiness native reports on every lifecycle event, plus native's one-hour
+inventory lifetime — so it answers the same question the native SDKs' `isReady` does. It is
+advisory: `show()` remains the authority and reports `opportunitySkipped` if the ad went away in
+between.
 
 ### That's it
 

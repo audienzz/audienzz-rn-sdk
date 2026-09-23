@@ -12,6 +12,13 @@ import org.audienzz.mobile.AudienzzRemoteConfigInterstitial
 class RCTRemoteConfigInterstitialView(context: Context) : RCTOriginalView(context) {
   internal var interstitialFactory: (Context, String, AudienzzRemoteConfigInterstitial.Events) -> AudienzzRemoteConfigInterstitial =
     { host, config, events -> AudienzzRemoteConfigInterstitial(host, config, events) }
+
+  /**
+   * Converts a native lifecycle event for JS. A seam for the same reason as [interstitialFactory]:
+   * `makeNativeMap` returns a JNI-backed map whose class cannot even be initialised on the JVM, so
+   * without this no test could observe what the bridge actually sends.
+   */
+  internal var toJsMap: (Map<String, Any?>) -> WritableMap = { Arguments.makeNativeMap(it) }
   private val requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext()
   private var adConfigId: String? = null
   private var manualControl = false
@@ -74,7 +81,13 @@ class RCTRemoteConfigInterstitialView(context: Context) : RCTOriginalView(contex
             "loaded", "showAttempted", "showFailed" -> presentationPhase = true
             "impression" -> emit("onAdImpression")
           }
-          emit("onLifecycleEvent", Arguments.makeNativeMap(event))
+          // Carry native's own readiness on every event. JS cannot query it — view commands return
+          // nothing — and re-deriving it from event names would duplicate native's rules (several
+          // showFailed paths treat held inventory differently) and drift from them. Native sets the
+          // ad before emitting `loaded`, so this is accurate at the moment each event fires.
+          val payload = event.toMutableMap()
+          payload["ready"] = remoteInterstitial?.isReady == true
+          emit("onLifecycleEvent", toJsMap(payload))
         }
       }
     )
@@ -102,6 +115,9 @@ class RCTRemoteConfigInterstitialView(context: Context) : RCTOriginalView(contex
       emit("onLifecycleEvent", Arguments.createMap().apply {
         putString("event", "opportunitySkipped"); putString("reason", "inactive")
         putString("configId", adConfigId)
+        // Every lifecycle event carries native readiness — this one too, though the bridge makes
+        // it up rather than native. Skipping for want of an Activity leaves held inventory alone.
+        putBoolean("ready", remoteInterstitial?.isReady == true)
       })
       return
     }

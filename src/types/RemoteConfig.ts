@@ -68,5 +68,10 @@ export interface RemoteConfigInterstitialProps
     timestampMillis?: number | null;
     loadAgeMillis?: number | null;
     responseId?: string | null;
+    /**
+     * Native's own readiness at the moment this event fired — the value behind
+     * `RemoteConfigInterstitialHandle.isReady()`.
+     */
+    ready?: boolean;
   }): void;
 }

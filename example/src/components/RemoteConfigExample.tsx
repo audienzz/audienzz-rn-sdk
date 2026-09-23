@@ -103,7 +103,10 @@ export default function RemoteConfigExample({
           labelButton="Show"
           onPress={() => {
             // Reported rather than silently queued: `show` takes an opportunity or skips it.
-            setStatus('show requested — presents only if inventory is ready');
+            if (!interstitial.current?.isReady()) {
+              setStatus('not ready — nothing to show (prefetch first)');
+              return;
+            }
             interstitial.current?.show(true);
           }}
         />
