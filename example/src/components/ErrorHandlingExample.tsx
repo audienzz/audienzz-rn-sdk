@@ -60,7 +60,6 @@ const ErrorHandlingExample = () => {
         <OriginalInterstitial
           adUnitId={ADS.INTERSTITIAL_DEMO.adUnitId}
           auConfigId={ADS.INTERSTITIAL_DEMO.auConfigId}
-          adFormats={['banner']}
           isLazyLoad={false}
           onAdLoaded={() => console.log('INTERSTITIAL success')}
           onAdFailedToLoad={(error) => {

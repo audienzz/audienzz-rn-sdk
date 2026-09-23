@@ -26,9 +26,13 @@ export interface OriginalBannerProps
   prefetchMargin?: number;
 }
 
+/**
+ * An interstitial's formats and API frameworks are not props: they are backend-controlled, and a
+ * hand-built interstitial asks for banner and video with MRAID 1/2/3 + OMID 1.
+ */
 export interface OriginalInterstitialProps
   extends Omit<BaseAdProps, 'style'>,
-  Omit<Parameters, 'videoPlacement'>,
+  Omit<Parameters, 'videoPlacement' | 'adFormats' | 'apiParameters'>,
   AdEvents {
   sizes?: AdSize[];
   minSizePercentage?: MinSizePercentage;

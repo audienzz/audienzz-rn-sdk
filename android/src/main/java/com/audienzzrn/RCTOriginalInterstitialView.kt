@@ -92,10 +92,9 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
     auInterstitialView = null
     loadedIdentity = identity
 
-    auInterstitialView = AudienzzInterstitialAdUnit(
-      auConfigID,
-      AudienzzConversionUtils.convertToAudienzzAdFormats(adFormats)
-    )
+    // Formats and API frameworks are backend-controlled: a hand-built interstitial asks for
+    // banner and video with MRAID 1/2/3 + OMID 1, whatever is set on it.
+    auInterstitialView = AudienzzInterstitialAdUnit(auConfigID)
     val handler = AudienzzInterstitialAdHandler(
       auInterstitialView!!,
       adUnitID,

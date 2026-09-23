@@ -28,9 +28,7 @@ RCT_EXPORT_MODULE(RCTOriginalInterstitialView)
 }
 
 RCT_EXPORT_VIEW_PROPERTY(isLazyLoad, BOOL)
-RCT_EXPORT_VIEW_PROPERTY(adFormats, NSArray)
 RCT_EXPORT_VIEW_PROPERTY(playbackMethod, NSArray)
-RCT_EXPORT_VIEW_PROPERTY(apiParameters, NSArray)
 RCT_EXPORT_VIEW_PROPERTY(videoProtocols, NSArray)
 RCT_EXPORT_VIEW_PROPERTY(videoBitrate, NSArray)
 RCT_EXPORT_VIEW_PROPERTY(videoDuration, NSArray)

@@ -121,7 +121,9 @@
 
   GAMRequest *request = [GAMRequest request];
   
-  _auInterstitialView = [[AUInterstitialView alloc] initWithConfigId:self.auConfigID adFormats:[AUConverter convertToAUAdFormats:self.adFormats] isLazyLoad:self.isLazyLoad minWidthPerc:[_minSizesPercentage[0] integerValue] minHeightPerc:[_minSizesPercentage[1] integerValue]];
+  // Formats and API frameworks are backend-controlled: a hand-built interstitial asks for banner
+  // and video with MRAID 1/2/3 + OMID 1, whatever is set on it.
+  _auInterstitialView = [[AUInterstitialView alloc] initWithConfigId:self.auConfigID isLazyLoad:self.isLazyLoad minWidthPerc:[_minSizesPercentage[0] integerValue] minHeightPerc:[_minSizesPercentage[1] integerValue]];
   if (!_requestContext) _requestContext = [AUAdRequestContext new];
   self.auInterstitialView.requestContext = _requestContext;
   
