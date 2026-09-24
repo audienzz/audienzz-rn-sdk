@@ -148,6 +148,10 @@
       }
   
   _auInterstitialView.bannerParameters = self.bannerParameters;
+  // An interstitial's video is an interstitial placement, as the native default describes it;
+  // the shared view leaves placement unset, so bidders were told nothing about the slot.
+  [self.videoParameters setPlacement:AUPlacementInterstitial];
+  [self.videoParameters setPlcmnt:AUPlcmntInterstitial];
   _auInterstitialView.videoParameters = self.videoParameters;
   _auInterstitialView.frame = CGRectMake(0, 0, 10, 10);
   

@@ -41,7 +41,8 @@ export const OriginalInterstitial = forwardRef<
     auConfigId,
     gpId,
     minSizePercentage = [80, 60],
-    playbackMethod = ['AutoPlaySoundOn'],
+    // Muted autoplay, as the native interstitial default.
+    playbackMethod = ['AutoPlaySoundOff'],
     isLazyLoad = true,
     videoProtocols = ['VAST_2_0'],
     videoBitrate = [300, 1500],

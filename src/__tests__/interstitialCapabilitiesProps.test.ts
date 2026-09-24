@@ -54,3 +54,24 @@ it('the interstitial prop types have no format or API list', () => {
   expect(decl).toContain("'apiParameters'");
   expect(decl).toMatch(/Omit<Parameters,[^>]*'adFormats'[^>]*'apiParameters'/);
 });
+
+/**
+ * The hand-built interstitial's video settings match the native interstitial default: MP4 only,
+ * interstitial placement, muted autoplay. Android advertised video/x-flv (not playable by Google's
+ * player), iOS left the placement unset, and the default playback was sound-on autoplay.
+ */
+describe('OriginalInterstitial video defaults', () => {
+  it('Android advertises MP4 only', () => {
+    expect(read('android/src/main/java/com/audienzzrn/RCTOriginalView.kt')).not.toContain('video/x-flv');
+  });
+
+  it('iOS describes the video as an interstitial placement', () => {
+    const view = read('ios/RCTOriginalInterstitialView.m');
+    expect(view).toContain('setPlacement:AUPlacementInterstitial');
+    expect(view).toContain('setPlcmnt:AUPlcmntInterstitial');
+  });
+
+  it('defaults to muted autoplay', () => {
+    expect(read('src/ads/original/OriginalInterstitial.tsx')).toContain("playbackMethod = ['AutoPlaySoundOff']");
+  });
+});

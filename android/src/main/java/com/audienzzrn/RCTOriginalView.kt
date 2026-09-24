@@ -40,7 +40,9 @@ open class RCTOriginalView(context: Context) : FrameLayout(context) {
   private var propsChanged: Boolean = false
 
   var bannerParameters = AudienzzBannerParameters()
-  var videoParameters = AudienzzVideoParameters(listOf("video/x-flv", "video/mp4"))
+  // MP4 only: the one container Google's player renders. FLV was advertised without
+  // being playable (native interstitials send MP4 only).
+  var videoParameters = AudienzzVideoParameters(listOf("video/mp4"))
 
   open fun createAd() {
     val allowedApis = mutableListOf<AudienzzSignals.Api>()
