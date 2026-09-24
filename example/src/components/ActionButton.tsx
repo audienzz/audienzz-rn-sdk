@@ -1,20 +1,30 @@
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import React from 'react';
 
 interface IActionButtonProps {
   onPress(): void;
   labelButton: string;
-  buttonStyle?: object;
+  buttonStyle?: StyleProp<ViewStyle>;
+  variant?: 'primary' | 'secondary';
 }
 
 const ActionButton = (props: IActionButtonProps) => {
+  const secondary = props.variant === 'secondary';
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      accessibilityRole="button"
+      activeOpacity={0.75}
       onPress={props.onPress}
-      style={[styles.button, props.buttonStyle]}
+      style={[
+        styles.button,
+        secondary && styles.secondaryButton,
+        props.buttonStyle,
+      ]}
     >
-      <Text style={styles.label}>{props.labelButton}</Text>
+      <Text style={[styles.label, secondary && styles.secondaryLabel]}>
+        {props.labelButton}
+      </Text>
     </TouchableOpacity>
   );
 };
@@ -23,15 +33,30 @@ const styles = StyleSheet.create({
   button: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: '60%',
-    height: 40,
-    backgroundColor: 'blue',
-    borderRadius: 14,
+    width: '100%',
+    minHeight: 48,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginVertical: 6,
+    backgroundColor: '#2563EB',
+    borderWidth: 1,
+    borderColor: '#2563EB',
+    borderRadius: 10,
+  },
+  secondaryButton: {
+    backgroundColor: '#F8FAFC',
+    borderColor: '#CBD5E1',
   },
   label: {
-    fontSize: 14,
-    lineHeight: 21,
-    color: 'white',
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: '600',
+    textAlign: 'center',
+    flexShrink: 1,
+    color: '#FFFFFF',
+  },
+  secondaryLabel: {
+    color: '#334155',
   },
 });
 

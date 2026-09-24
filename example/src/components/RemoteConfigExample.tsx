@@ -21,9 +21,14 @@ export default function RemoteConfigExample({
   // One under every ad slot, matching the native examples: the screen-navigation test is about
   // what happens to THAT banner when you leave and come back, so the button has to be reachable
   // while the slot it concerns is on screen.
-  const navButton = (label: string) =>
+  const navButton = () =>
     onOpenTestScreen ? (
-      <ActionButton labelButton={label} onPress={onOpenTestScreen} />
+      <ActionButton
+        labelButton="Open test screen →"
+        variant="secondary"
+        buttonStyle={styles.navigationButton}
+        onPress={onOpenTestScreen}
+      />
     ) : null;
 
   return (
@@ -50,7 +55,7 @@ export default function RemoteConfigExample({
             }}
           />
         </View>
-        {navButton('Open test screen (from fixed banner) →')}
+        {navButton()}
       </View>
 
       <View style={styles.section}>
@@ -86,7 +91,7 @@ export default function RemoteConfigExample({
             }}
           />
         </View>
-        {navButton('Open test screen (from adaptive banner) →')}
+        <View style={styles.adaptiveActions}>{navButton()}</View>
       </View>
 
       <View style={styles.section}>
@@ -94,6 +99,7 @@ export default function RemoteConfigExample({
         <Text style={styles.status}>{status}</Text>
         <ActionButton
           labelButton="Prefetch"
+          variant="secondary"
           onPress={() => {
             setStatus('loading…');
             interstitial.current?.prefetch();
@@ -112,13 +118,15 @@ export default function RemoteConfigExample({
         />
         <ActionButton
           labelButton="Prefetch and show"
+          variant="secondary"
           onPress={() => {
             setStatus('loading… (will show when ready)');
             interstitial.current?.prefetchAndShow();
           }}
         />
         <ActionButton
-          labelButton="Try An Ineligible Opportunity"
+          labelButton="Test ineligible opportunity"
+          variant="secondary"
           onPress={() => {
             setStatus('ineligible opportunity — must be skipped');
             interstitial.current?.show(false);
@@ -203,6 +211,12 @@ const styles = StyleSheet.create({
   adaptiveSectionTitle: {
     marginHorizontal: 16,
   },
+  adaptiveActions: {
+    paddingHorizontal: 16,
+  },
+  navigationButton: {
+    marginTop: 12,
+  },
   bannerContainer: {
     width: '100%',
     alignItems: 'center',
@@ -240,8 +254,5 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 20,
     textAlign: 'justify',
-  },
-  buttonSpacing: {
-    height: 12,
   },
 });
