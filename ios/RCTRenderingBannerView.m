@@ -121,7 +121,19 @@
     
     _auBannerView.frame = CGRectMake(0, 0, _width, _height);
     [self addSubview:_auBannerView];
+    [self setNeedsLayout];
+}
+
+// Center the rendering banner horizontally within the RN host so a creative narrower
+// than the host isn't leading-aligned.
+- (void)layoutSubviews {
     [super layoutSubviews];
+    if (_auBannerView) {
+        CGRect frame = _auBannerView.frame;
+        CGFloat x = round((self.bounds.size.width - frame.size.width) / 2.0);
+        frame.origin.x = x > 0 ? x : 0;
+        _auBannerView.frame = frame;
+    }
 }
 
 #pragma mark - AUBannerRenderingAdDelegate

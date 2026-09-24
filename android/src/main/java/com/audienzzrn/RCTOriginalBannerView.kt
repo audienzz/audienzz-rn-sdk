@@ -52,7 +52,11 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
 
   private val measureAndLayout = Runnable {
     val heightPx = (receivedSize.height  * resources.displayMetrics.density).toInt()
-    val widthPx = (receivedSize.width * resources.displayMetrics.density).toInt()
+    // Keep the RN-assigned (full) width. Measuring the host to the creative's own width
+    // (and adding the child without centering) left-aligned a sub-width creative on a
+    // host wider than the creative. The child is added with Gravity.CENTER_HORIZONTAL
+    // (see RCTOriginalBannerViewManager), so a full-width host centers it.
+    val widthPx = if (width > 0) width else resources.displayMetrics.widthPixels
 
     val heightMeasureSpec = MeasureSpec.makeMeasureSpec(heightPx, MeasureSpec.EXACTLY)
     measure(MeasureSpec.makeMeasureSpec(widthPx, MeasureSpec.EXACTLY), heightMeasureSpec)

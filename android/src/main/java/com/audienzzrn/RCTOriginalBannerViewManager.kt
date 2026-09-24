@@ -20,8 +20,10 @@ package com.audienzz
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.core.view.doOnNextLayout
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.ReadableArray
@@ -139,7 +141,16 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
 
     val currentActivity = (reactViewGroup.context as ReactContext).currentActivity ?: return null
     val adView = AdManagerAdView(currentActivity)
-    reactViewGroup.addView(adView)
+    // Center the GAM view within the full-width host; without a gravity it defaults to
+    // TOP|START, so a creative narrower than the host renders left-aligned.
+    reactViewGroup.addView(
+      adView,
+      FrameLayout.LayoutParams(
+        FrameLayout.LayoutParams.WRAP_CONTENT,
+        FrameLayout.LayoutParams.WRAP_CONTENT,
+        Gravity.CENTER_HORIZONTAL,
+      ),
+    )
 
     adView.adListener =
       object : AdListener() {
