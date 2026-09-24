@@ -1,5 +1,13 @@
 import * as React from 'react';
-import { ScrollView, Text, TouchableOpacity, View, Platform, StyleSheet, SafeAreaView } from 'react-native';
+import {
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native';
 import RNAudienzz from 'audienzz';
 import {
   Audienzz,
@@ -16,13 +24,11 @@ import OriginalRewardedAPIExample from './components/OriginalRewardedAPIExample'
 import LazyLoadingExample from './components/LazyLoadingExample';
 import RenderingInterstitialAPIExample from './components/RenderingInterstitialAPIExample';
 import RemoteConfigExample from './components/RemoteConfigExample';
+import ActionButton from './components/ActionButton';
 import StickyAdExample from './components/StickyAdExample';
-import SmartRefreshBannerExample from './components/SmartRefreshBannerExample';
 import LegacyOriginalView_v0_3_8 from './components/LegacyOriginalView_v0_3_8';
 import TestScreenExample from './components/TestScreenExample';
 import ReloadTabsExample from './components/ReloadTabsExample';
-import ManagedBannerExample from './components/ManagedBannerExample';
-import ManagedFlowsExample from './components/ManagedFlowsExample';
 
 // Remote config ad units 118, 192 and 267 belong to publisher 81, which exists on the DEV backend
 // only: `GET https://api.adnz.co/api/ws-sdk-config/public/v1/publishers/81` answers 404 and its
@@ -40,7 +46,9 @@ const PUBLISHER_ID = '81';
 
 export default function App() {
   const [initialized, setInitialized] = React.useState(false);
-  const [screen, setScreen] = React.useState<'main' | 'test' | 'sticky' | 'smartRefresh' | 'legacy' | 'reloadTabs' | 'managed' | 'managedFlows'>('main');
+  const [screen, setScreen] = React.useState<
+    'main' | 'test' | 'sticky' | 'legacy' | 'reloadTabs'
+  >('main');
 
   // This app has a hand-rolled router rather than React Navigation, so it drives the SDK's
   // navigation adapter itself. The adapter takes a React-Navigation-shaped state; a custom router
@@ -82,12 +90,12 @@ export default function App() {
     RNAudienzz().setBlankOnScreenReload(true);
     if (REMOTE_CONFIG_ENABLED) {
       RNAudienzz()
-        .initializeRemote(
-          REMOTE_CONFIG_URL,
-          PUBLISHER_ID
-        )
+        .initializeRemote(REMOTE_CONFIG_URL, PUBLISHER_ID)
         .then((value) => {
-          console.log('[SDK] Initialized with remote config:', JSON.stringify(value, null, 2));
+          console.log(
+            '[SDK] Initialized with remote config:',
+            JSON.stringify(value, null, 2)
+          );
           RNTargeting().addGlobalTargeting('TEST', '1');
           // The opening route, reported BEFORE the first ad-bearing screen renders. Nothing has
           // been rendered yet because `initialized` still gates the whole tree. With React
@@ -132,7 +140,6 @@ export default function App() {
     }
   }, []);
 
-
   if (!initialized) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -151,23 +158,15 @@ export default function App() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.mainContainer}>
-          <TouchableOpacity style={styles.backButton} onPress={() => goTo('main')}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => goTo('main')}
+          >
             <Text style={styles.backButtonText}>← Back</Text>
           </TouchableOpacity>
           <StickyAdExample />
         </View>
       </SafeAreaView>
-    );
-  }
-
-  if (screen === 'smartRefresh') {
-    return (
-      <View style={styles.mainContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => goTo('main')}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <SmartRefreshBannerExample />
-      </View>
     );
   }
 
@@ -179,72 +178,63 @@ export default function App() {
     return <ReloadTabsExample onBack={() => goTo('main')} />;
   }
 
-  if (screen === 'managed') {
-    return <ManagedBannerExample onBack={() => goTo('main')} />;
-  }
-
-  if (screen === 'managedFlows') {
-    return <ManagedFlowsExample onBack={() => goTo('main')} />;
-  }
-
   return REMOTE_CONFIG_ENABLED
-    ? RemoteView(() => goTo('test'), () => goTo('sticky'), () => goTo('smartRefresh'), () => goTo('legacy'), () => goTo('reloadTabs'), () => goTo('managed'), () => goTo('managedFlows'))
-    : OriginalView(() => goTo('test'), () => goTo('sticky'), () => goTo('smartRefresh'), () => goTo('legacy'), () => goTo('reloadTabs'), () => goTo('managed'), () => goTo('managedFlows'));
+    ? RemoteView(
+        () => goTo('test'),
+        () => goTo('sticky'),
+        () => goTo('legacy'),
+        () => goTo('reloadTabs')
+      )
+    : OriginalView(
+        () => goTo('test'),
+        () => goTo('sticky'),
+        () => goTo('legacy'),
+        () => goTo('reloadTabs')
+      );
 }
 
-function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void, onOpenReloadTabs: () => void, onOpenManaged: () => void, onOpenManagedFlows: () => void) {
+function RemoteView(
+  onOpenTest: () => void,
+  onOpenSticky: () => void,
+  onOpenLegacy: () => void,
+  onOpenReloadTabs: () => void
+) {
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.mainContainer}>
-        <ScrollView
-          style={styles.mainContainer}
-          contentContainerStyle={styles.scrollviewcontentContainerStyle}
-        >
-          <Text style={styles.bigText}>MANAGED BANNER (recommended)</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenManaged}>
-            <Text style={styles.navButtonText}>Open Managed Banner Example →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
-          <Text style={styles.bigText}>MANAGED TEST FLOWS</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenManagedFlows}>
-            <Text style={styles.navButtonText}>Open Managed Flows (A→B→A, tabs, cover, delay) →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
-          <Text style={styles.bigText}>TEST SCREEN</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenTest}>
-            <Text style={styles.navButtonText}>Open Test Screen →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
-          <Text style={styles.bigText}>STICKY AD</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
-            <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
-          <Text style={styles.bigText}>SMART REFRESH</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenSmartRefresh}>
-            <Text style={styles.navButtonText}>Open Smart Refresh Example →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
-          <Text style={styles.bigText}>RELOAD TABS</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenReloadTabs}>
-            <Text style={styles.navButtonText}>Open Reload Tabs Example →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
-          <Text style={styles.bigText}>REMOTE CONFIG</Text>
-          <RemoteConfigExample onOpenTestScreen={onOpenTest} />
-          <View style={styles.height30} />
-          <Text style={styles.bigText}>LEGACY (v0.3.8)</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenLegacy}>
-            <Text style={styles.navButtonText}>Open Legacy Example →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
-        </ScrollView>
-      </View>
+      <ScrollView
+        style={styles.mainContainer}
+        contentContainerStyle={styles.remoteContent}
+      >
+        <RemoteConfigExample onOpenTestScreen={onOpenTest} />
+        <View style={styles.otherExamples}>
+          <Text style={styles.otherExamplesTitle}>Other examples</Text>
+          <ActionButton
+            labelButton="Sticky ad →"
+            variant="secondary"
+            onPress={onOpenSticky}
+          />
+          <ActionButton
+            labelButton="Reload tabs →"
+            variant="secondary"
+            onPress={onOpenReloadTabs}
+          />
+          <ActionButton
+            labelButton="Legacy (v0.3.8) →"
+            variant="secondary"
+            onPress={onOpenLegacy}
+          />
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
-function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void, onOpenReloadTabs: () => void, onOpenManaged: () => void, onOpenManagedFlows: () => void) {
+function OriginalView(
+  onOpenTest: () => void,
+  onOpenSticky: () => void,
+  onOpenLegacy: () => void,
+  onOpenReloadTabs: () => void
+) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
@@ -252,16 +242,6 @@ function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSm
           style={styles.mainContainer}
           contentContainerStyle={styles.scrollviewcontentContainerStyle}
         >
-          <Text style={styles.bigText}>MANAGED BANNER (recommended)</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenManaged}>
-            <Text style={styles.navButtonText}>Open Managed Banner Example →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
-          <Text style={styles.bigText}>MANAGED TEST FLOWS</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenManagedFlows}>
-            <Text style={styles.navButtonText}>Open Managed Flows (A→B→A, tabs, cover, delay) →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
           <Text style={styles.bigText}>TEST SCREEN</Text>
           <TouchableOpacity style={styles.navButton} onPress={onOpenTest}>
             <Text style={styles.navButtonText}>Open Test Screen →</Text>
@@ -270,11 +250,6 @@ function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSm
           <Text style={styles.bigText}>STICKY AD</Text>
           <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
             <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
-          <Text style={styles.bigText}>SMART REFRESH</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenSmartRefresh}>
-            <Text style={styles.navButtonText}>Open Smart Refresh Example →</Text>
           </TouchableOpacity>
           <View style={styles.height30} />
           <Text style={styles.bigText}>RELOAD TABS</Text>
@@ -337,6 +312,22 @@ const styles = StyleSheet.create({
         paddingBottom: 30,
       },
     }),
+  },
+  remoteContent: {
+    paddingTop: 20,
+    paddingBottom: 32,
+  },
+  otherExamples: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#CBD5E1',
+  },
+  otherExamplesTitle: {
+    marginBottom: 8,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#334155',
   },
   height30: {
     height: 30,

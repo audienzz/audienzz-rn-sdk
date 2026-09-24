@@ -68,45 +68,36 @@ The line vocabulary is in
 
 ## Screens to test
 
-Everything the reviews asked about is reachable in at most two taps from the home list.
+The main screen combines remote banners, scroll-testing content and interstitial controls.
+Separate Managed Banner, Managed Flows and Smart Refresh screens have been removed.
 
-| Flow | Where |
-| --- | --- |
-| RemoteBanner in a scrolling page; scroll off and back | **Managed test flows → Article** (two in-content slots; the second is a real scroll away) |
-| Background / foreground with a banner on screen | any article — background the app past the refresh interval, then return |
-| Page A → ad-free B → A | **Managed test flows → Ad-free destination**, then back |
-| Two routes with the same screen name | **Managed test flows → Article 1** and **Article 2** — both are called `article` and must own their banners separately |
-| Delayed content | **Managed test flows → Article after 3s** — leave the route before it lands; it must not reclaim the foreground |
-| Retained tabs | **Managed test flows → Retained tabs** (both built, only the selected one owns an ad) |
-| Host-reported cover | **Article → Report cover** — a painted veil no geometry check can see |
-| Durable publisher pause | **Article → Pause refresh** — a scroll or page change must not undo it |
-| Interstitial prefetch → show | **Remote config screen → Prefetch**, then **Show at this opportunity** |
-| Interstitial prefetchAndShow | same screen → **Show when it arrives** |
-| Repeated taps / ineligible opportunity | same screen — every button stays enabled on purpose |
-| Disposal during loading | tap **Prefetch** then immediately leave the screen |
+| Flow                                            | Where                                                                                      |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| RemoteBanner scrolling; scroll off and back     | **Main → Remote ads**: fixed banner 118 and adaptive banner 192, separated by article text |
+| Background / foreground with a banner on screen | Main screen — background the app past the refresh interval, then return                    |
+| Page A → B → A                                  | **Open test screen** below either banner, then **Back**                                    |
+| Retained tabs                                   | **Other examples → Reload tabs**                                                           |
+| Sticky banner                                   | **Other examples → Sticky ad**                                                             |
+| Interstitial prefetch → show                    | **Main → Interstitial → Prefetch**, then **Show**                                          |
+| Interstitial prefetchAndShow                    | **Main → Interstitial → Prefetch and show**                                                |
+| Repeated taps / ineligible opportunity          | Same controls; use **Test ineligible opportunity** for a rejected show                     |
+| Disposal during loading                         | Start **Prefetch**, then use a navigation button to leave the main screen                  |
+| Older integration                               | **Other examples → Legacy (v0.3.8)**                                                       |
+
+The viewport is judged by the native SDK. Use the `AUDZ` diagnostics to verify refresh holds and
+requests; the example does not claim that a JavaScript visibility estimate is native refresh state.
+Managed-page edge cases (same-name routes, delayed content, covers and durable pauses) remain
+covered by the SDK's automated tests; they are no longer separate demo screens.
 
 ### What a good run looks like
 
-Leaving an article for the ad-free screen:
+When you open the test screen, the navigation diagnostic names `test` before its ad is created.
+The main screen's banners are released and unmounted. On **Back**, navigation reports `main`
+before its banners are created again; lazy slots wait until they are near the viewport.
 
-```
-AUDZ app navigate to=settings
-AUDZ page impression id=settings name=settings
-AUDZ slot release config=118 reason=otherPage page=settings
-```
-
-...and coming back:
-
-```
-AUDZ app navigate to=article-1
-AUDZ page impression id=article-1 name=article
-AUDZ slot recreate config=118 page=article
-AUDZ auction start slot=… reason=pageImpression gen=2
-AUDZ auction end slot=… result=filled
-```
-
-If a slot stays empty, look first at `slot hold reason=…`, then at whether `slot create`'s `page`
-matches the `page impression` before it, then at `refresh block … held=`.
+While scrolling or backgrounding the app, check native `AUDZ` refresh diagnostics for holds and
+subsequent recovery. A slot outside the eligible viewport must not start a periodic refresh.
+If a slot stays empty, inspect the hold reason and whether its owning page matches the active page.
 
 ## A note on `Podfile.lock`
 

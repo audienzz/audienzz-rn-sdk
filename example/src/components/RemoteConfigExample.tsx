@@ -1,11 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import {
   RemoteConfigBanner,
   RemoteConfigInterstitial,
   type RemoteConfigInterstitialHandle,
 } from 'audienzz';
 import ActionButton from './ActionButton';
+
+const LOREM =
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor ' +
+  'incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud ' +
+  'exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure ' +
+  'dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. ' +
+  'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit ' +
+  'anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem ' +
+  'accusantium doloremque laudantium totam rem aperiam eaque ipsa quae ab illo inventore.';
 
 export default function RemoteConfigExample({
   onOpenTestScreen,
@@ -32,11 +41,15 @@ export default function RemoteConfigExample({
     ) : null;
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-    >
-      <Text style={styles.title}>Remote Config Test</Text>
+    <View style={styles.container}>
+      <View style={styles.introduction}>
+        <Text style={styles.title}>Remote ads</Text>
+        <Text style={styles.subtitle}>
+          Scroll banners off-screen and back to test smart refresh. Open the
+          test screen below either banner, then return to test page changes.
+          Native diagnostics show when refresh is held or an auction starts.
+        </Text>
+      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Fixed Size Banner (ID: 118)</Text>
@@ -58,18 +71,9 @@ export default function RemoteConfigExample({
         {navButton()}
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.longLabel}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum
-          leo metus, sagittis nec finibus eu, viverra vel eros. Donec lobortis,
-          metus nec maximus viverra, nunc mi fermentum lorem, quis fermentum est
-          turpis ac risus. Nullam sed nunc aliquam, scelerisque felis at,
-          malesuada magna. Aliquam tincidunt, odio at ultricies lacinia, purus
-          nunc feugiat ipsum, ac scelerisque purus elit nec ligula. Donec neque
-          quam, auctor sit amet velit a, porta cursus metus. Nullam interdum
-          posuere odio quis ultricies. Donec vulputate vulputate magna, eu
-          scelerisque erat bibendum in.
-        </Text>
+      <View style={styles.articleContent}>
+        <Text style={styles.longLabel}>{LOREM}</Text>
+        <Text style={styles.longLabel}>{LOREM}</Text>
       </View>
 
       <View style={styles.adaptiveSection}>
@@ -92,6 +96,11 @@ export default function RemoteConfigExample({
           />
         </View>
         <View style={styles.adaptiveActions}>{navButton()}</View>
+      </View>
+
+      <View style={styles.articleContent}>
+        <Text style={styles.longLabel}>{LOREM}</Text>
+        <Text style={styles.longLabel}>{LOREM}</Text>
       </View>
 
       <View style={styles.section}>
@@ -174,24 +183,32 @@ export default function RemoteConfigExample({
           console.log('[RemoteConfig] Interstitial clicked');
         }}
       />
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     width: '100%',
   },
-  contentContainer: {
-    paddingVertical: 20,
-    alignItems: 'center',
+  introduction: {
+    paddingHorizontal: 16,
+    marginBottom: 24,
+  },
+  subtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#64748B',
+  },
+  articleContent: {
+    paddingHorizontal: 16,
+    marginBottom: 24,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 20,
+    marginBottom: 8,
   },
   section: {
     width: '100%',
@@ -253,6 +270,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     lineHeight: 20,
-    textAlign: 'justify',
+    marginBottom: 24,
   },
 });
