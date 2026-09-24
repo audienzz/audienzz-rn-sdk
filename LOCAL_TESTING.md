@@ -59,6 +59,41 @@ yarn ios / yarn android
 
 ## Collecting a log
 
+### Charles SSL Proxying on Android
+
+Use an **example debug APK built from this branch**. Its debug-only network security configuration
+trusts user-installed CAs, including Charles, alongside Android's system CAs. The release app and
+the published SDK library do not receive this trust override. Installing the certificate alone
+does not make a release APK trust it.
+
+1. Put the phone and Charles computer on the same network. Set the phone's Wi-Fi HTTP proxy to
+   the computer's address and Charles port (usually 8888), and allow the device in Charles.
+2. Use Charles's **Help → SSL Proxying → Install Charles Root Certificate on a Mobile Device or
+   Remote Browser** instructions. Download the certificate through that proxy and install it
+   in Android settings as a **CA certificate**. Each Charles installation has its own certificate.
+3. Enable SSL Proxying for the hosts being investigated (remote configuration, the configured
+   Prebid server and Google ad requests). Keep the SDK's original HTTPS URLs: normal traffic
+   inspection needs the HTTP proxy plus SSL Proxying, not a replacement SDK endpoint.
+4. Rebuild/install the debug app, then fully close and reopen it. Fast Refresh cannot apply
+   Android manifest or certificate trust changes. If using Metro, keep it running and use
+   `adb reverse tcp:8081 tcp:8081` over USB as usual.
+
+The startup screen shows reported initialization errors with their codes and a retry button.
+If the native callback has not arrived after 30 seconds, it shows network/Charles instructions
+without starting a second initialization. It still accepts a later successful callback. Correct
+the proxy/certificate setup and relaunch if initialization remains pending. If a certificate
+error persists, record its complete message: a hostname mismatch or an expired certificate is
+different from an untrusted CA and is still rejected.
+
+For a publisher's own test app, apply the same configuration in **that app's debug source set**;
+the SDK intentionally cannot change a host app's certificate trust.
+
+References: [Charles certificate setup](https://www.charlesproxy.com/documentation/using-charles/ssl-certificates/),
+[Android debug CA configuration](https://developer.android.com/privacy-and-security/security-config#Debug),
+[Google Mobile Ads Charles guide](https://developers.google.com/ad-manager/mobile-ads-sdk/android/charles).
+
+### SDK diagnostics
+
 Diagnostics are **on** in this example. Every decision the SDK makes about a slot is one
 `AUDZ …` line, and every action you take in the app is an `AUDZ app …` line, so a captured log
 reads back as a sequence without you having to narrate it.

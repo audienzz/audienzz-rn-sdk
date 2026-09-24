@@ -50,6 +50,10 @@ other URLs with `UNSUPPORTED_REMOTE_URL`; earlier versions silently ignored them
 and placement IDs from the same environment. The example uses production publisher `35`, banner
 placements `46` / `48`, and interstitial `47`; development publisher `81` does not exist there.
 
+Testing Android through Charles? Use the example's **debug build** and install your Charles CA
+on the device. Release builds retain normal certificate trust. See
+[Charles setup and startup troubleshooting](LOCAL_TESTING.md#charles-ssl-proxying-on-android).
+
 ### 3. Report every screen — including screens without ads
 
 > **Required:** every screen that becomes active must produce a `pageImpression` (PI), even if it

@@ -35,7 +35,10 @@ const REMOTE_CONFIG_ENABLED = true;
 
 export default function App() {
   const [initialized, setInitialized] = React.useState(false);
-  const [initializationError, setInitializationError] = React.useState<string>();
+  const [initializationError, setInitializationError] =
+    React.useState<string>();
+  const [initializationSlow, setInitializationSlow] = React.useState(false);
+  const [initializationAttempt, setInitializationAttempt] = React.useState(0);
   const [screen, setScreen] = React.useState<
     'main' | 'test' | 'sticky' | 'legacy' | 'reloadTabs'
   >('main');
@@ -66,84 +69,99 @@ export default function App() {
   );
 
   React.useEffect(() => {
-    // Pages are reported by `goTo` at the navigation action, and the first one right after
-    // initialization — never from render, layout or a parent effect.
-    // Opt into smart-refresh v2 (directional viewport gate) instead of the legacy 20% gate,
-    // and blank the slot during a screen-resume reload — parity with the native iOS/Android SDKs.
-    // Both override backend config for the session; call before creating banners.
-    // One greppable AUDZ line per slot decision, on the JS side and in both native SDKs.
-    // Capture with `npx react-native log-ios` / `log-android` (or `adb logcat -s AUDZ`) and grep
-    // AUDZ. On by default HERE because this app exists to be tested and have its log read back;
-    // in a real app it is off unless you ask for it.
-    Audienzz.setDiagnosticsEnabled(true);
-    RNAudienzz().setSmartRefreshV2Enabled(true);
-    RNAudienzz().setBlankOnScreenReload(true);
-    if (REMOTE_CONFIG_ENABLED) {
-      RNAudienzz()
-        .initializeRemote(REMOTE_CONFIG.url, REMOTE_CONFIG.publisherId)
-        .then((value) => {
-          console.log(
-            '[SDK] Initialized with remote config:',
-            JSON.stringify(value, null, 2)
+    let active = true;
+    setInitializationError(undefined);
+    setInitializationSlow(false);
+    // A slow native callback is not proof of failure. Show recovery instructions without
+    // starting another native initialization while the first one is still in flight.
+    const slowTimer = setTimeout(() => {
+      if (active) setInitializationSlow(true);
+    }, 30_000);
+
+    async function initialize() {
+      try {
+        // Overrides precede ad creation; diagnostics are enabled for this test app only.
+        Audienzz.setDiagnosticsEnabled(true);
+        RNAudienzz().setSmartRefreshV2Enabled(true);
+        RNAudienzz().setBlankOnScreenReload(true);
+        const value = REMOTE_CONFIG_ENABLED
+          ? await RNAudienzz().initializeRemote(
+              REMOTE_CONFIG.url,
+              REMOTE_CONFIG.publisherId
+            )
+          : await RNAudienzz().initialize(
+              'Company ID provided for the app by Audienzz'
+            );
+        if (!active) return;
+        console.log('[SDK] Initialized:', JSON.stringify(value, null, 2));
+        if (!REMOTE_CONFIG_ENABLED) {
+          RNAudienzz().setSchainObject(
+            JSON.stringify({
+              source: {
+                schain: {
+                  ver: '1.0',
+                  complete: 1,
+                  nodes: [{ asi: 'netpoint-media.de', sid: 'np-7255', hp: 1 }],
+                },
+              },
+            })
           );
-          RNTargeting().addGlobalTargeting('TEST', '1');
-          // The opening route, reported BEFORE the first ad-bearing screen renders. Nothing has
-          // been rendered yet because `initialized` still gates the whole tree. With React
-          // Navigation this is what `onReady` is for — it emits no initial state change.
-          audienzzOnNavigationReady({
-            index: 0,
-            routes: [{ key: 'main', name: 'main' }],
-          });
-          setInitialized(true);
-        })
-        .catch((error) => {
-          setInitializationError(String(error));
-          console.error('[SDK] Initialization error:', error);
+        }
+        RNTargeting().addGlobalTargeting('TEST', '1');
+        // Report the opening page BEFORE its banners render, including after a failed attempt.
+        audienzzOnNavigationReady({
+          index: 0,
+          routes: [{ key: 'main', name: 'main' }],
         });
-    } else {
-      RNAudienzz()
-        .initialize('Company ID provided for the app by Audienzz')
-        .then((value) => {
-          console.log(JSON.stringify(value, null, 2));
-          RNAudienzz().setSchainObject(`
-                              { "source": 
-                                  { "schain": {
-                                      "ver": "1.0",
-                                      "complete": 1,
-                                      "nodes": [
-                                          {
-                                              "asi": "netpoint-media.de",
-                                              "sid": "np-7255",
-                                              "hp": 1
-                                          }
-                                        ]
-                                      }
-                                  } 
-                              }
-                          `);
-          RNTargeting().addGlobalTargeting('TEST', '1');
-          audienzzOnNavigationReady({
-            index: 0,
-            routes: [{ key: 'main', name: 'main' }],
-          });
-          setInitialized(true);
-        })
-        .catch((error) => {
-          setInitializationError(String(error));
-          console.error('[SDK] Initialization error:', error);
-        });
+        setInitialized(true);
+      } catch (error) {
+        if (!active) return;
+        const code = (error as { code?: string } | null)?.code;
+        setInitializationError(`${code ? `${code}: ` : ''}${String(error)}`);
+        setInitializationSlow(false);
+        console.error('[SDK] Initialization error:', error);
+      } finally {
+        clearTimeout(slowTimer);
+      }
     }
-  }, []);
+    initialize();
+    return () => {
+      active = false;
+      clearTimeout(slowTimer);
+    };
+  }, [initializationAttempt]);
 
   if (!initialized) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
-          <Text>
+          <Text style={styles.initializationMessage} accessibilityRole="alert">
             {initializationError
               ? `SDK initialization failed: ${initializationError}`
+              : initializationSlow
+              ? 'SDK initialization is taking longer than expected (30 seconds).'
               : 'Initializing SDK...'}
           </Text>
+          {(initializationError || initializationSlow) && (
+            <>
+              <Text style={styles.initializationHint}>
+                Check the network and proxy settings.
+                {Platform.OS === 'android' &&
+                  ' Using Charles SSL Proxying? Install its CA certificate on this device and use the debug build. See LOCAL_TESTING.md.'}
+                {initializationSlow &&
+                  ' Initialization is still pending. After correcting the connection, fully close and reopen the app if it does not finish.'}
+              </Text>
+              {initializationError && (
+                <ActionButton
+                  labelButton="Retry initialization"
+                  onPress={() => {
+                    setInitializationError(undefined);
+                    setInitializationAttempt((attempt) => attempt + 1);
+                  }}
+                />
+              )}
+            </>
+          )}
         </View>
       </SafeAreaView>
     );
@@ -298,9 +316,21 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
+    padding: 24,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white',
+  },
+  initializationMessage: {
+    color: '#0F172A',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  initializationHint: {
+    color: '#475569',
+    marginVertical: 16,
+    lineHeight: 22,
+    textAlign: 'center',
   },
   scrollviewcontentContainerStyle: {
     alignItems: 'center',
