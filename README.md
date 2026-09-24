@@ -45,7 +45,13 @@ Await this once after consent, before mounting the ad-bearing navigation tree. H
 with your startup error/retry UI; keep app content available if initialization fails. Initialization
 does not report a page — the real navigation state in step 3 does that.
 
-### 3. Report every screen
+### 3. Report every screen — including screens without ads
+
+> **Required:** every screen that becomes active must produce a `pageImpression` (PI), even if it
+> contains no ads. This includes the initial screen, navigation to an ad-free settings/profile
+> screen, tab changes, and returning to a previous screen. Report the screen independently of
+> whether an ad loads. Reporting the destination releases the previous screen's banners so they
+> cannot keep refreshing behind it.
 
 Wire **both** callbacks around your existing React Navigation navigator:
 
@@ -73,7 +79,8 @@ const navigationRef = createNavigationContainerRef();
 
 `onReady` reports the opening screen; `onStateChange` covers later transitions, including nested
 navigators and **ad-free destinations**. Reporting the destination releases the previous page's
-banners. Do not also call `pageImpression` for the same transition.
+banners. **The navigation adapter already reports PI: do not add a second manual `pageImpression`
+call inside each screen for the same transition.**
 
 ### 4. Place a banner
 
