@@ -187,6 +187,9 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
   }
 
   private fun requestAd(reactViewGroup: RCTOriginalBannerView) {
+    // Retire before any early return. Replacing only in updateAdViewHandler left the old
+    // scheduler alive if the Activity or required props disappeared during reconstruction.
+    reactViewGroup.destroyAdViewHandler()
     val adView = initAdView(reactViewGroup)
     val isLazyLoad = reactViewGroup.isLazyLoad
     val isAdaptive = reactViewGroup.isAdaptive

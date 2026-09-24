@@ -67,6 +67,22 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
       .receiveEvent(id, "onAdClosed", null)
   }
 
+  private fun handleAdFailedToShow(adError: AdError) {
+    val error: WritableMap = Arguments.createMap()
+    error.putInt("code", adError.code)
+    error.putString("message", adError.message)
+    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdFailedToShow", error)
+  }
+
+  private fun emitFailedToLoad(code: Int, message: String) {
+    val error: WritableMap = Arguments.createMap()
+    error.putInt("code", code)
+    error.putString("message", message)
+    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdFailedToLoad", error)
+  }
+
   /** Releases the interstitial this view owns. Safe to call more than once. */
   fun destroyAd() {
     auInterstitialView?.destroy()
@@ -88,6 +104,14 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
     // bought a few interstitials, only one of which could ever be shown.
     val identity = "$auConfigID|$adUnitID"
     if (auInterstitialView != null && identity == loadedIdentity) return
+    // Resolved once, up front: with no foreground Activity nothing can be loaded or shown, so
+    // report a load failure rather than force-unwrap it later and crash. Not recorded as loaded,
+    // so the next prop update retries.
+    val activity = (context as? ReactContext)?.currentActivity
+    if (activity == null) {
+      emitFailedToLoad(-1, "No foreground Activity available to load the interstitial ad")
+      return
+    }
     auInterstitialView?.destroy()
     auInterstitialView = null
     loadedIdentity = identity
@@ -117,17 +141,13 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
     auInterstitialView?.impOrtbConfig = impOrtbConfig
     auInterstitialView?.setMinSizePercentage(minSizesPercentage[0], minSizesPercentage[1])
 
-    val activity = (context as? ReactContext)?.currentActivity
-
     this.lazyAdLoader(
       adHandler = handler,
       adLoadCallback = object : AudienzzInterstitialAdLoadCallback() {
         override fun onAdLoaded(interstitialAd: AdManagerInterstitialAd) {
           mInterstitialAd = interstitialAd
           handleAdLoaded()
-          if (activity != null) {
-            mInterstitialAd?.show(activity)
-          }
+          mInterstitialAd?.show(activity)
         }
 
         override fun onAdFailedToLoad(loadAdError: LoadAdError) {
@@ -144,7 +164,10 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
           mInterstitialAd = null
         }
 
-        override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+        override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+          // Surfaced, not swallowed: a bid burned by presenting into a backgrounded or covered
+          // app has to be observable.
+          handleAdFailedToShow(adError)
           mInterstitialAd = null
         }
 
@@ -154,7 +177,7 @@ class RCTOriginalInterstitialView(context: Context) : RCTOriginalView(context) {
   },
       resultCallback = { resultCode, request, listener ->
         AdManagerInterstitialAd.load(
-          activity!!,
+          activity,
           adUnitID,
           request,
           listener,

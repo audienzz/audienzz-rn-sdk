@@ -40,33 +40,46 @@
     self.propsChanged = YES;
 }
 
-- (NSString *)createInterstitialORTBConfigWithSizes:(NSArray *)sizes {
-    if (!sizes || sizes.count == 0) {
-        return nil;
-    }
-    
-    NSMutableArray *formatStrings = [[NSMutableArray alloc] init];
-    
+// Merges the sizes into the publisher's impOrtbConfig as `banner.format` (the Prebid #1135
+// workaround) instead of replacing it: overwriting it dropped the publisher's deals, floors and
+// first-party data whenever `sizes` was set. Returns nil when there are no valid sizes; the
+// caller then leaves the publisher's config as it is.
+- (NSString *)mergeBannerFormatIntoOrtbConfig:(NSString *)existingConfig sizes:(NSArray *)sizes {
+    NSMutableArray *formatArray = [[NSMutableArray alloc] init];
     for (NSDictionary *sizeDict in sizes) {
         if ([sizeDict isKindOfClass:[NSDictionary class]]) {
             NSNumber *width = sizeDict[@"width"];
             NSNumber *height = sizeDict[@"height"];
-            
             if (width && height) {
-                NSString *formatString = [NSString stringWithFormat:@"{ \"w\": %d, \"h\": %d }",
-                                        [width intValue], [height intValue]];
-                [formatStrings addObject:formatString];
+                [formatArray addObject:@{@"w": @([width intValue]), @"h": @([height intValue])}];
             }
         }
     }
-    
-    if (formatStrings.count == 0) {
+    if (formatArray.count == 0) {
         return nil;
     }
-    
-    NSString *formatArrayString = [formatStrings componentsJoinedByString:@", "];
-    
-    return [NSString stringWithFormat:@"{\n  \"banner\": {\n    \"format\": [ %@ ]\n  }\n}", formatArrayString];
+
+    NSMutableDictionary *root = nil;
+    if (existingConfig.length > 0) {
+        NSData *data = [existingConfig dataUsingEncoding:NSUTF8StringEncoding];
+        id parsed = [NSJSONSerialization JSONObjectWithData:data
+                                                    options:NSJSONReadingMutableContainers
+                                                      error:nil];
+        if ([parsed isKindOfClass:[NSDictionary class]]) {
+            root = [parsed mutableCopy];
+        }
+    }
+    if (root == nil) {
+        root = [NSMutableDictionary dictionary];
+    }
+    id existingBanner = root[@"banner"];
+    NSMutableDictionary *banner = [existingBanner isKindOfClass:[NSDictionary class]]
+        ? [existingBanner mutableCopy] : [NSMutableDictionary dictionary];
+    banner[@"format"] = formatArray;
+    root[@"banner"] = banner;
+
+    NSData *outData = [NSJSONSerialization dataWithJSONObject:root options:0 error:nil];
+    return outData ? [[NSString alloc] initWithData:outData encoding:NSUTF8StringEncoding] : existingConfig;
 }
 
 - (NSArray<NSValue *> *)convertSizesToCGSizeArray:(NSArray *)sizes {
@@ -104,6 +117,13 @@
 - (void)internalCreateAd {
   [super internalCreateAd];
 
+  // Props land incrementally and creation runs on a debounce: without both identifiers this would
+  // build an ad from empty defaults. Not recorded as loaded, so the next prop transaction retries.
+  if (self.adUnitID.length == 0 || self.auConfigID.length == 0) {
+    NSLog(@"[Audienzz] Interstitial ad creation skipped — adUnitID/auConfigID not ready");
+    return;
+  }
+
   // didSetProps fires on every prop change, and each run used to allocate another
   // AUInterstitialView, add it as a subview and start its own auction — so a handful of prop
   // updates bought a handful of interstitials, only one of which could ever be shown. Keep the ad
@@ -139,7 +159,7 @@
   
   //TODO: remove hack when fixed - https://github.com/prebid/prebid-mobile-ios/issues/1135
       if (_sizes && _sizes.count > 0) {
-          NSString *ortbConfig = [self createInterstitialORTBConfigWithSizes:_sizes];
+          NSString *ortbConfig = [self mergeBannerFormatIntoOrtbConfig:self.impOrtbConfig sizes:_sizes];
           NSArray<NSValue *> *cgSizeArray = [self convertSizesToCGSizeArray:_sizes];
           [self.bannerParameters setAdSizes: cgSizeArray];
           if (ortbConfig) {
@@ -156,11 +176,14 @@
   _auInterstitialView.frame = CGRectMake(0, 0, 10, 10);
   
   [self addSubview:_auInterstitialView];
-  [_auInterstitialView createAdWith:request adUnitID:self.adUnitID];
-  
+
+  // Installed BEFORE createAdWith:, which issues the first request itself when not lazy.
   __weak typeof(self) weakSelf = self;
   _auInterstitialView.onLoadRequest = ^(id _Nonnull request) {
     __strong typeof(weakSelf) self = weakSelf;
+    if (self == nil) {
+      return;
+    }
     if (![request isKindOfClass:[GADRequest class]]) {
       NSLog(@"Failed request unwrap");
       return;
@@ -188,17 +211,24 @@
       [ad presentFromRootViewController:nil];
     }];
   };
+
+  [_auInterstitialView createAdWith:request adUnitID:self.adUnitID];
+
 }
 
 #pragma mark - GADFullScreenContentDelegate
 
 - (void)ad:(nonnull id<GADFullScreenPresentingAd>)ad
 didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
-  NSLog(@"Failed to present interstitial ad with error: %@", error.localizedDescription);
+  // Surfaced, not only logged: a bid won and then not shown has to be observable.
+  [self.auInterstitialView removeFromSuperview];
+  self.auInterstitialView = nil;
+  if (self.onAdFailedToShow) {
+    self.onAdFailedToShow(@{@"code": @(error.code), @"message": [error localizedDescription]});
+  }
 }
 
 - (void)adWillPresentFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
-  [UIApplication.sharedApplication setStatusBarHidden:YES];
   if (self.onAdOpened) {
     self.onAdOpened(@{});
   }
@@ -213,8 +243,7 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 - (void)adWillDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
   [self.auInterstitialView removeFromSuperview];
   self.auInterstitialView = nil;
-  
-  [UIApplication.sharedApplication setStatusBarHidden:NO];
+
   if (self.onAdClosed) {
     self.onAdClosed(@{});
   }

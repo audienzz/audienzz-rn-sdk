@@ -15,27 +15,19 @@
 
 */
 
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
-import {
-  requireNativeComponent,
-  UIManager,
-  findNodeHandle,
-} from 'react-native';
+import React from 'react';
+import { requireNativeComponent, UIManager } from 'react-native';
 import type { OriginalInterstitialProps, AdError } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTOriginalInterstitialView';
 const NativeComponent = requireNativeComponent<any>(ComponentName);
 
-export interface OriginalInterstitialHandle {
-  /** Displays the loaded interstitial ad. Call this after `onAdLoaded` fires. */
-  show(): void;
-}
-
-export const OriginalInterstitial = forwardRef<
-  OriginalInterstitialHandle,
-  OriginalInterstitialProps
->((props, ref) => {
+// Presents itself as soon as it loads: there is no imperative `show()`. The ref handle this
+// used to expose dispatched a command neither view manager implements, so it did nothing.
+// `onAdLoaded` reports availability, `onAdOpened` reports presentation, and
+// `onAdFailedToShow` reports a failed presentation.
+export const OriginalInterstitial = (props: OriginalInterstitialProps) => {
   const {
     adUnitId,
     auConfigId,
@@ -48,27 +40,13 @@ export const OriginalInterstitial = forwardRef<
     videoBitrate = [300, 1500],
     videoDuration = [5, 30],
     onAdFailedToLoad,
+    onAdFailedToShow,
     ...restProps
   } = props;
-
-  const nativeRef = useRef<any>(null);
 
   if (UIManager.getViewManagerConfig(ComponentName) == null) {
     throw new Error(LINKING_ERROR);
   }
-
-  useImperativeHandle(ref, () => ({
-    show() {
-      const node = findNodeHandle(nativeRef.current);
-      if (node != null) {
-        UIManager.dispatchViewManagerCommand(
-          node,
-          UIManager.getViewManagerConfig(ComponentName).Commands.show ?? 'show',
-          []
-        );
-      }
-    },
-  }));
 
   const handleAdFailedToLoad = (
     event: AdError | { nativeEvent: { code: number; message: string } }
@@ -77,9 +55,15 @@ export const OriginalInterstitial = forwardRef<
     onAdFailedToLoad?.(error);
   };
 
+  const handleAdFailedToShow = (
+    event: AdError | { nativeEvent: { code: number; message: string } }
+  ) => {
+    const error: AdError = 'nativeEvent' in event ? event.nativeEvent : event;
+    onAdFailedToShow?.(error);
+  };
+
   return (
     <NativeComponent
-      ref={nativeRef}
       {...restProps}
       adUnitID={adUnitId}
       auConfigID={auConfigId}
@@ -91,6 +75,7 @@ export const OriginalInterstitial = forwardRef<
       videoDuration={videoDuration}
       minSizesPercentage={minSizePercentage}
       onAdFailedToLoad={handleAdFailedToLoad}
+      onAdFailedToShow={handleAdFailedToShow}
     />
   );
-});
+};

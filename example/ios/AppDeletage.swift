@@ -14,6 +14,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    // Native bridge regression tests exercise the views directly, without Metro or live ads.
+    if ProcessInfo.processInfo.environment["AUDIENZZ_BRIDGE_TESTS"] == "1" {
+      window = UIWindow(frame: UIScreen.main.bounds)
+      window?.rootViewController = UIViewController()
+      window?.makeKeyAndVisible()
+      return true
+    }
     let delegate = ReactNativeDelegate()
     let factory = RCTReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()

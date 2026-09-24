@@ -53,8 +53,11 @@ export class OriginalBanner extends Component<
   ) {
     super(props, context);
     this.nativeComponentRef = createRef();
+    // A lazy banner must have a real frame before it loads: the native viewport check that
+    // starts its auction bails on 0x0, so a lazy slot hidden until onAdLoaded never loaded at all.
+    // Lazy and explicitly reserved banners reserve their first requested size (see render).
     this.state = {
-      isBannerVisible: props.isReserved ?? false,
+      isBannerVisible: props.isReserved || props.isLazyLoad || false,
     };
     // Inside an <AudienzzPage>, that page owns this slot, whichever banner API is used. Reading
     // the module-global "current page" instead bound every retained tab's banner to whichever tab
@@ -143,6 +146,9 @@ export class OriginalBanner extends Component<
       videoPlacement = 'inBanner',
       videoBitrate = [300, 1500],
       videoDuration = [5, 30],
+      onAdClicked,
+      onAdOpened,
+      onAdClosed,
       ...restProps
     } = this.props;
 
@@ -150,11 +156,14 @@ export class OriginalBanner extends Component<
       throw new Error(LINKING_ERROR);
     }
 
+    // Native fires these with an empty `{ nativeEvent: {} }`; the public callbacks take no argument.
+    const handleAdClicked = () => onAdClicked?.();
+    const handleAdOpened = () => onAdOpened?.();
+    const handleAdClosed = () => onAdClosed?.();
+
     const handleAdLoaded = (event: AdSize | { nativeEvent: { width: number; height: number } }) => {
       const adSize: AdSize =
         'nativeEvent' in event ? event.nativeEvent : event;
-
-      console.log("Adsize", adSize);
 
       this.setState({ isBannerVisible: true, adSize: adSize });
       this.props.onAdLoaded?.(adSize);
@@ -169,8 +178,11 @@ export class OriginalBanner extends Component<
       this.props.onAdFailedToLoad?.(error);
     };
 
-    const bannerStyle = this.state.isBannerVisible && this.state.adSize != null
-      ? { width: this.state.adSize.width, height: this.state.adSize.height }
+    // Until the ad loads, a reserved or lazy banner holds its first requested size, so the native
+    // visibility check has a frame to measure; after load, the size Google actually served.
+    const reservedSize = this.state.adSize ?? restProps.sizes?.[0];
+    const bannerStyle = this.state.isBannerVisible && reservedSize != null
+      ? { width: reservedSize.width, height: reservedSize.height }
       : styles.hiddenBanner;
 
     return (
@@ -188,6 +200,7 @@ export class OriginalBanner extends Component<
           smartRefresh={smartRefresh}
           prefetchMargin={prefetchMargin}
           isAdaptive={isAdaptive}
+          playbackMethod={playbackMethod}
           adFormats={adFormats}
           apiParameters={apiParameters}
           videoProtocols={videoProtocols}
@@ -196,6 +209,9 @@ export class OriginalBanner extends Component<
           videoDuration={videoDuration}
           onAdLoaded={handleAdLoaded}
           onAdFailedToLoad={handleAdFailedToLoad}
+          onAdClicked={handleAdClicked}
+          onAdOpened={handleAdOpened}
+          onAdClosed={handleAdClosed}
         />
       </View>
     );

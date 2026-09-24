@@ -17,6 +17,7 @@
 
 #import "RCTOriginalBannerView.h"
 #import "AUConverter.h"
+#import "RCTAudienzzViewUtils.h"
 #import <GoogleMobileAds/GoogleMobileAds.h>
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 
@@ -133,8 +134,33 @@
   });
 }
 
+// Stops the current banner and takes it out of the view tree. A prop change used to allocate
+// another AUBannerView while the previous one stayed a subview, still registered with the page
+// coordinator and still auctioning; an unmounted view kept its banner alive the same way.
+- (void)teardownAd {
+  _auBannerView.onLoadRequest = nil;
+  _bannerView.delegate = nil;
+  [_auBannerView destroy];
+  [_auBannerView removeFromSuperview];
+  _auBannerView = nil;
+  _bannerView = nil;
+}
+
+- (void)dealloc {
+  [self teardownAd];
+}
+
 - (void)internalCreateAd {
   [super internalCreateAd];
+  [self teardownAd];
+
+  // Props land incrementally and creation runs on a debounce: without both identifiers this would
+  // build an ad from empty defaults. The next prop transaction schedules creation again.
+  if (self.adUnitID.length == 0 || self.auConfigID.length == 0) {
+    NSLog(@"[Audienzz] Banner ad creation skipped — adUnitID/auConfigID not ready");
+    return;
+  }
+
   GAMRequest *request = [GAMRequest request];
   
   if (self.isAdaptive && _sizes && _sizes.count > 0) {
@@ -203,26 +229,38 @@
   _auBannerView.smartRefresh = _smartRefresh;
   _auBannerView.prefetchMarginPoints = (CGFloat)(_prefetchMargin > 0 ? _prefetchMargin : 200);
 
-  _bannerView.rootViewController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+  _bannerView.rootViewController = [RCTAudienzzViewUtils rootViewControllerForView:self];
   _bannerView.delegate = self;
   _bannerView.adUnitID = self.adUnitID;
   
   AUBannerEventHandler *eventHandler = [[AUBannerEventHandler alloc] initWithAdUnitId:self.adUnitID gamView:_bannerView];
+  // Loads the request the SDK hands over — NOT the `request` built above. The SDK assembles a
+  // fresh request for every auction (the publisher's keys, global targeting, its own keys and
+  // Prebid's bid keys) and leaves this one untouched, so loading it sent Google none of them.
+  // Weak: the banner holds this block, so a strong capture kept the view and its auctions alive
+  // after unmount.
+  __weak typeof(self) weakSelf = self;
+  void (^onLoadRequest)(id) = ^(id gamRequest) {
+    __strong typeof(weakSelf) strongSelf = weakSelf;
+    if (strongSelf == nil) {
+      return;
+    }
+    if (![gamRequest isKindOfClass:[GAMRequest class]]) {
+      NSLog(@"Failed request unwrap");
+      return;
+    }
+    [strongSelf.bannerView loadRequest:gamRequest];
+  };
+
+  // Installed BEFORE createAdWith:, which may issue the first request itself (an eager banner).
+  _auBannerView.onLoadRequest = onLoadRequest;
+
   // Must precede createAdWith:, which is where the ad joins the current page.
   if (self.pageKey != nil) {
     [_auBannerView setScreen:self.pageKey];
   }
   [_auBannerView createAdWith:request gamBanner:_bannerView eventHandler:eventHandler];
 
-  void (^onLoadRequest)(id) = ^(id gamRequest) {
-    if (![request isKindOfClass:[GAMRequest class]]) {
-      NSLog(@"Failed request unwrap");
-      return;
-    }
-    [self.bannerView loadRequest:request];
-  };
-
-  _auBannerView.onLoadRequest = onLoadRequest;
   
   _auBannerView.frame = CGRectMake(0, 0, adSize.width, adSize.height);
   [self addSubview:_auBannerView];
@@ -271,8 +309,8 @@
 }
 
 - (void)bannerView:(GADBannerView *)bannerView didFailToReceiveAdWithError:(NSError *)error {
-  [self.auBannerView removeFromSuperview];
-  self.auBannerView = nil;
+  if (bannerView != self.bannerView) return;
+  [self teardownAd];
   
   if (self.onAdFailedToLoad) {
     self.onAdFailedToLoad(@{@"code": @(error.code), @"message": [error localizedDescription]});

@@ -16,6 +16,7 @@
  */
 
 #import "RCTRemoteConfigBannerView.h"
+#import "RCTAudienzzViewUtils.h"
 #import <React/RCTLog.h>
 
 @interface RCTRemoteConfigBannerView ()
@@ -107,9 +108,7 @@
     [self.auRemoteConfigBannerView setScreen:self.pageKey];
   }
 
-  UIViewController *rootViewController =
-      [[[[UIApplication sharedApplication] delegate] window]
-          rootViewController];
+  UIViewController *rootViewController = [RCTAudienzzViewUtils rootViewControllerForView:self];
 
   // Before loadIn:, which is where the owner builds the banner and it can request.
   [self applyPendingPublisherState];

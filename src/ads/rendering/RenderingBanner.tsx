@@ -136,8 +136,6 @@ export class RenderingBanner extends Component<
       const adSize: AdSize =
         'nativeEvent' in event ? event.nativeEvent : event;
 
-      console.log("Adsize", adSize);
-
       this.setState({ isBannerVisible: true, adSize: adSize });
       this.props.onAdLoaded?.(adSize);
     };

@@ -589,6 +589,14 @@ The Audienzz React Native SDK allows you to display three types Ads - `Banner`, 
 
 #### Original API
 
+`OriginalInterstitial` and `OriginalRewarded` present automatically after loading. Their former
+`show()` ref handles did nothing and have been removed, including the exported handle types.
+Use `onAdLoaded` for load completion, `onAdOpened` for presentation, and `onAdFailedToShow`
+for presentation errors. For explicit `prefetch()` / `show()` / `prefetchAndShow()` control,
+use `RemoteConfigInterstitial`.
+
+See [the audit migration notes](docs/audit-migration.md) for the release changes and validation.
+
 <details>
 <summary><span>Components example:</span></summary>
 

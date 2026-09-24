@@ -111,8 +111,12 @@ class RCTRenderingBannerView(context: Context) : RCTOriginalView(context) {
     super.createAd()
 
     val currentActivity = (context as ReactContext).currentActivity
+    if (currentActivity == null) {
+      handleAdFailedToLoad(AudienzzAdException(AudienzzAdException.INTERNAL_ERROR, "No Activity available to load the banner ad"))
+      return
+    }
     val eventHandler =
-      AudienzzGamBannerEventHandler(currentActivity!!, adUnitID, AudienzzAdSize(adWidth, adHeight))
+      AudienzzGamBannerEventHandler(currentActivity, adUnitID, AudienzzAdSize(adWidth, adHeight))
 
     auBannerView = AudienzzBannerView(currentActivity, auConfigID, eventHandler)
     updateAuBannerView(auBannerView!!)
@@ -191,4 +195,3 @@ class RCTRenderingBannerView(context: Context) : RCTOriginalView(context) {
     adHeight = value
   }
 }
-
