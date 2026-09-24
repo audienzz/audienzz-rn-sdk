@@ -29,23 +29,13 @@ import StickyAdExample from './components/StickyAdExample';
 import LegacyOriginalView_v0_3_8 from './components/LegacyOriginalView_v0_3_8';
 import TestScreenExample from './components/TestScreenExample';
 import ReloadTabsExample from './components/ReloadTabsExample';
+import { REMOTE_CONFIG } from './remoteConfig';
 
-// Remote config ad units 118, 192 and 267 belong to publisher 81, which exists on the DEV backend
-// only: `GET https://api.adnz.co/api/ws-sdk-config/public/v1/publishers/81` answers 404 and its
-// `/ad-configs` is empty, while the dev host returns the publisher and all three units. That is an
-// environment difference, not a platform one — the previous `Platform.OS === 'ios'` gate and its
-// "Android returns 404" note were wrong, and the iOS path was reading a cached config rather than a
-// live one. Pointing at dev gives BOTH platforms the same RemoteBanner flow with real, provisioned
-// placements; no ids are invented here.
-//
-// To exercise remote config against production instead, use a publisher that is provisioned there
-// (for example publisher 35 with units 46/47/48) — publisher 81 has no production configuration.
 const REMOTE_CONFIG_ENABLED = true;
-const REMOTE_CONFIG_URL = 'https://dev-api.adnz.co/api/ws-sdk-config/public/v1';
-const PUBLISHER_ID = '81';
 
 export default function App() {
   const [initialized, setInitialized] = React.useState(false);
+  const [initializationError, setInitializationError] = React.useState<string>();
   const [screen, setScreen] = React.useState<
     'main' | 'test' | 'sticky' | 'legacy' | 'reloadTabs'
   >('main');
@@ -90,7 +80,7 @@ export default function App() {
     RNAudienzz().setBlankOnScreenReload(true);
     if (REMOTE_CONFIG_ENABLED) {
       RNAudienzz()
-        .initializeRemote(REMOTE_CONFIG_URL, PUBLISHER_ID)
+        .initializeRemote(REMOTE_CONFIG.url, REMOTE_CONFIG.publisherId)
         .then((value) => {
           console.log(
             '[SDK] Initialized with remote config:',
@@ -107,6 +97,7 @@ export default function App() {
           setInitialized(true);
         })
         .catch((error) => {
+          setInitializationError(String(error));
           console.error('[SDK] Initialization error:', error);
         });
     } else {
@@ -136,6 +127,10 @@ export default function App() {
             routes: [{ key: 'main', name: 'main' }],
           });
           setInitialized(true);
+        })
+        .catch((error) => {
+          setInitializationError(String(error));
+          console.error('[SDK] Initialization error:', error);
         });
     }
   }, []);
@@ -144,7 +139,11 @@ export default function App() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
-          <Text>Initializing SDK...</Text>
+          <Text>
+            {initializationError
+              ? `SDK initialization failed: ${initializationError}`
+              : 'Initializing SDK...'}
+          </Text>
         </View>
       </SafeAreaView>
     );

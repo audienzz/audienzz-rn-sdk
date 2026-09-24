@@ -6,6 +6,7 @@ import {
   type RemoteConfigInterstitialHandle,
 } from 'audienzz';
 import ActionButton from './ActionButton';
+import { REMOTE_CONFIG } from '../remoteConfig';
 
 const LOREM =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor ' +
@@ -52,10 +53,12 @@ export default function RemoteConfigExample({
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Fixed Size Banner (ID: 118)</Text>
+        <Text style={styles.sectionTitle}>
+          Fixed Size Banner (ID: {REMOTE_CONFIG.fixedBannerId})
+        </Text>
         <View style={styles.bannerContainer}>
           <RemoteConfigBanner
-            adConfigId="118"
+            adConfigId={REMOTE_CONFIG.fixedBannerId}
             style={styles.fixedBanner}
             onAdLoaded={(size) => {
               console.log('[RemoteConfig] Fixed banner loaded:', size);
@@ -78,11 +81,11 @@ export default function RemoteConfigExample({
 
       <View style={styles.adaptiveSection}>
         <Text style={[styles.sectionTitle, styles.adaptiveSectionTitle]}>
-          Adaptive Banner (ID: 192)
+          Adaptive Banner (ID: {REMOTE_CONFIG.adaptiveBannerId})
         </Text>
         <View style={styles.adaptiveBannerContainer}>
           <RemoteConfigBanner
-            adConfigId="192"
+            adConfigId={REMOTE_CONFIG.adaptiveBannerId}
             style={styles.adaptiveBanner}
             onAdLoaded={(size) => {
               console.log('[RemoteConfig] Adaptive banner loaded:', size);
@@ -104,7 +107,9 @@ export default function RemoteConfigExample({
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Interstitial (ID: 267)</Text>
+        <Text style={styles.sectionTitle}>
+          Interstitial (ID: {REMOTE_CONFIG.interstitialId})
+        </Text>
         <Text style={styles.status}>{status}</Text>
         <ActionButton
           labelButton="Prefetch"
@@ -147,7 +152,7 @@ export default function RemoteConfigExample({
       <RemoteConfigInterstitial
         ref={interstitial}
         manualControl
-        adConfigId="267"
+        adConfigId={REMOTE_CONFIG.interstitialId}
         onAdLoaded={() => {
           // After a plain `prefetch` this is where it stops: ready, and nothing on screen.
           setStatus('ready to show');

@@ -4,6 +4,12 @@ The bridge and example use published `com.audienzz:sdk:0.3.0` and
 `AudienzziOSSDK ~> 0.4.0` by default. No native checkout is needed for normal builds.
 The overrides below are optional and only for developing native changes.
 
+The example's endpoint, publisher and placement IDs live together in `example/src/remoteConfig.ts`.
+It uses production publisher **35**, fixed banner **46**, adaptive banner **48**, and interstitial
+**47** on both platforms. Android SDK 0.3.0 always fetches configuration from production; it cannot
+use the development publisher **81** or placements **118/192/267**. The bridge rejects unsupported
+URLs instead of silently sending those IDs to production.
+
 ## Android — one Gradle property
 
 Publish the native SDK to your local Maven repository once:
@@ -73,7 +79,7 @@ Separate Managed Banner, Managed Flows and Smart Refresh screens have been remov
 
 | Flow                                            | Where                                                                                      |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| RemoteBanner scrolling; scroll off and back     | **Main → Remote ads**: fixed banner 118 and adaptive banner 192, separated by article text |
+| RemoteBanner scrolling; scroll off and back     | **Main → Remote ads**: fixed banner 46 and adaptive banner 48, separated by article text |
 | Background / foreground with a banner on screen | Main screen — background the app past the refresh interval, then return                    |
 | Page A → B → A                                  | **Open test screen** below either banner, then **Back**                                    |
 | Retained tabs                                   | **Other examples → Reload tabs**                                                           |
@@ -98,6 +104,9 @@ before its banners are created again; lazy slots wait until they are near the vi
 While scrolling or backgrounding the app, check native `AUDZ` refresh diagnostics for holds and
 subsequent recovery. A slot outside the eligible viewport must not start a periodic refresh.
 If a slot stays empty, inspect the hold reason and whether its owning page matches the active page.
+First check for configuration errors: an HTTP 404 for the publisher followed by
+`Remote config not found` means no banner auction could start. With native Android 0.3.0, a successful
+SDK initialization callback alone does not guarantee the remote configuration downloaded successfully.
 
 ## A note on `Podfile.lock`
 

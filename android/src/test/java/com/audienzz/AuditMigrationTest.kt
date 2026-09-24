@@ -37,6 +37,32 @@ class AuditMigrationTest {
 
   @After fun cleanup() { unmockkAll() }
 
+  @Test fun `remote setup rejects a backend the released Android SDK would ignore`() {
+    val module = RNAudienzzModule(context)
+    for (url in listOf(
+      "https://dev-api.adnz.co/api/ws-sdk-config/public/v1/",
+      "https://api.adnz.co/api/ws-sdk-config/public/v2/",
+      "https://api.adnz.co/api/ws-sdk-config/public/v1/?environment=dev",
+    )) {
+      val promise = mockk<Promise>(relaxed = true)
+      module.configureRemote(url, "81", promise)
+      verify(exactly = 1) { promise.reject("UNSUPPORTED_REMOTE_URL", any<String>()) }
+      verify(exactly = 0) { promise.resolve(any()) }
+    }
+    module.invalidate()
+  }
+
+  @Test fun `remote setup accepts the production endpoint with or without a trailing slash`() {
+    val module = RNAudienzzModule(context)
+    for (suffix in listOf("", "/")) {
+      val promise = mockk<Promise>(relaxed = true)
+      module.configureRemote("https://api.adnz.co/api/ws-sdk-config/public/v1$suffix", "35", promise)
+      verify(exactly = 1) { promise.resolve(null) }
+      verify(exactly = 0) { promise.reject(any<String>(), any<String>()) }
+    }
+    module.invalidate()
+  }
+
   @Test fun `initialization failure and warning both settle the promise`() {
     // Initialize the Kotlin object before MockK records calls made by its static initializer.
     AudienzzPrebidMobile.hashCode()

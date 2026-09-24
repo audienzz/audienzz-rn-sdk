@@ -27,7 +27,6 @@ import com.google.android.gms.ads.MobileAds
 import org.audienzz.mobile.AudienzzPrebidMobile
 import org.audienzz.mobile.AudienzzTargetingParams
 import org.audienzz.mobile.api.data.AudienzzInitializationStatus
-import org.audienzz.mobile.util.remote.RemoteConfigManager
 
 private const val RN_SDK_VERSION = "0.4.4"
 
@@ -168,17 +167,18 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
 
   @ReactMethod
   fun configureRemote(remoteUrl: String, publisherId: String, promise: Promise) {
-    try {
-      // This bridge is the sole consumer of org.audienzz.mobile.util.remote.RemoteConfigManager —
-      // it is not dead code natively. Do not remove it there without migrating this call first.
-      RemoteConfigManager.initialize(
-        publisherId = publisherId,
-        remoteUrl = remoteUrl
+    // Android SDK 0.3.0 hardcodes this endpoint in NetworkModule. The util.remote manager only
+    // stored the supplied URL; the actual HTTP client never read it. Reject unsupported URLs
+    // before initializeRemote starts so development IDs cannot silently go to production.
+    if (remoteUrl.trim().trimEnd('/') != REMOTE_CONFIG_URL) {
+      promise.reject(
+        "UNSUPPORTED_REMOTE_URL",
+        "Android SDK 0.3.0 supports only $REMOTE_CONFIG_URL/. " +
+          "Use a publisher and placement IDs provisioned on that endpoint."
       )
-      promise.resolve(null)
-    } catch (e: Exception) {
-      promise.reject("CONFIGURE_REMOTE_FAILED", e.message, e)
+      return
     }
+    promise.resolve(null)
   }
 
   @ReactMethod
@@ -212,6 +212,7 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
   companion object {
     private const val SERVICE = "RNAudienzzModule"
     private const val TAG = "AudienzzSDKInitializer"
+    private const val REMOTE_CONFIG_URL = "https://api.adnz.co/api/ws-sdk-config/public/v1"
 
     /** Device event carrying the page name of every native page impression. */
     const val PAGE_IMPRESSION_EVENT = "AudienzzPageImpression"

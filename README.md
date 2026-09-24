@@ -45,6 +45,11 @@ Await this once after consent, before mounting the ad-bearing navigation tree. H
 with your startup error/retry UI; keep app content available if initialization fails. Initialization
 does not report a page — the real navigation state in step 3 does that.
 
+**Android 0.3.0 supports the production configuration URL shown above only.** The bridge rejects
+other URLs with `UNSUPPORTED_REMOTE_URL`; earlier versions silently ignored them. Use publisher
+and placement IDs from the same environment. The example uses production publisher `35`, banner
+placements `46` / `48`, and interstitial `47`; development publisher `81` does not exist there.
+
 ### 3. Report every screen — including screens without ads
 
 > **Required:** every screen that becomes active must produce a `pageImpression` (PI), even if it

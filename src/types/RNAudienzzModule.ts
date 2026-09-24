@@ -49,8 +49,9 @@ export interface RNAudienzzModule {
 
   /**
    * Initialize SDK with remote configuration
-   * This method combines initialize(), configureRemote(), and fetchPublisherConfig()
-   * @param remoteUrl - The remote configuration API URL
+   * This method combines configureRemote() and fetchPublisherConfig().
+   * @param remoteUrl - The remote configuration API URL. Android 0.3.0 supports only
+   * https://api.adnz.co/api/ws-sdk-config/public/v1/ and rejects other endpoints.
    * @param publisherId - The publisher ID
    */
   initializeRemote(remoteUrl: string, publisherId: string): Promise<AudienzzInitStatus>;
