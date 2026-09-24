@@ -1,6 +1,6 @@
 PODS:
   - audienzz (0.5.0):
-    - AudienzziOSSDK (~> 0.3.2)
+    - AudienzziOSSDK (~> 0.4.0)
     - DoubleConversion
     - glog
     - hermes-engine
@@ -24,7 +24,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - AudienzziOSSDK (0.3.2):
+  - AudienzziOSSDK (0.4.0):
     - Google-Mobile-Ads-SDK (~> 13.0)
     - GoogleAds-IMA-iOS-SDK (~> 3.26)
     - PrebidMobile (~> 3.3)
@@ -1703,7 +1703,7 @@ PODS:
 
 DEPENDENCIES:
   - audienzz (from `../..`)
-  - AudienzziOSSDK (from `https://github.com/audienzz/audienzz-ios-sdk.git`, tag `0.3.2`)
+  - AudienzziOSSDK (~> 0.4.0)
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
@@ -1781,6 +1781,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - AudienzziOSSDK
     - Google-Mobile-Ads-SDK
     - GoogleAds-IMA-iOS-SDK
     - GoogleUserMessagingPlatform
@@ -1792,9 +1793,6 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   audienzz:
     :path: "../.."
-  AudienzziOSSDK:
-    :git: https://github.com/audienzz/audienzz-ios-sdk.git
-    :tag: 0.3.2
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   DoubleConversion:
@@ -1937,14 +1935,9 @@ EXTERNAL SOURCES:
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
-CHECKOUT OPTIONS:
-  AudienzziOSSDK:
-    :git: https://github.com/audienzz/audienzz-ios-sdk.git
-    :tag: 0.3.2
-
 SPEC CHECKSUMS:
-  audienzz: feec32ea985a3aa19f0b014f05ef65d997f5f8f0
-  AudienzziOSSDK: 921973f8ae72ba8ee0025266bf8e05f48729bf08
+  audienzz: 154fd17e486c60e8febb53293a04610002e1f7d8
+  AudienzziOSSDK: 80018efb6e56096bfd8664e26eb3f621df898090
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
@@ -2023,6 +2016,6 @@ SPEC CHECKSUMS:
   SQLite.swift: c914f905e13b6318cdc07fd66661db14c6cdd330
   Yoga: b2eaabf17044cd4273a661b14eb83f9fd2c90491
 
-PODFILE CHECKSUM: 75cbca83b4bf74d9130f47e753edae5124c074e2
+PODFILE CHECKSUM: 777acee15aea929ce6eefa6299fbabaa20252e5d
 
 COCOAPODS: 1.16.2
