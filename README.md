@@ -7,8 +7,8 @@
 
 ## Quick integration (remote config + `pageImpression`)
 
-The recommended path: your ad units come from the Audienzz publisher config, and you tell the SDK
-which screen is current. Four steps.
+The recommended path: Audienzz supplies your publisher and placement IDs, the backend configures
+delivery, and managed components own each banner's lifecycle. Five steps.
 
 ### 1. Install
 
@@ -17,86 +17,148 @@ npm install audienzz          # or: yarn add audienzz
 cd ios && pod install
 ```
 
-Add your GAM/AdMob app ID to `Info.plist` (`GADApplicationIdentifier`) and
-`AndroidManifest.xml` (`com.google.android.gms.ads.APPLICATION_ID`).
+Use the package release that requires **Android 0.3.0 / iOS 0.4.0** (this branch). Older React Native
+releases do not include the managed APIs below. The native SDKs require **Android API 24** and
+**iOS 15.0**; use a higher deployment target if your React Native version requires it.
+
+Add your GAM/AdMob app ID to `AndroidManifest.xml` as `com.google.android.gms.ads.APPLICATION_ID`
+and to `Info.plist` as `GADApplicationIdentifier` — see [Setup](#setup). In GAM, leave each banner
+ad unit's **refresh rate unset**; Audienzz owns refresh.
 
 ### 2. Initialize once, at app startup
 
-```tsx
-import { Audienzz, audienzzOnNavigationReady } from 'audienzz';
+Run your CMP and forward its result through `Targeting` **before** initializing or creating ads —
+see [Consent](#consent). Initialize from your app's startup flow, so every entry route uses it.
 
-useEffect(() => {
-  Audienzz.initializeRemote(
+```tsx
+import { Audienzz } from 'audienzz';
+
+async function initializeAds() {
+  await Audienzz.initializeRemote(
     'https://api.adnz.co/api/ws-sdk-config/public/v1/',
-    'YOUR_PUBLISHER_ID',           // provided by Audienzz
-  ).then(() => {
-    // The opening route, reported before the first ad-bearing screen renders.
-    // React Navigation emits no initial state change, which is what `onReady` is for.
-    audienzzOnNavigationReady({ index: 0, routes: [{ key: 'home', name: 'home' }] });
-    setInitialized(true);
-  });
-}, []);
+    'YOUR_PUBLISHER_ID',
+  );
+}
 ```
 
-Gate your ad-bearing tree on `initialized` so the opening route is reported first.
-
-Run your CMP **before** this and forward the result through `Targeting` — see [Consent](#consent).
+Await this once after consent, before mounting the ad-bearing navigation tree. Handle rejection
+with your startup error/retry UI; keep app content available if initialization fails. Initialization
+does not report a page — the real navigation state in step 3 does that.
 
 ### 3. Report every screen
 
-Wire the navigation adapter once, and the SDK follows your router:
+Wire **both** callbacks around your existing React Navigation navigator:
 
 ```tsx
-import { audienzzOnNavigationReady, audienzzOnNavigationStateChange } from 'audienzz';
+import {
+  NavigationContainer,
+  createNavigationContainerRef,
+} from '@react-navigation/native';
+import {
+  audienzzOnNavigationReady,
+  audienzzOnNavigationStateChange,
+} from 'audienzz';
 
+const navigationRef = createNavigationContainerRef();
+
+// In your initialized app:
 <NavigationContainer
+  ref={navigationRef}
   onReady={() => audienzzOnNavigationReady(navigationRef.getRootState())}
-  onStateChange={(state) => audienzzOnNavigationStateChange(state)}
+  onStateChange={audienzzOnNavigationStateChange}
 >
+  <AppNavigator />
+</NavigationContainer>
 ```
 
-Without a router, report each screen yourself:
+`onReady` reports the opening screen; `onStateChange` covers later transitions, including nested
+navigators and **ad-free destinations**. Reporting the destination releases the previous page's
+banners. Do not also call `pageImpression` for the same transition.
+
+### 4. Place a banner
+
+Pass the `route` supplied to your screen by React Navigation:
 
 ```tsx
-Audienzz.pageImpression('article');
+import React from 'react';
+import { ScrollView, Text } from 'react-native';
+import { AudienzzBanner, AudienzzPage } from 'audienzz';
+
+function ArticleScreen({ route }: { route: { key: string } }) {
+  return (
+    <AudienzzPage name="article" route={route}>
+      <ScrollView>
+        <Text>Article content</Text>
+        <AudienzzBanner
+          adConfigId="YOUR_BANNER_CONFIG_ID"
+          slotKey="article-middle"
+          placeholderHeight={250}
+        />
+      </ScrollView>
+    </AudienzzPage>
+  );
+}
 ```
 
-This is the one thing the SDK cannot do for you: it groups a visit's ad events, and it is what
-releases the *previous* screen's banners. **Report ad-free screens too** — skipping them leaves the
-previous screen's banners auctioning for a screen nobody is looking at.
+Keep `slotKey` stable and unique within the page. Reserve the expected height **before** the ad
+loads; `AudienzzBanner` mounts the placeholder, loads and disposes for you. Remote banners default
+to lazy loading; the backend controls `lazyLoad`, prefetch distance and refresh settings.
 
-### 4. Place ads
+The page wrapper binds the banner to its route instance and waits for navigation focus. Retained
+screens and pre-mounted navigator tabs need no extra focus reporting. For custom navigation,
+follow the [managed integration](#the-managed-integration-recommended) and its explicit `active` contract.
+
+### 5. Show an interstitial
+
+Keep one `RemoteConfigInterstitial` mounted per placement, above transient routes, with
+`manualControl` so mounting it does not request or show an ad:
 
 ```tsx
-import { RemoteConfigBanner, RemoteConfigInterstitial } from 'audienzz';
+import { useRef } from 'react';
+import {
+  RemoteConfigInterstitial,
+  type RemoteConfigInterstitialHandle,
+} from 'audienzz';
 
-<RemoteConfigBanner adConfigId="YOUR_CONFIG_ID" style={{ height: 250 }} />
-```
-
-Interstitial — three verbs, and the distinction between them is deliberate:
-
-```tsx
+// Inside a persistent component:
 const interstitial = useRef<RemoteConfigInterstitialHandle>(null);
 
-interstitial.current?.prefetch();          // obtain and retain one ad; never presents
-interstitial.current?.show(true);          // present what is in hand, or skip — never later
-interstitial.current?.prefetchAndShow();   // the one call that presents something you did not time
-
-interstitial.current?.isReady();           // is an ad held and ready for show()? synchronous
-
-<RemoteConfigInterstitial ref={interstitial} manualControl adConfigId="YOUR_CONFIG_ID" />
+// Include in that component's JSX:
+<RemoteConfigInterstitial
+  ref={interstitial}
+  manualControl
+  adConfigId="YOUR_INTERSTITIAL_CONFIG_ID"
+  onAdFailedToLoad={(error) => console.warn('Interstitial load failed', error)}
+  onAdFailedToShow={(error) => console.warn('Interstitial show failed', error)}
+/>
 ```
 
-`isReady()` mirrors the readiness native reports on every lifecycle event, plus native's one-hour
-inventory lifetime — so it answers the same question the native SDKs' `isReady` does. It is
-advisory: `show()` remains the authority and reports `opportunitySkipped` if the ad went away in
-between.
+Choose the flow that matches the display opportunity; call these from your app's event handlers:
 
-### That's it
+```tsx
+interstitial.current?.prefetch();          // Cache one ad; never presents.
+interstitial.current?.show(canShowAd);     // Show now if ready; otherwise skip.
 
-You do not have to wait for initialization before rendering ad components. An auction that would
-start before the native SDK is ready is deferred and taken as soon as it is — so a banner mounted
-during launch fills normally rather than losing its one request.
+// Alternative: explicitly request presentation as soon as the ad is ready.
+interstitial.current?.prefetchAndShow();
+```
+
+`canShowAd` is your current frequency-cap and screen-policy decision; apply that policy before
+`prefetchAndShow()` too. Commands return `void`; observe callbacks and `onLifecycleEvent` for
+outcomes. `isReady()` is advisory, and `show()` never queues a missed opportunity for later.
+Repeated prefetches share an outstanding load and retain ready inventory. Unmounting disposes the
+owner; keep it mounted through dismissal. See [remote interstitials](#interstitial-ad-remote-config).
+
+### What the SDK handles
+
+Managed banners own loading, page transitions, viewport refresh gating and disposal. Native code
+pauses refresh in the background and handles foreground recovery. **Do not add refresh timers or
+reload on render, navigation or app resume.** Smart Refresh v2 is selected by backend configuration;
+without it, the classic viewport gate applies.
+
+Report custom covers the SDK cannot see through the managed banner ref's `reportCover(true)` and
+clear it when the cover disappears. For a whole retained page, set `AudienzzPage.active` to `false`.
+See [test flows and local setup](LOCAL_TESTING.md) before shipping.
 
 ---
 
@@ -389,13 +451,13 @@ signals.
 
 ### Initialize the Audienzz React Native SDK
 
-Before loading and displaying ads, initialize the Audienzz React Native SDK. This needs to be done only once, ideally at app launch. Automatic Ppid could be enabled or disabled.
+Initialize once at app startup, after consent and before creating ads. PPID is controlled by the backend publisher configuration; initialization has no PPID argument.
 
 ```js
 import RNAudienzz from 'audienzz';
 
 RNAudienzz()
-  .initialize('Company ID provided for the app by Audienzz', false) // Open-Ended Question
+  .initialize('Company ID provided for the app by Audienzz')
   .then((value) => console.log(JSON.stringify(value, null, 2)));
 ```
 
@@ -403,18 +465,22 @@ RNAudienzz()
 | Method                   | Parameters             | Description                                                                                                                              |
 |--------------------------|------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
 | `setPublisherPpid`       | `ppid: string \| null` | Supply your own PPID (e.g. a hashed e-mail). Takes precedence over the SDK-generated one; pass `null` to clear and fall back to it.       |
-| `getPpid`                |                        | The PPID currently being sent: yours if set, otherwise the SDK-generated UUID. `null` only when consent is missing.                       |
+| `getPpid`                |                        | The PPID currently being sent: yours if set, otherwise the SDK-generated UUID. `null` when the backend disables PPID (`ppidEnabled: false`).                       |
 
-A PPID is **always** sent with ad requests — the SDK generates one (a UUID,
-persisted locally and rotated every 12 months) whenever you haven't supplied
-your own. There is no enable/disable switch in the SDK: a missing PPID costs
-frequency capping and cross-session targeting. One backend switch suppresses it:
+PPID is enabled by default. The native SDK generates a persisted identifier, rotated every
+12 months, unless you supply your own. The publisher configuration controls whether either
+identifier is sent; there is no initialization argument for this:
 
 | Publisher config field | Effect when `false` | Absent |
 |---|---|---|
 | `ppidEnabled` | No PPID is sent at all, including one you supplied | Enabled |
+
+SDK controls:
+
+| Method | Parameters | Description |
+|---|---|---|
 | `setSchainObject`        | `schain: string`       | Method used to set Schain object for all ad requests.                                                                                    |
-| `pageImpression`        | `name: string`         | Report an ad-bearing screen/dialog by name — fires a `pageImpression` and reloads on-screen banners. Call on each such screen. See [Screen tracking](#screen-tracking-analytics). |
+| `pageImpression`        | `name: string`         | Report every screen/dialog by name, including ad-free destinations — fires a `pageImpression`. See [Screen tracking](#screen-tracking-analytics). |
 | `setSmartRefreshV2Enabled` | `enabled: boolean`   | Force smart-refresh v2 (directional viewport gate) on/off, overriding backend config. Call **before** creating banners.                  |
 | `setBlankOnScreenReload` | `enabled: boolean`     | Blank a banner's slot during a screen-resume reload (default `false`). Call **before** creating banners.                                 |
 | `setAppVolume`           | `volume: number`       | Set the global ad audio volume for all ad types (`0.0`–`1.0`, `0.0` = muted). The SDK defaults to muted.                                 |
@@ -437,7 +503,7 @@ Wire navigation once, place a banner, and write nothing else. No `load()`, no `T
 after a page impression or an app resume, no disposal.
 
 ```tsx
-import { createNavigationContainerRef } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import {
   AudienzzBanner,
   AudienzzPage,
@@ -780,9 +846,8 @@ import { RNAudienzz, Targeting } from 'audienzz';
 
 RNAudienzz()
   .initializeRemote(
-    'https://api.adnz.co/api/ws-sdk-config/public/v1/', // Audienzz remove config URL
-    'YOUR_PUBLISHER_ID', // Will be provided for you
-    false // enablePPID
+    'https://api.adnz.co/api/ws-sdk-config/public/v1/', // Audienzz remote config URL
+    'YOUR_PUBLISHER_ID' // Provided by Audienzz
   )
   .then((value) => {
     console.log('SDK initialized with remote config:', JSON.stringify(value, null, 2));
