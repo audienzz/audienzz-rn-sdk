@@ -2,6 +2,7 @@
 #import <XCTest/XCTest.h>
 #import <objc/runtime.h>
 #import <audienzz/RCTOriginalBannerView.h>
+#import <audienzz/RCTRemoteConfigBannerView.h>
 #import <audienzz/RCTOriginalInterstitialView.h>
 #import <audienzz/RCTOriginalRewardedView.h>
 #import <audienzz/RCTAudienzzViewUtils.h>
@@ -46,6 +47,18 @@ static GADRequest *RewardedRequest;
   GoogleRequest = request;
   GoogleLoads++;
 }
+@end
+
+// Control the asynchronous setup boundary; the real didSetProps and internalCreateAd run.
+@interface DeferredBanner : RCTOriginalBannerView
+@end
+@implementation DeferredBanner
+- (void)createAd {}
+@end
+@interface DeferredRemoteBanner : RCTRemoteConfigBannerView
+@end
+@implementation DeferredRemoteBanner
+- (void)createAd {}
 @end
 
 @interface AudienzzrnExampleTests : XCTestCase
@@ -94,6 +107,27 @@ static GADRequest *RewardedRequest;
   view.videoBitrate = @[@300, @1500];
   view.videoDuration = @[@5, @30];
   return view;
+}
+
+- (void)testBannerIdentityIsReservedBeforeAsynchronousCreation {
+  DeferredBanner *first = [DeferredBanner new];
+  DeferredRemoteBanner *second = [DeferredRemoteBanner new];
+  first.auConfigID = @"first";
+  second.adConfigId = @"second";
+  [first didSetProps:@[@"auConfigID"]];
+  [second didSetProps:@[@"adConfigId"]];
+  AUAdRequestContext *firstContext = [first valueForKey:@"requestContext"];
+  AUAdRequestContext *secondContext = [second valueForKey:@"requestContext"];
+  XCTAssertNotNil(firstContext, @"Original banner must reserve before createAd runs");
+  XCTAssertNotNil(secondContext, @"Remote banner must reserve before config resolution");
+  XCTAssertNotEqual(firstContext, secondContext);
+  first.videoBitrate = @[@300, @1500]; first.videoDuration = @[@5, @30];
+  first.sizes = @[@{@"width": @300, @"height": @250}];
+  first.adFormats = @[@"banner"]; first.adUnitID = @"/test";
+  [first internalCreateAd];
+  XCTAssertEqual(first.auBannerView.requestContext, firstContext);
+  [first didSetProps:@[@"sizes"]];
+  XCTAssertEqual([first valueForKey:@"requestContext"], firstContext);
 }
 
 - (void)testSDKRequestIsForwardedOnInitialAndReplacementDelivery {

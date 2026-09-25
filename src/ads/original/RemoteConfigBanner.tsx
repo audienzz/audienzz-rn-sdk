@@ -171,6 +171,6 @@ const styles = StyleSheet.create({
     },
     adaptiveNativeComponent: {
         width: '100%',
-        minHeight: 1,
+        minHeight: 50,
     },
 });

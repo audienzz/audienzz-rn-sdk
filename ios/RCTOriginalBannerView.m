@@ -37,6 +37,14 @@
   AUAdRequestContext *_requestContext;
 }
 
+- (void)didSetProps:(NSArray<NSString *> *)changedProps {
+  // Reserve in React's mount order, before asynchronous size/setup work can reorder slots.
+  if (self.propsChanged && !_requestContext) {
+    _requestContext = [AUAdRequestContext forSlot:NSUUID.UUID.UUIDString pageKey:self.pageKey];
+  }
+  [super didSetProps:changedProps];
+}
+
 - (void)setAutoRefreshPeriodMillis:(NSNumber *)value {
   _autoRefreshPeriodMillis = [value floatValue];
   self.propsChanged = YES;

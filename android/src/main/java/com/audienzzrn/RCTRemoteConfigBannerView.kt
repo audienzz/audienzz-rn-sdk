@@ -15,7 +15,16 @@ import org.audienzz.mobile.AudienzzRemoteBannerView
 
 class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
 
-  val requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext()
+  var requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext()
+    private set
+  private var requestContextReserved = false
+
+  fun reserveRequestContext() {
+    if (requestContextReserved) return
+    requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext.forSlot(
+      java.util.UUID.randomUUID().toString(), pageKey)
+    requestContextReserved = true
+  }
 
   private var configId: String? = null
   private var loadedConfigId: String? = null
@@ -107,6 +116,7 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
 
   fun loadAd() {
     val id = configId ?: return
+    reserveRequestContext()
 
     // Lazy loading and the prefetch margin are not props: they come from the ad config alone,
     // which the native view reads when it builds the ad handler.

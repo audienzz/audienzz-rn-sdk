@@ -5,6 +5,11 @@
 > refresh and interstitial APIs used by this bridge. The examples use published dependencies
 > by default. Optional local development overrides are described in [LOCAL_TESTING.md](LOCAL_TESTING.md).
 
+> **Unreleased fixes on this branch:** adaptive iOS loading and banner-only slot numbering
+> need the matching native fixes. Flutter also needs the new native interstitial context API.
+> Until native releases and bridge pins are updated, use the local native overrides in
+> [LOCAL_TESTING.md](LOCAL_TESTING.md#pending-native-fixes-in-this-branch).
+
 ## Quick integration (remote config + `pageImpression`)
 
 The recommended path: Audienzz supplies your publisher and placement IDs, the backend configures
@@ -53,6 +58,12 @@ placements `46` / `48`, and interstitial `47`; development publisher `81` does n
 Testing Android through Charles? Use the example's **debug build** and install your Charles CA
 on the device. Release builds retain normal certificate trust. See
 [Charles setup and startup troubleshooting](LOCAL_TESTING.md#charles-ssl-proxying-on-android).
+
+On iOS, if your app requests tracking permission, add `NSUserTrackingUsageDescription` and
+resolve ATT while the app is active, **before ad initialization**. Prompt only for `notDetermined`;
+a denied/restricted decision must still let your app initialize. IDFA remains unavailable without
+authorization. The example includes this flow; the SDK never prompts automatically for publishers.
+See [Apple's ATT request requirements](https://developer.apple.com/documentation/apptrackingtransparency/attrackingmanager/requesttrackingauthorization(completionhandler:)).
 
 ### 3. Report every screen — including screens without ads
 
@@ -1183,6 +1194,7 @@ Apache License 2.0
 
 ### Automatic request counters
 
-Original and remote banners/interstitials automatically include `au_page_seq`, `au_slot` and
-`hb_refresh_count` in GAM custom targeting. See [the request targeting contract](docs/ad-request-targeting.md)
+Original and remote banners include `au_page_seq`, `au_slot` and `hb_refresh_count` in GAM
+custom targeting. Interstitials include only `au_page_seq` and `hb_refresh_count`; they never
+consume a banner position. See [the request targeting contract](docs/ad-request-targeting.md)
 for page resets, automatic slot ordering and request-count semantics. No new publisher parameter is required.

@@ -29,7 +29,16 @@ import org.audienzz.mobile.AudienzzBannerAdUnit
 import org.audienzz.mobile.original.AudienzzAdViewHandler
 
 class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
-  val requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext()
+  var requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext()
+    private set
+  private var requestContextReserved = false
+
+  fun reserveRequestContext() {
+    if (requestContextReserved) return
+    requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext.forSlot(
+      java.util.UUID.randomUUID().toString(), pageKey)
+    requestContextReserved = true
+  }
 
   private var sizes: Array<AudienzzAdSize> = arrayOf()
   private var receivedSize: AdSize = AdSize(1,1)

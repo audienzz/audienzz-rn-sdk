@@ -20,6 +20,7 @@
 
 @interface RCTOriginalView : UIView <GADBannerViewDelegate, GADFullScreenContentDelegate, AUInterstitialenderingAdDelegate, AURewardedAdUnitDelegate, AUBannerRenderingAdDelegate>
 
+- (void)didSetProps:(NSArray<NSString *> *)changedProps;
 - (void)createAd;
 - (void)internalCreateAd;
 

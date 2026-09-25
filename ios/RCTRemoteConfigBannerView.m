@@ -56,6 +56,10 @@
 
 - (void)didSetProps:(NSArray<NSString *> *)changedProps {
   if (self.propsChanged) {
+    // Reserve in React's mount order, before asynchronous configuration/setup work.
+    if (!_requestContext) {
+      _requestContext = [AUAdRequestContext forSlot:NSUUID.UUID.UUIDString pageKey:self.pageKey];
+    }
     dispatch_async(self.backgroundQueue, ^{
       [self createAd];
     });

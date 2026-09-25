@@ -54,6 +54,7 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     super.onAfterUpdateTransaction(reactViewGroup)
 
     if (reactViewGroup.getPropsChanged()) {
+      reactViewGroup.reserveRequestContext()
       // Retained so teardown can cancel it: React can drop the view inside this window, and the
       // task would then build an ad — handler, coordinator registration and all — for a view that
       // no longer exists.

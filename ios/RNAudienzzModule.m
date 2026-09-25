@@ -21,7 +21,7 @@
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 #import <GoogleMobileAds/GoogleMobileAds.h>
 
-static NSString * const kRNSdkVersion = @"0.4.4";
+static NSString * const kRNSdkVersion = @"0.5.0";
 
 @implementation RNAudienzzModule
 
