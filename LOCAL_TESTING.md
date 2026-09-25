@@ -182,7 +182,12 @@ Repeat **Prefetch → ready → Show → dismiss** at least three times without 
 Each cycle must load new inventory, show once and return to not-ready. Capture the full error
 and `AUDZ interstitial` events if a show is skipped. The example displays structured errors.
 
-The sticky example has labels above and below every loaded creative. They sample geometry every
+The sticky example uses five `RemoteConfigBanner` instances with the same fixed placement as
+the main screen. Lazy loading and prefetch distance come only from the backend (`lazyLoad`
+defaults to `true`, `prefetchDistanceDp` to `200`); the example supplies no delivery overrides.
+With those defaults, verify that distant slots wait until they approach the viewport to request.
+
+It has labels above and below every loaded creative. They sample geometry every
 500 ms and use the native top-edge/half-height thresholds. They describe viewport eligibility,
 not whether a network refresh is currently running.
 

@@ -1,8 +1,9 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import StickyAdExample from '../../example/src/components/StickyAdExample';
+import { REMOTE_CONFIG } from '../../example/src/remoteConfig';
 
-jest.mock('audienzz', () => ({ OriginalBanner: 'Banner' }), { virtual: true });
+jest.mock('audienzz', () => ({ RemoteConfigBanner: 'RemoteBanner' }), { virtual: true });
 jest.mock('../../src/components/AudienzzStickyAdWrapper', () => ({
   AudienzzStickyAdWrapper: 'Sticky',
 }));
@@ -15,17 +16,20 @@ jest.mock('react-native', () => ({
 }));
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
-test('every sticky banner is lazy and shows indicators on both sides after loading', () => {
+test('every sticky banner uses remote delivery settings and shows indicators on both sides after loading', () => {
   jest.useFakeTimers();
   let tree!: renderer.ReactTestRenderer;
   act(() => { tree = renderer.create(<StickyAdExample />); });
-  const banners = tree.root.findAllByType('Banner' as any);
+  const banners = tree.root.findAllByType('RemoteBanner' as any);
   expect(banners).toHaveLength(5);
   for (const banner of banners) {
-    expect(banner.props.isLazyLoad).toBe(true);
-    expect(banner.props.smartRefresh).toBe(true);
+    expect(banner.props.adConfigId).toBe(REMOTE_CONFIG.fixedBannerId);
+    expect(banner.props.style).toEqual({ width: 300, height: 250 });
+    for (const prop of ['isLazyLoad', 'lazyLoad', 'prefetchMargin', 'smartRefresh', 'refreshTimeMillis']) {
+      expect(banner.props).not.toHaveProperty(prop);
+    }
   }
-  act(() => { banners[0]!.props.onAdLoaded(); });
+  act(() => { banners[0]!.props.onAdLoaded({ width: 300, height: 250 }); });
   const indicators = tree.root.findAllByType('Text' as any).filter(
     (node) => String(node.props.children).startsWith('Ad 1 — viewport')
   );
@@ -44,7 +48,7 @@ test('both indicators follow the measured half-height and physical-pixel top bou
       else callback(0, bannerY, 300, 250);
     } }),
   }); });
-  act(() => { tree.root.findAllByType('Banner' as any)[0]!.props.onAdLoaded(); });
+  act(() => { tree.root.findAllByType('RemoteBanner' as any)[0]!.props.onAdLoaded({ width: 300, height: 250 }); });
   const expectVerdict = (y: number, verdict: string) => {
     bannerY = y;
     act(() => { jest.advanceTimersByTime(500); });

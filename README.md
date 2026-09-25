@@ -1090,6 +1090,9 @@ function MyScreen() {
 
 `RemoteConfigBanner` works as the child view without any changes — wrap it directly:
 
+The example app's **Sticky ad** screen uses this approach. Lazy loading and prefetch distance
+come from the backend, with defaults of `true` and `200` dp/pt; no code overrides are needed.
+
 ```tsx
 import { useRef } from 'react';
 import { Animated, ScrollView } from 'react-native';

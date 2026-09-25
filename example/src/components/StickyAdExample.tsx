@@ -1,14 +1,12 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { Animated, PixelRatio, Platform, StyleSheet, Text, View } from 'react-native';
-import { OriginalBanner } from 'audienzz';
+import { RemoteConfigBanner } from 'audienzz';
 import { AudienzzStickyAdWrapper } from '../../../src/components/AudienzzStickyAdWrapper';
+import { REMOTE_CONFIG } from '../remoteConfig';
 
-// Ad configuration — mirrors the iOS StickyAdExampleViewController constants.
-const AD_UNIT_ID = '/96628199/testapp_publisher/banner_test_ad_unit';
-const AU_CONFIG_ID = '15624474';
+// Reserve layout before loading; delivery settings come from the remote placement.
 const AD_SIZE = { width: 300, height: 250 };
 const MAX_HEIGHT = 450;
-const REFRESH_MILLIS = 30_000;
 
 // Rows at which an ad slot is inserted (1-based paragraph index).
 const AD_SLOT_ROWS = [6, 12, 18, 24, 30];
@@ -33,7 +31,7 @@ function Paragraph({ index }: { index: number }) {
 /**
  * Demonstrates `AudienzzStickyAdWrapper` in a static `ScrollView`.
  *
- * Lazy first loads happen near the viewport. Native owns smart-refresh v2.
+ * Remote config controls lazy loading and prefetch distance. Native owns refresh.
  * These indicators estimate geometry only; lifecycle, covers and publisher
  * pauses may also block refresh. They are not a native scheduler status.
  */
@@ -144,16 +142,11 @@ export default function StickyAdExample() {
                 bannerRefs.current[slotIdx] = el;
               }}
               collapsable={false}
-              style={AD_SIZE}
+              style={styles.bannerBounds}
             >
-              <OriginalBanner
-                adUnitId={AD_UNIT_ID}
-                auConfigId={AU_CONFIG_ID}
-                sizes={[AD_SIZE]}
-                adFormats={['banner']}
-                isLazyLoad={true}
-                smartRefresh={true}
-                refreshTimeMillis={REFRESH_MILLIS}
+              <RemoteConfigBanner
+                adConfigId={REMOTE_CONFIG.fixedBannerId}
+                style={AD_SIZE}
                 onAdLoaded={() => {
                   console.log(`[StickyAdExample] Ad ${i} loaded`);
                   setLoaded((prev) => {
@@ -194,7 +187,8 @@ export default function StickyAdExample() {
         <Text style={styles.title}>Sticky Ad Example</Text>
         <Text style={styles.subtitle}>
           Scroll down — each banner stays pinned within its reserved area as you
-          scroll past it, then exits at the bottom. Ads load near the viewport.
+          scroll past it, then exits at the bottom. Remote configuration controls
+          when ads load and how far ahead they prefetch.
           Refresh requires the top edge on screen and at least half the banner
           visible. The indicators above and below each ad estimate viewport
           eligibility.
@@ -247,6 +241,10 @@ const styles = StyleSheet.create({
   },
   bannerHost: {
     alignItems: 'center',
+  },
+  bannerBounds: {
+    width: AD_SIZE.width,
+    // Follow RemoteConfigBanner's loaded height when measuring eligibility.
   },
   indicator: {
     alignSelf: 'stretch',
