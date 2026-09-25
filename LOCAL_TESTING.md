@@ -134,6 +134,13 @@ The line vocabulary is in
 The main screen combines remote banners, scroll-testing content and interstitial controls.
 Separate Managed Banner, Managed Flows and Smart Refresh screens have been removed.
 
+The Android example keeps content below the visible status bar and inside the navigation-bar
+and display-cutout insets. Android 14 and below use the system's fitted window; Android 15+
+uses root padding because edge-to-edge is enforced. Check the main screen and test-screen
+back button in portrait and landscape, including after an interstitial closes. Google shows
+interstitials in a separate `AdActivity`, so also verify its close button independently;
+the example's root padding does not control Google's fullscreen layout.
+
 | Flow                                            | Where                                                                                      |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | RemoteBanner scrolling; scroll off and back     | **Main → Remote ads**: fixed banner 46 and adaptive banner 48, separated by article text |

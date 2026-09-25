@@ -1,5 +1,6 @@
 package com.audienzzrnexample
 
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.ViewCompat
@@ -13,16 +14,20 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate
 class MainActivity : ReactActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    // RN's built-in SafeAreaView only protects iOS. Android 15 enforces edge-to-edge:
-    // reserve the actual system bars/cutout so every example header stays tappable.
-    WindowCompat.setDecorFitsSystemWindows(window, false)
-    val content = findViewById<View>(android.R.id.content)
-    ViewCompat.setOnApplyWindowInsetsListener(content) { view, insets ->
-      val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
-      view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-      insets
+    // Keep app content inside the system bars. On Android 14 and below the window
+    // does this itself; adding inset padding there would reserve the space twice.
+    WindowCompat.setDecorFitsSystemWindows(window, true)
+    if (Build.VERSION.SDK_INT >= 35) {
+      // Android 15+ enforces edge-to-edge for our target SDK. RN's built-in
+      // SafeAreaView only protects iOS, so reserve the bars/cutout at the root.
+      val content = findViewById<View>(android.R.id.content)
+      ViewCompat.setOnApplyWindowInsetsListener(content) { view, insets ->
+        val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+        view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+        insets
+      }
+      ViewCompat.requestApplyInsets(content)
     }
-    ViewCompat.requestApplyInsets(content)
   }
 
   /**
