@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { Animated, Platform, StyleSheet, Text, View } from 'react-native';
+import { Animated, PixelRatio, Platform, StyleSheet, Text, View } from 'react-native';
 import { OriginalBanner } from 'audienzz';
 import { AudienzzStickyAdWrapper } from '../../../src/components/AudienzzStickyAdWrapper';
 
@@ -40,6 +40,7 @@ function Paragraph({ index }: { index: number }) {
 export default function StickyAdExample() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const viewportRef = useRef<View>(null);
+  const measurement = useRef(0);
 
   // One View ref per ad slot for visibility measurement.
   const bannerRefs = useRef<(View | null)[]>(
@@ -57,17 +58,23 @@ export default function StickyAdExample() {
   // -------------------------------------------------------------------------
 
   const checkVisibility = useCallback(() => {
+    const sample = ++measurement.current;
     viewportRef.current?.measureInWindow(
-      (_vx, viewportY, _vw, viewportHeight) => {
+      (viewportX, viewportY, viewportWidth, viewportHeight) => {
+        if (sample !== measurement.current) return;
         bannerRefs.current.forEach((ref, idx) => {
-          ref?.measureInWindow((_x, y, _w, height) => {
+          ref?.measureInWindow((x, y, width, height) => {
+            if (sample !== measurement.current) return;
             const visibleBottom = Math.min(
               viewportY + viewportHeight,
               y + height
             );
             const isActive =
               height > 0 &&
-              y >= viewportY - 1 &&
+              viewportHeight > 0 &&
+              Math.min(viewportX + viewportWidth, x + width) > Math.max(viewportX, x) &&
+              // Native's top tolerance is one physical pixel, not one React Native point.
+              Math.max(0, viewportY - y) * PixelRatio.get() < 1 &&
               visibleBottom - y >= height / 2;
             setActive((prev) => {
               if (prev[idx] === isActive) return prev;
@@ -86,7 +93,7 @@ export default function StickyAdExample() {
   // 5 bridge calls + full-tree re-renders at 10 fps, which jankifies scroll.
   useEffect(() => {
     const id = setInterval(checkVisibility, 500);
-    return () => clearInterval(id);
+    return () => { clearInterval(id); measurement.current++; };
   }, [checkVisibility]);
 
   // -------------------------------------------------------------------------
@@ -132,6 +139,7 @@ export default function StickyAdExample() {
           <View style={styles.bannerHost}>
             {indicator(slotIdx)}
             <View
+              testID={`sticky-banner-${slotIdx}`}
               ref={(el) => {
                 bannerRefs.current[slotIdx] = el;
               }}
@@ -172,7 +180,7 @@ export default function StickyAdExample() {
   // -------------------------------------------------------------------------
 
   return (
-    <View ref={viewportRef} collapsable={false} style={styles.scroll}>
+    <View testID="sticky-viewport" ref={viewportRef} collapsable={false} style={styles.scroll}>
       <Animated.ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.contentContainer}

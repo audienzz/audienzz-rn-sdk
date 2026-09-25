@@ -159,11 +159,11 @@ export default function RemoteConfigExample({
           console.log('[RemoteConfig] Interstitial loaded successfully');
         }}
         onAdFailedToLoad={(error) => {
-          setStatus(`load failed: ${String(error)}`);
+          setStatus(`load failed: ${JSON.stringify(error)}`);
           console.log('[RemoteConfig] Interstitial failed to load:', error);
         }}
         onAdFailedToShow={(error) => {
-          setStatus(`failed to show: ${String(error)}`);
+          setStatus(`failed to show: ${JSON.stringify(error)}`);
           console.log('[RemoteConfig] Presentation failed:', error);
         }}
         onLifecycleEvent={(event) => {

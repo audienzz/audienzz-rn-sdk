@@ -36,13 +36,13 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
   fun initialize(companyID: String, promise: Promise) {
     AudienzzPrebidMobile.initializeSdk(applicationContext, companyID) { status ->
       when (status) {
-        AudienzzInitializationStatus.SUCCEEDED -> {
+        AudienzzInitializationStatus.SUCCEEDED, AudienzzInitializationStatus.SERVER_STATUS_WARNING -> {
           setupOmid()
           setupRnSdkIdentity()
           val result: WritableMap =
             Arguments.createMap().apply {
-              putString("status", "SUCCEEDED")
-              putString("description", "SDK initialized successfully!")
+              putString("status", status.name)
+              putString("description", status.description ?: "SDK initialized successfully!")
             }
 
           promise.resolve(result)
@@ -187,7 +187,7 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
       applicationContext,
       publisherId
     ) { status ->
-      if (status == AudienzzInitializationStatus.SUCCEEDED) {
+      if (status != AudienzzInitializationStatus.FAILED) {
         setupOmid()
         setupRnSdkIdentity()
         promise.resolve(null)

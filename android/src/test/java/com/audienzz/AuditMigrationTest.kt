@@ -63,7 +63,7 @@ class AuditMigrationTest {
     module.invalidate()
   }
 
-  @Test fun `initialization failure and warning both settle the promise`() {
+  @Test fun `initialization failure rejects but a server warning leaves Google usable`() {
     // Initialize the Kotlin object before MockK records calls made by its static initializer.
     AudienzzPrebidMobile.hashCode()
     mockkStatic(AudienzzPrebidMobile::class)
@@ -73,9 +73,26 @@ class AuditMigrationTest {
       val promise = mockk<Promise>(relaxed = true)
       RNAudienzzModule(context).initialize("company", promise)
       listener.captured.onInitializationComplete(status)
-      verify(exactly = 1) { promise.reject("INIT_FAILED", any<String>()) }
-      verify(exactly = 0) { promise.resolve(any()) }
+      if (status == AudienzzInitializationStatus.FAILED) {
+        verify(exactly = 1) { promise.reject("INIT_FAILED", any<String>()) }
+        verify(exactly = 0) { promise.resolve(any()) }
+      } else {
+        verify(exactly = 1) { promise.resolve(match<WritableMap> { it.getString("status") == "SERVER_STATUS_WARNING" }) }
+        verify(exactly = 0) { promise.reject(any<String>(), any<String>()) }
+      }
     }
+  }
+
+  @Test fun `remote initialization also accepts a Prebid warning`() {
+    AudienzzPrebidMobile.hashCode()
+    mockkStatic(AudienzzPrebidMobile::class)
+    val listener = slot<AudienzzSdkInitializationListener>()
+    every { AudienzzPrebidMobile.initializeRemoteSdk(any(), any(), capture(listener)) } just Runs
+    val promise = mockk<Promise>(relaxed = true)
+    RNAudienzzModule(context).fetchPublisherConfig("35", promise)
+    listener.captured.onInitializationComplete(AudienzzInitializationStatus.SERVER_STATUS_WARNING)
+    verify(exactly = 1) { promise.resolve(null) }
+    verify(exactly = 0) { promise.reject(any<String>(), any<String>()) }
   }
 
   @Test fun `each ad creation reports missing Activity without throwing`() {

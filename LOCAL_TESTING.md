@@ -159,11 +159,32 @@ puts it back; the installed Pods are unaffected.
 
 ## Pending native fixes in this branch
 
+Android Prebid-outage fallback and recovery after a translucent interstitial also require the
+native branch checkout. They are not in the published Android 0.3.0 pin. Rebuild with the local
+native override to test them; restarting Metro alone does not update the native SDK.
+
 Adaptive iOS bootstrap and banner-only slot numbering require the matching native
 `feature/page-impression-api` checkouts. Flutter also calls the new `forInterstitial` context
 factory, so these changes cannot compile against the old published native pins.
 Use the local overrides below while testing. Release native Android and iOS first, then update
 both bridge dependency pins and lockfiles before publishing the bridges. Do not ship local pins.
+
+### Android outage and repeated-interstitial checks
+
+Block only the configured Prebid host in Charles, leaving the Audienzz configuration and Google
+hosts reachable. Test both a cold launch and blocking after initialization. Remote banners and
+interstitials must still reach Google; a timeout/error in Prebid must not become an empty slot
+with no Google request. A Prebid initialization failure resolves with a warning and permits
+Google-only demand. Retry initialization after restoring connectivity to restore Prebid too.
+Missing remote configuration or a Google network failure is still a load failure.
+
+Repeat **Prefetch → ready → Show → dismiss** at least three times without leaving the page.
+Each cycle must load new inventory, show once and return to not-ready. Capture the full error
+and `AUDZ interstitial` events if a show is skipped. The example displays structured errors.
+
+The sticky example has labels above and below every loaded creative. They sample geometry every
+500 ms and use the native top-edge/half-height thresholds. They describe viewport eligibility,
+not whether a network refresh is currently running.
 
 ## ATT in the iOS example
 

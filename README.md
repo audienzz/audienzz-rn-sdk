@@ -50,6 +50,11 @@ Await this once after consent, before mounting the ad-bearing navigation tree. H
 with your startup error/retry UI; keep app content available if initialization fails. Initialization
 does not report a page — the real navigation state in step 3 does that.
 
+Android server-status warnings resolve initialization so Google ads can still load. Full fallback
+when Prebid initialization fails requires the pending native release; see
+[local native testing and outage checks](LOCAL_TESTING.md#pending-native-fixes-in-this-branch).
+An unavailable remote placement configuration or Google endpoint remains an error.
+
 **Android 0.3.0 supports the production configuration URL shown above only.** The bridge rejects
 other URLs with `UNSUPPORTED_REMOTE_URL`; earlier versions silently ignored them. Use publisher
 and placement IDs from the same environment. The example uses production publisher `35`, banner
