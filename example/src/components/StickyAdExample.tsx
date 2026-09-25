@@ -142,7 +142,6 @@ export default function StickyAdExample() {
                 bannerRefs.current[slotIdx] = el;
               }}
               collapsable={false}
-              style={styles.bannerBounds}
             >
               <RemoteConfigBanner
                 adConfigId={REMOTE_CONFIG.fixedBannerId}
@@ -241,10 +240,6 @@ const styles = StyleSheet.create({
   },
   bannerHost: {
     alignItems: 'center',
-  },
-  bannerBounds: {
-    width: AD_SIZE.width,
-    // Follow RemoteConfigBanner's loaded height when measuring eligibility.
   },
   indicator: {
     alignSelf: 'stretch',

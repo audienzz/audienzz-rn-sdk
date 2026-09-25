@@ -30,7 +30,6 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
   private var loadedConfigId: String? = null
   private var adWidth: Int? = null
   private var adHeight: Int? = null
-  private var receivedSize: AdSize = AdSize(1, 1)
   private var remoteConfigBannerView: AudienzzRemoteBannerView? = null
   // Route key reported to pageImpression when this ad mounted. Every React Native ad lives in the
   // single host Activity, so the native page coordinator can't tell one route's ads from another's
@@ -44,25 +43,19 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
 
   override fun requestLayout() {
     super.requestLayout()
+    removeCallbacks(measureAndLayout)
     post(measureAndLayout)
   }
 
   private val measureAndLayout = Runnable {
-    val heightPx = (receivedSize.height * resources.displayMetrics.density).toInt()
-    // Keep the RN-assigned (full) container width and only drive the dynamic ad
-    // height. Forcing the container down to the creative's own width pinned it to
-    // the left edge, so a creative narrower than the screen (e.g. 300x600 on a
-    // tablet) rendered left-aligned instead of centered. The child banner is added
-    // with Gravity.CENTER, so a full-width container centers it horizontally.
-    val widthPx = if (width > 0) width else resources.displayMetrics.widthPixels
-
-    if (widthPx <= 0 || heightPx <= 0) {
-      return@Runnable
-    }
-
-    val heightMeasureSpec = MeasureSpec.makeMeasureSpec(heightPx, MeasureSpec.EXACTLY)
-    measure(MeasureSpec.makeMeasureSpec(widthPx, MeasureSpec.EXACTLY), heightMeasureSpec)
-    layout(left, top, left + widthPx, top + heightPx)
+    // Yoga owns this host's frame. Only re-layout the native children inside it; changing
+    // our own height here disagreed with React Native (and collapsed first loads to 1 dp).
+    if (width <= 0 || height <= 0) return@Runnable
+    measure(
+      MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+      MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
+    )
+    layout(left, top, right, bottom)
   }
 
   fun updateConfigId(value: String) {
@@ -186,7 +179,7 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
       val widthPx = (adWidth!! * resources.displayMetrics.density).toInt()
       val heightPx = (adHeight!! * resources.displayMetrics.density).toInt()
       Log.d(TAG, "Fixed size: ${adWidth}dp x ${adHeight}dp → ${widthPx}px x ${heightPx}px")
-      bannerView.layoutParams = LayoutParams(widthPx, heightPx, Gravity.CENTER)
+      bannerView.layoutParams = LayoutParams(widthPx, heightPx, Gravity.TOP or Gravity.CENTER_HORIZONTAL)
       bannerView.loadAd()
     } else {
       // Adaptive: AudienzzRemoteBannerView.createAdFromConfig reads `this.width` to compute
@@ -196,7 +189,7 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
       // before the config-fetch coroutine resumes on the Main dispatcher.
       val screenWidthPx = resources.displayMetrics.widthPixels
       Log.d(TAG, "Adaptive mode, pre-measuring with screen width: ${screenWidthPx}px")
-      bannerView.layoutParams = LayoutParams(screenWidthPx, LayoutParams.WRAP_CONTENT, Gravity.CENTER)
+      bannerView.layoutParams = LayoutParams(screenWidthPx, LayoutParams.WRAP_CONTENT, Gravity.TOP or Gravity.CENTER_HORIZONTAL)
       bannerView.measure(
         MeasureSpec.makeMeasureSpec(screenWidthPx, MeasureSpec.EXACTLY),
         MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
@@ -207,15 +200,23 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
   }
 
   fun destroy() {
+    removeCallbacks(measureAndLayout)
     remoteConfigBannerView?.destroy()
     remoteConfigBannerView = null
     loadedConfigId = null
     removeAllViews()
+    removeCallbacks(measureAndLayout)
   }
 
   private fun handleAdLoaded(adSize: AdSize?) {
-    if (adSize != null) {
-      receivedSize = adSize
+    if (adSize != null && adSize.width > 0 && adSize.height > 0) {
+      // The reservation is only a placeholder. A 320x50 fill must not remain in a centered
+      // 300x250 child after JS shrinks the host to 50 dp (which placed the ad ABOVE its slot).
+      remoteConfigBannerView?.layoutParams = LayoutParams(
+        adSize.getWidthInPixels(context),
+        adSize.getHeightInPixels(context),
+        Gravity.TOP or Gravity.CENTER_HORIZONTAL
+      )
       requestLayout()
     }
 

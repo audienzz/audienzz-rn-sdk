@@ -48,3 +48,25 @@ describe('RemoteConfigBanner delivery settings', () => {
     expect(props).not.toHaveProperty('prefetchMargin');
   });
 });
+
+describe('RemoteConfigBanner loaded dimensions', () => {
+  it.each([{ width: '100%' }, { width: 300, height: 250 }])(
+    'fits the native view to successive creative sizes with style %j',
+    (style) => {
+      let tree!: renderer.ReactTestRenderer;
+      act(() => { tree = renderer.create(<RemoteConfigBanner adConfigId="46" style={style as any} />); });
+      for (const size of [{ width: 300, height: 250 }, { width: 320, height: 50 }, { width: 300, height: 600 }]) {
+        act(() => {
+          tree.root.findByType('MockRemoteConfigBanner' as any).props.onAdLoaded({ nativeEvent: size });
+        });
+        const outer = tree.root.findByType('View' as any);
+        const resolvedStyle = Object.assign({}, ...outer.props.style);
+        expect(resolvedStyle.height).toBe(size.height);
+        expect(resolvedStyle.width).toBe(typeof style.width === 'number' ? size.width : '100%');
+        const native = tree.root.findByType('MockRemoteConfigBanner' as any);
+        expect(native.props.style.height).toBe('100%');
+      }
+      act(() => { tree.unmount(); });
+    }
+  );
+});

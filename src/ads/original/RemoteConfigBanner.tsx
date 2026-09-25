@@ -58,11 +58,12 @@ const RNRemoteConfigBannerView =
  */
 export class RemoteConfigBanner extends Component<
     RemoteConfigBannerProps,
-    { height?: number }
+    { width?: number; height?: number }
 > {
     private nativeRef: any;
 
     state = {
+        width: undefined,
         height: undefined,
     };
 
@@ -125,9 +126,10 @@ export class RemoteConfigBanner extends Component<
     };
 
     _onAdLoaded = (event: any) => {
-        const { height } = event.nativeEvent;
-        if (height && height !== this.state.height) {
-            this.setState({ height });
+        const { width, height } = event.nativeEvent;
+        if (width > 0 && height > 0 &&
+            (width !== this.state.width || height !== this.state.height)) {
+            this.setState({ width, height });
         }
 
         if (this.props.onAdLoaded) {
@@ -137,11 +139,15 @@ export class RemoteConfigBanner extends Component<
 
     render() {
         const { style, onAdLoaded, onAdFailedToLoad, ...otherProps } = this.props;
-        const dynamicStyle = this.state.height ? { height: this.state.height } : {};
         const flattenedStyle = RNStyleSheet.flatten(style) as ViewStyle | undefined;
         const adWidth = typeof flattenedStyle?.width === 'number' ? flattenedStyle.width : undefined;
         const adHeight = typeof flattenedStyle?.height === 'number' ? flattenedStyle.height : undefined;
-        const nativeStyle = adHeight
+        // Numeric dimensions reserve the first load; subsequent creative sizes can differ.
+        // Keep percentage/full-width hosts intact so native can center a narrower creative.
+        const dynamicStyle = this.state.height
+            ? { height: this.state.height, ...(adWidth && this.state.width ? { width: this.state.width } : {}) }
+            : {};
+        const nativeStyle = adHeight || this.state.height
             ? styles.fixedNativeComponent
             : styles.adaptiveNativeComponent;
 

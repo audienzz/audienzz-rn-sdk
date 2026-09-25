@@ -191,6 +191,19 @@ It has labels above and below every loaded creative. They sample geometry every
 500 ms and use the native top-edge/half-height thresholds. They describe viewport eligibility,
 not whether a network refresh is currently running.
 
+## RemoteBanner sizing checks
+
+Production placement 46 allows both 300×250 and 320×50. Check both creatives, including a refresh
+that switches between them: the ad must remain inside its slot without overlapping its title
+or neighbouring text. The initial 300×250 example style reserves space; it does not restrict
+the backend's list of sizes. Sticky slots must also follow the returned size.
+
+Placement 48 currently sends `type: INLINE`, `widthStrategy: CUSTOM`, `customWidth: 320`.
+That width is **320 dp**, not 320 physical pixels. Test at more than one device density and
+verify the full creative height, horizontal centering, and lazy loading before first fill.
+The custom-width/type fix requires a native Android build containing it; the default 0.3.0 pin
+does not include it. Use the local-native override above until a new native version is released.
+
 ## ATT in the iOS example
 
 The example requests ATT only when the app is active and status is `notDetermined`, before

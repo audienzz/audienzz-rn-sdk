@@ -924,7 +924,9 @@ function MyComponent() {
 </details>
 
 #### Fixed Size Banner
-To enforce a specific fixed size, pass the `width` and `height` props to the `RemoteConfigBanner` component. These dimensions will be used to request and display the ad:
+Use `style.width` and `style.height` to reserve space before the banner loads. The backend
+defines the available ad sizes. Once Google returns a creative, the component follows its
+height and adjusts a numeric width to fit it; a percentage width remains the container width:
 
 ```jsx
 <RemoteConfigBanner
