@@ -21,6 +21,7 @@ import {
     UIManager,
     findNodeHandle,
     View,
+    Platform,
     StyleSheet,
     StyleSheet as RNStyleSheet,
 } from 'react-native';
@@ -33,6 +34,7 @@ const COMPONENT_NAME = 'RNRemoteConfigBanner';
 type NativeRemoteConfigBannerProps = RemoteConfigBannerProps & {
     adWidth?: number;
     adHeight?: number;
+    onAdSizeChanged?: (event: any) => void;
     /** Route key this ad belongs to; see `pageRegistry`. */
     pageKey?: string | null;
 };
@@ -125,13 +127,16 @@ export class RemoteConfigBanner extends Component<
         );
     };
 
-    _onAdLoaded = (event: any) => {
+    _onAdSizeChanged = (event: any) => {
         const { width, height } = event.nativeEvent;
         if (width > 0 && height > 0 &&
             (width !== this.state.width || height !== this.state.height)) {
             this.setState({ width, height });
         }
+    };
 
+    _onAdLoaded = (event: any) => {
+        this._onAdSizeChanged(event);
         if (this.props.onAdLoaded) {
             this.props.onAdLoaded(event.nativeEvent);
         }
@@ -160,6 +165,7 @@ export class RemoteConfigBanner extends Component<
                     adHeight={adHeight}
                     style={nativeStyle}
                     onAdLoaded={this._onAdLoaded}
+                    onAdSizeChanged={Platform.OS === 'ios' ? this._onAdSizeChanged : undefined}
                     onAdFailedToLoad={onAdFailedToLoad}
                     ref={(ref) => {
                         this.nativeRef = ref;

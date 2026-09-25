@@ -54,7 +54,9 @@ sources without editing the committed `Podfile`; the generated lockfile records 
 ## Run
 
 ```bash
-yarn ios / yarn android
+cd ~/Documents/audienzz-rn-sdk/example
+yarn ios
+# Or: yarn android
 ```
 
 ## Collecting a log
@@ -147,8 +149,21 @@ SDK initialization callback alone does not guarantee the remote configuration do
 
 Running `pod install` with `AUDIENZZ_IOS_SDK_PATH` set rewrites `example/ios/Podfile.lock` to point
 at your checkout, so the file will show as modified while you are testing. **Do not commit it** —
-an absolute path in a tracked lock only resolves on one machine. `git checkout -- example/ios/Podfile.lock`
-puts it back; the installed Pods are unaffected.
+an absolute path in a tracked lock only resolves on one machine. Keep that local lockfile while
+using the local Pods. Restoring only `Podfile.lock` leaves it different from `Pods/Manifest.lock`
+and breaks `yarn ios` with **The sandbox is not in sync with the Podfile.lock**.
+
+To repair that error while testing native changes:
+
+```bash
+cd ~/Documents/audienzz-rn-sdk/example/ios
+AUDIENZZ_IOS_SDK_PATH=~/Documents/audienzz-ios-sdk pod install
+cd ..
+yarn ios
+```
+
+To return to released dependencies, unset `AUDIENZZ_IOS_SDK_PATH`, restore the committed
+`Podfile.lock`, and run `pod install` again. Both lockfiles and the installed SDK must agree.
 
 ## Before releasing
 
@@ -209,6 +224,12 @@ That width is **320 dp**, not 320 physical pixels. Test at more than one device 
 verify the full creative height, horizontal centering, and lazy loading before first fill.
 The custom-width/type fix requires a native Android build containing it; the default 0.3.0 pin
 does not include it. Use the local-native override above until a new native version is released.
+
+For iOS inline banners, also test a size arriving after the load callback and a creative changing
+height after display. The slot must retain its placeholder until a positive creative size arrives,
+then update both UIKit and React Native layout without another auction or `onAdLoaded` event.
+This requires the native iOS sizing fix and the RN size-event bridge from this branch; the
+published iOS 0.4.0 dependency does not include the native fix.
 
 ## ATT in the iOS example
 

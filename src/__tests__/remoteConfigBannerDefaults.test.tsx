@@ -3,7 +3,7 @@ import renderer, { act } from 'react-test-renderer';
 import { RemoteConfigBanner } from '../ads/original/RemoteConfigBanner';
 
 jest.mock('react-native', () => ({
-  Platform: { select: (options: any) => options.default },
+  Platform: { OS: 'ios', select: (options: any) => options.default },
   requireNativeComponent: () => 'MockRemoteConfigBanner',
   findNodeHandle: jest.fn(() => 42),
   StyleSheet: {
@@ -50,6 +50,24 @@ describe('RemoteConfigBanner delivery settings', () => {
 });
 
 describe('RemoteConfigBanner loaded dimensions', () => {
+  it('accepts a late iOS creative size without reporting a second load', () => {
+    let tree!: renderer.ReactTestRenderer;
+    const loaded = jest.fn();
+    act(() => { tree = renderer.create(<RemoteConfigBanner adConfigId="48" style={{ width: '100%' }} onAdLoaded={loaded} />); });
+    const native = () => tree.root.findByType('MockRemoteConfigBanner' as any);
+    act(() => native().props.onAdLoaded({ nativeEvent: { width: 320, height: 0 } }));
+    expect(native().props.style.minHeight).toBeGreaterThan(0);
+    expect(typeof native().props.onAdSizeChanged).toBe('function');
+    for (const height of [180, 280]) {
+      act(() => native().props.onAdSizeChanged({ nativeEvent: { width: 320, height } }));
+      const outer = tree.root.findByType('View' as any);
+      expect(Object.assign({}, ...outer.props.style)).toMatchObject({ width: '100%', height });
+      expect(native().props.style.height).toBe('100%');
+    }
+    expect(loaded).toHaveBeenCalledTimes(1);
+    act(() => tree.unmount());
+  });
+
   it.each([{ width: '100%' }, { width: 300, height: 250 }])(
     'fits the native view to successive creative sizes with style %j',
     (style) => {

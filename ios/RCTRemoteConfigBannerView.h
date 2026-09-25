@@ -19,7 +19,7 @@
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 #import <React/RCTComponent.h>
 
-@interface RCTRemoteConfigBannerView : RCTOriginalView
+@interface RCTRemoteConfigBannerView : RCTOriginalView <GADAdSizeDelegate>
 
 @property(nonatomic, strong) NSString *adConfigId;
 @property(nonatomic, strong) AURemoteConfigBannerView *auRemoteConfigBannerView;
@@ -27,6 +27,7 @@
 // single host view controller, so the native page coordinator can't tell one route's ads from
 // another's by host identity — this key is what it matches on instead.
 @property(nonatomic, copy) NSString *pageKey;
+@property(nonatomic, copy) RCTBubblingEventBlock onAdSizeChanged;
 
 - (void)reloadIfVisible;
 - (void)stopAutoRefresh;

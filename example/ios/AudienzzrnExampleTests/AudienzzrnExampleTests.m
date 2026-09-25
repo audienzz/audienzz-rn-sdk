@@ -11,6 +11,10 @@
 - (NSString *)mergeBannerFormatIntoOrtbConfig:(NSString *)config sizes:(NSArray *)sizes;
 @end
 
+@interface RCTRemoteConfigBannerView (AuditTests)
+- (void)setOnAdLoaded:(RCTBubblingEventBlock)block;
+@end
+
 // Replace only the network boundaries. The production RN view creates the SDK and Google views,
 // installs its real callback and tears them down. No auctions or live Google requests are sent.
 static GAMRequest *SDKRequest;
@@ -232,5 +236,22 @@ static GADRequest *RewardedRequest;
   XCTAssertEqual(view.window, window);
   XCTAssertEqual([RCTAudienzzViewUtils rootViewControllerForView:view], controller);
   window.hidden = YES;
+}
+
+- (void)testRemoteAdaptiveSizeEventUsesCallbackDimensionsWithoutAnotherLoadedEvent {
+  RCTRemoteConfigBannerView *view = [RCTRemoteConfigBannerView new];
+  GAMBannerView *google = [[GAMBannerView alloc] initWithAdSize:GADCurrentOrientationInlineAdaptiveBannerAdSizeWithWidth(320)];
+  __block NSDictionary *sizeEvent = nil;
+  __block NSUInteger loaded = 0;
+  view.onAdSizeChanged = ^(NSDictionary *event) { sizeEvent = event; };
+  [view setOnAdLoaded:^(NSDictionary *event) { loaded++; }];
+  [view bannerViewDidReceiveAd:google];
+  XCTAssertEqual(loaded, 1u);
+  XCTAssertEqual(google.adSize.size.height, 0);
+  [view adView:google willChangeAdSizeTo:GADAdSizeFromCGSize(CGSizeMake(320, 180))];
+  XCTAssertEqualObjects(sizeEvent, (@{@"width": @320, @"height": @180}));
+  [view adView:google willChangeAdSizeTo:GADAdSizeFromCGSize(CGSizeMake(320, 280))];
+  XCTAssertEqualObjects(sizeEvent, (@{@"width": @320, @"height": @280}));
+  XCTAssertEqual(loaded, 1u, @"layout updates are not additional load completions");
 }
 @end

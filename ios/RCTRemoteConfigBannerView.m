@@ -202,6 +202,13 @@
 
 #pragma mark - GADBannerViewDelegate
 
+- (void)adView:(GADBannerView *)bannerView willChangeAdSizeTo:(GADAdSize)size {
+  // adSize still describes the previous size here. Forward Google's callback dimensions.
+  if (size.size.width > 0 && size.size.height > 0 && self.onAdSizeChanged) {
+    self.onAdSizeChanged(@{@"width": @(size.size.width), @"height": @(size.size.height)});
+  }
+}
+
 - (void)bannerViewDidReceiveAd:(GADBannerView *)bannerView {
   if (_onAdLoaded) {
     _onAdLoaded(@{
