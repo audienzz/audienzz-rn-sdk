@@ -15,12 +15,8 @@
 
 */
 
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
-import {
-  requireNativeComponent,
-  UIManager,
-  findNodeHandle,
-} from 'react-native';
+import React from 'react';
+import { requireNativeComponent, UIManager } from 'react-native';
 import type {
   OriginalRewardedProps,
   AdError,
@@ -31,15 +27,11 @@ import { LINKING_ERROR } from '../../constants';
 const ComponentName = 'RCTOriginalRewardedView';
 const NativeComponent = requireNativeComponent<any>(ComponentName);
 
-export interface OriginalRewardedHandle {
-  /** Displays the loaded rewarded ad. Call this after `onAdLoaded` fires. */
-  show(): void;
-}
-
-export const OriginalRewarded = forwardRef<
-  OriginalRewardedHandle,
-  OriginalRewardedProps
->((props, ref) => {
+// Presents itself as soon as it loads: there is no imperative `show()`. The ref handle this
+// used to expose dispatched a command neither view manager implements, so it did nothing.
+// `onAdLoaded` reports availability, `onAdOpened` reports presentation, and
+// `onAdFailedToShow` reports a failed presentation.
+export const OriginalRewarded = (props: OriginalRewardedProps) => {
   const {
     adUnitId,
     auConfigId,
@@ -53,27 +45,13 @@ export const OriginalRewarded = forwardRef<
     onUserEarnedReward,
     onAdClosed,
     onAdFailedToLoad,
+    onAdFailedToShow,
     ...restProps
   } = props;
-
-  const nativeRef = useRef<any>(null);
 
   if (UIManager.getViewManagerConfig(ComponentName) == null) {
     throw new Error(LINKING_ERROR);
   }
-
-  useImperativeHandle(ref, () => ({
-    show() {
-      const node = findNodeHandle(nativeRef.current);
-      if (node != null) {
-        UIManager.dispatchViewManagerCommand(
-          node,
-          UIManager.getViewManagerConfig(ComponentName).Commands.show ?? 'show',
-          []
-        );
-      }
-    },
-  }));
 
   // Native fires a single onAdClosed event carrying the reward payload.
   // We split it here: reward data → onUserEarnedReward, close signal → onAdClosed.
@@ -94,9 +72,15 @@ export const OriginalRewarded = forwardRef<
     onAdFailedToLoad?.(error);
   };
 
+  const handleAdFailedToShow = (
+    event: AdError | { nativeEvent: { code: number; message: string } }
+  ) => {
+    const error: AdError = 'nativeEvent' in event ? event.nativeEvent : event;
+    onAdFailedToShow?.(error);
+  };
+
   return (
     <NativeComponent
-      ref={nativeRef}
       {...restProps}
       adUnitID={adUnitId}
       auConfigID={auConfigId}
@@ -109,6 +93,7 @@ export const OriginalRewarded = forwardRef<
       videoDuration={videoDuration}
       onAdClosed={handleAdClosed}
       onAdFailedToLoad={handleAdFailedToLoad}
+      onAdFailedToShow={handleAdFailedToShow}
     />
   );
-});
+};

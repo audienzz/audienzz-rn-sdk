@@ -68,7 +68,11 @@ class RCTRenderingInterstitialView(context: Context) : RCTOriginalView(context) 
     super.createAd()
 
     val currentActivity = (context as ReactContext).currentActivity
-    val eventHandler = AudienzzGamInterstitialEventHandler(currentActivity!!, adUnitID)
+    if (currentActivity == null) {
+      handleAdFailedToLoad(AudienzzAdException(AudienzzAdException.INTERNAL_ERROR, "No Activity available to load the interstitial ad"))
+      return
+    }
+    val eventHandler = AudienzzGamInterstitialEventHandler(currentActivity, adUnitID)
 
     auInterstitialView = AudienzzInterstitialAdUnit(
       currentActivity, auConfigID, AudienzzConversionUtils.convertToAudienzzAdFormat(adFormat), eventHandler

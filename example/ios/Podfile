@@ -14,10 +14,17 @@ ENV['RCT_NEW_ARCH_ENABLED'] = '0'
 use_frameworks!
 
 target 'AudienzzrnExample' do
-  # Pin AudienzziOSSDK to the exact release tag so CocoaPods fetches it
-  # directly from GitHub. Remove this override once 0.3.0 is on the CocoaPods trunk.
-  pod 'AudienzziOSSDK', :git => 'https://github.com/audienzz/audienzz-ios-sdk.git', :tag => '0.3.0'
-  # AudienzziOSSDK 0.3.0 builds against STOCK PrebidMobile (no fork) — its analytics
+  # Published native SDK by default. For local development only, set
+  # AUDIENZZ_IOS_SDK_PATH to the native checkout before pod install.
+  # See LOCAL_TESTING.md; never commit a lockfile containing that local path.
+  audienzz_local_ios_sdk = ENV['AUDIENZZ_IOS_SDK_PATH']
+  if audienzz_local_ios_sdk && !audienzz_local_ios_sdk.empty?
+    Pod::UI.puts "[Audienzz] using LOCAL iOS SDK at #{audienzz_local_ios_sdk}".yellow
+    pod 'AudienzziOSSDK', :path => audienzz_local_ios_sdk
+  else
+    pod 'AudienzziOSSDK', '~> 0.4.0'
+  end
+  # AudienzziOSSDK 0.4.0 builds against STOCK PrebidMobile (no fork) — its analytics
   # use the fork-free economics path. Pin 3.3.1+ for the UserUniqueID(uniqueId:) API;
   # GMAS 13 raises the min iOS deployment target to 15.
   pod 'PrebidMobile',                 '~> 3.3.1'
@@ -29,6 +36,10 @@ target 'AudienzzrnExample' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
+
+  target 'AudienzzrnExampleTests' do
+    inherit! :search_paths
+  end
 
   post_install do |installer|
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202

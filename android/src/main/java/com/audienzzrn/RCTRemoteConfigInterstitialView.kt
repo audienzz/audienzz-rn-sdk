@@ -1,11 +1,6 @@
 package com.audienzz
 
-/*
-    Copyright 2025 Audienzz AG
-*/
-
 import android.content.Context
-import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.bridge.WritableMap
@@ -14,92 +9,140 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.LoadAdError
 import org.audienzz.mobile.AudienzzRemoteConfigInterstitial
 
-class RCTRemoteConfigInterstitialView(
-  context: Context
-) : RCTOriginalView(context) {
+class RCTRemoteConfigInterstitialView(context: Context) : RCTOriginalView(context) {
+  internal var interstitialFactory: (Context, String, AudienzzRemoteConfigInterstitial.Events) -> AudienzzRemoteConfigInterstitial =
+    { host, config, events -> AudienzzRemoteConfigInterstitial(host, config, events) }
 
+  /**
+   * Converts a native lifecycle event for JS. A seam for the same reason as [interstitialFactory]:
+   * `makeNativeMap` returns a JNI-backed map whose class cannot even be initialised on the JVM, so
+   * without this no test could observe what the bridge actually sends.
+   */
+  internal var toJsMap: (Map<String, Any?>) -> WritableMap = { Arguments.makeNativeMap(it) }
+  private val requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext()
   private var adConfigId: String? = null
+  private var manualControl = false
+  private var appliedConfig: Pair<String, Boolean>? = null
   private var remoteInterstitial: AudienzzRemoteConfigInterstitial? = null
+  private var generation = 0
+  private var disposed = false
+  private var presentationPhase = false
 
-  fun setAdConfigId(value: String?) {
-    adConfigId = value
+  fun setAdConfigId(value: String?) { adConfigId = value }
+  fun setManualControl(value: Boolean) { manualControl = value }
+
+  private fun emit(name: String, payload: WritableMap? = null) {
+    if (!disposed) (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, name, payload)
   }
 
-  private fun handleAdLoaded() {
-    (context as ReactContext)
-      .getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(id, "onAdLoaded", null)
-  }
-
-  private fun handleAdFailedToLoad(loadError: LoadAdError) {
-    val error: WritableMap = Arguments.createMap()
-    error.putInt("code", loadError.code)
-    error.putString("message", loadError.message)
-
-    (context as ReactContext)
-      .getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(id, "onAdFailedToLoad", error)
-  }
-
-  private fun handleAdClicked() {
-    (context as ReactContext)
-      .getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(id, "onAdClicked", null)
-  }
-
-  private fun handleAdOpened() {
-    (context as ReactContext)
-      .getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(id, "onAdOpened", null)
-  }
-
-  private fun handleAdClosed() {
-    (context as ReactContext)
-      .getJSModule(RCTEventEmitter::class.java)
-      .receiveEvent(id, "onAdClosed", null)
+  private fun error(name: String, code: Int, message: String, domain: String) {
+    emit(name, Arguments.createMap().apply {
+      putInt("code", code); putString("message", message); putString("domain", domain)
+    })
   }
 
   override fun createAd() {
-    super.createAd()
-
-    val configId = adConfigId
-    if (configId.isNullOrBlank()) {
-      return
-    }
-
-    val activity = (context as? ReactContext)?.currentActivity
-
-    remoteInterstitial = AudienzzRemoteConfigInterstitial(
-      context = activity!!,
-      configId = configId,
-      events = object : AudienzzRemoteConfigInterstitial.Events {
-
-        override fun onLoaded() {
-          handleAdLoaded()
-        }
-
+    if (disposed) return
+    val config = adConfigId?.takeIf { it.isNotBlank() }?.let { it to manualControl }
+    if (config == appliedConfig) return
+    releaseOwner("replaced")
+    appliedConfig = config
+    presentationPhase = false
+    if (config == null) return
+    val token = generation
+    remoteInterstitial = interstitialFactory(
+       (context as ReactContext).currentActivity ?: context,
+      config.first,
+      object : AudienzzRemoteConfigInterstitial.Events {
+        private fun current() = !disposed && token == generation
+        override fun onLoaded() { if (current()) emit("onAdLoaded") }
         override fun onFailed(loadError: LoadAdError) {
-          handleAdFailedToLoad(loadError)
+          if (current()) error("onAdFailedToLoad", loadError.code, loadError.message, loadError.domain)
         }
-
-        override fun onOpened() {
-          handleAdOpened()
-        }
-
-        override fun onClosed() {
-          handleAdClosed()
-        }
-
-        override fun onClicked() {
-          handleAdClicked()
-        }
-
+        override fun onOpened() { if (current()) emit("onAdOpened") }
+        override fun onClosed() { if (current()) emit("onAdClosed") }
+        override fun onClicked() { if (current()) emit("onAdClicked") }
         override fun onFailedToShow(adError: AdError) {
-          // Nothing to handle
+          if (current()) error("onAdFailedToShow", adError.code, adError.message, adError.domain)
+        }
+        override fun onError(reason: String) {
+          if (current()) error(if (presentationPhase) "onAdFailedToShow" else "onAdFailedToLoad",
+            -1, reason, "Audienzz")
+        }
+        override fun onLifecycleEvent(event: Map<String, Any?>) {
+          // A discard is emitted during teardown, after the generation bump that silences load and
+          // presentation callbacks. Gating it away swallowed exactly the event this teardown
+          // should surface, so it is allowed through on its own terms.
+          val isDiscard = event["event"] == "discardedWithoutImpression"
+          if (!current() && !isDiscard) return
+          when (event["event"]) {
+            "loadRequested" -> presentationPhase = false
+            "loaded", "showAttempted", "showFailed" -> presentationPhase = true
+            "impression" -> emit("onAdImpression")
+          }
+          // Carry native's own readiness on every event. JS cannot query it — view commands return
+          // nothing — and re-deriving it from event names would duplicate native's rules (several
+          // showFailed paths treat held inventory differently) and drift from them. Native sets the
+          // ad before emitting `loaded`, so this is accurate at the moment each event fires.
+          val payload = event.toMutableMap()
+          payload["ready"] = remoteInterstitial?.isReady == true
+          emit("onLifecycleEvent", toJsMap(payload))
         }
       }
     )
+    // manualControl == false means "prefetch and show as soon as this component mounts": the
+    // convenience form, spelled out rather than hidden behind a load that sometimes presents.
+    remoteInterstitial?.requestContext = requestContext
+    if (!manualControl) remoteInterstitial?.prefetchAndShow()
+  }
 
-    remoteInterstitial?.loadAd()
+  fun prefetch() {
+    if (disposed) return
+    remoteInterstitial?.prefetch()
+  }
+
+  fun prefetchAndShow() {
+    if (disposed) return
+    remoteInterstitial?.prefetchAndShow()
+  }
+
+  fun show(eligible: Boolean) { if (!disposed) showOnce(eligible) }
+
+  private fun showOnce(eligible: Boolean) {
+    val activity = (context as ReactContext).currentActivity
+    if (activity == null) {
+      emit("onLifecycleEvent", Arguments.createMap().apply {
+        putString("event", "opportunitySkipped"); putString("reason", "inactive")
+        putString("configId", adConfigId)
+        // Every lifecycle event carries native readiness — this one too, though the bridge makes
+        // it up rather than native. Skipping for want of an Activity leaves held inventory alone.
+        putBoolean("ready", remoteInterstitial?.isReady == true)
+      })
+      return
+    }
+    remoteInterstitial?.show(activity, eligible)
+  }
+
+  fun dispose() {
+    if (disposed) return
+    releaseOwner("disposed")
+    disposed = true
+  }
+
+  /**
+   * Releases the placement owner, recording why: a prop change that swaps placements is a
+   * replacement, an unmount is a disposal. Only the reported reason differs.
+   *
+   * The generation bump stops load and presentation callbacks reaching JS as spurious failures —
+   * every one of them is generation-gated. But destroy() is also what reports inventory discarded
+   * without an impression, and gating that away swallowed exactly the event this teardown should
+   * surface, so the discard is forwarded directly instead.
+   */
+  private fun releaseOwner(reason: String) {
+    val owner = remoteInterstitial
+    generation++
+    remoteInterstitial = null
+    owner?.destroy(reason)
   }
 }

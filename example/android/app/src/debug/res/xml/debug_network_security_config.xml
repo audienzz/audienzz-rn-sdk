@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Preserve the debug app's HTTP connection to Metro, including LAN hosts. -->
+    <base-config cleartextTrafficPermitted="true" />
+    <!-- Install the tester's Charles CA in Android's user certificate store first.
+         System CAs remain trusted. Both this resource and its manifest entry are debug-only. -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>

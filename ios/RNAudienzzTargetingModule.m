@@ -49,11 +49,13 @@ RCT_EXPORT_METHOD(getDomain:(RCTPromiseResolveBlock)resolve
     resolve(domain);
 }
 
-RCT_EXPORT_METHOD(setStoreURL:(NSString *)url) {
+// The exported selector IS the JavaScript name. It read setStoreURL while the JS layer and the
+// Android module both call setStoreUrl, so this never ran.
+RCT_EXPORT_METHOD(setStoreUrl:(NSString *)url) {
     [[AUTargeting shared] setStoreURL:url];
 }
 
-RCT_EXPORT_METHOD(getStoreURL:(RCTPromiseResolveBlock)resolve
+RCT_EXPORT_METHOD(getStoreUrl:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     NSString *url = [[AUTargeting shared] storeURL];
     resolve(url);
@@ -139,11 +141,13 @@ RCT_EXPORT_METHOD(getSubjectToGDPR:(RCTPromiseResolveBlock)resolve
     resolve(gdpr);
 }
 
-RCT_EXPORT_METHOD(setGdprConsentString:(NSString *)consent) {
+// Likewise: the JS layer and the Android module both call setGDPRConsentString. Exporting
+// setGdprConsentString meant a publisher's TCF consent string never reached the SDK at all.
+RCT_EXPORT_METHOD(setGDPRConsentString:(NSString *)consent) {
     [[AUTargeting shared] setGdprConsentString:consent];
 }
 
-RCT_EXPORT_METHOD(getGdprConsentString:(RCTPromiseResolveBlock)resolve
+RCT_EXPORT_METHOD(getGDPRConsentString:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     NSString *consent = [[AUTargeting shared] gdprConsentString];
     resolve(consent);

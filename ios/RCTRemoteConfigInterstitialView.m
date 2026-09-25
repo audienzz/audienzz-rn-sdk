@@ -16,143 +16,187 @@
  */
 
 #import "RCTRemoteConfigInterstitialView.h"
-#import <React/RCTLog.h>
+#import <React/UIView+React.h>
 
 @implementation RCTRemoteConfigInterstitialView {
-  RCTBubblingEventBlock _onAdLoaded;
-  RCTBubblingEventBlock _onAdFailedToLoad;
-  RCTBubblingEventBlock _onAdClicked;
-  RCTBubblingEventBlock _onAdOpened;
-  RCTBubblingEventBlock _onAdClosed;
+  AUAdRequestContext *_requestContext;
+  NSString *_appliedConfig;
+  BOOL _appliedManualControl;
+  BOOL _disposed;
+  BOOL _loading;
+  BOOL _presenting;
+  NSUInteger _generation;
 }
 
-- (instancetype)init {
-  self = [super init];
-  if (self) {
-    // Interstitial doesn't need semaphore/background queue
-  }
-  return self;
+- (void)didSetProps:(NSArray<NSString *> *)changedProps { [self createAd]; }
+
+- (void)releaseOwner {
+  [self releaseOwnerWithReason:@"disposed"];
 }
 
-- (void)setAdConfigId:(NSString *)adConfigId {
-  _adConfigId = adConfigId;
-  self.propsChanged = YES;
-
-  if (_adConfigId) {
-    self.auRemoteConfigInterstitial =
-        [[AURemoteConfigInterstitial alloc] initWithAdConfigId:_adConfigId];
-    self.auRemoteConfigInterstitial.delegate = self;
+/// `reason` records why held inventory is being released: a prop change that swaps placements is a
+/// replacement, an unmount is a disposal. Only the reported reason differs.
+- (void)releaseOwnerWithReason:(NSString *)reason {
+  AURemoteConfigInterstitial *owner = self.auRemoteConfigInterstitial;
+  if (owner == nil) {
+    _generation++;
+    _loading = NO;
+    _presenting = NO;
+    return;
   }
+  RCTBubblingEventBlock lifecycle = self.onLifecycleEvent;
+  // Bumping first stops load/presentation callbacks reaching JS as spurious failures: every one of
+  // those blocks is generation-gated.
+  _generation++;
+  _loading = NO;
+  _presenting = NO;
+  owner.delegate = nil;
+  owner.onPresentationError = nil;
+  // But destroy() is also what reports inventory discarded without an impression, and clearing
+  // this callback before destroying swallowed exactly the event this teardown should surface. An
+  // ungated forwarder is installed across the call and removed straight after.
+  owner.onLifecycleEvent = ^(NSDictionary *event) {
+    // Teardown: whatever was held is being released, so nothing is ready any more.
+    if (lifecycle) lifecycle([RCTRemoteConfigInterstitialView event:event withReady:NO]);
+  };
+  // destroyWithReason:, not destroy: — Swift exports `destroy(reason:)` with the argument label
+  // folded into the selector. Verified against the generated AudienzziOSSDK-Swift.h.
+  [owner destroyWithReason:reason];
+  owner.onLifecycleEvent = nil;
+  self.auRemoteConfigInterstitial = nil;
 }
 
-- (void)didSetProps:(NSArray<NSString *> *)changedProps {
-  if (self.propsChanged) {
-    [self createAd];
-  }
-  self.propsChanged = NO;
+/// Carry native's own readiness on every lifecycle event.
+///
+/// JS cannot query it — view commands return nothing — and re-deriving it from event names would
+/// duplicate native's rules (several showFailed paths treat held inventory differently) and drift
+/// from them. Native stores the ad before emitting `loaded`, so this is accurate at each event.
++ (NSDictionary *)event:(NSDictionary *)event withReady:(BOOL)ready {
+  NSMutableDictionary *payload = [event mutableCopy] ?: [NSMutableDictionary dictionary];
+  payload[@"ready"] = @(ready);
+  return payload;
 }
 
 - (void)createAd {
-  [self load];
+  if (_disposed) return;
+  if ((_appliedConfig == self.adConfigId || [_appliedConfig isEqualToString:self.adConfigId]) &&
+      _appliedManualControl == self.manualControl) return;
+  [self releaseOwnerWithReason:@"replaced"];
+  _appliedConfig = [self.adConfigId copy];
+  _appliedManualControl = self.manualControl;
+  if (self.adConfigId.length == 0) return;
+  self.auRemoteConfigInterstitial = [[AURemoteConfigInterstitial alloc] initWithAdConfigId:self.adConfigId];
+  if (!_requestContext) _requestContext = [AUAdRequestContext new];
+  self.auRemoteConfigInterstitial.requestContext = _requestContext;
+  self.auRemoteConfigInterstitial.delegate = self;
+  NSUInteger token = _generation;
+  __weak typeof(self) weakSelf = self;
+  self.auRemoteConfigInterstitial.onPresentationError = ^(NSError *error) {
+    typeof(self) self = weakSelf;
+    if (!self || self->_disposed || token != self->_generation) return;
+    self->_presenting = NO;
+    NSDictionary *payload = [self errorPayload:error];
+    if (self.onAdFailedToShow) self.onAdFailedToShow(payload);
+    else if (!self.manualControl && self.onAdFailedToLoad) self.onAdFailedToLoad(payload);
+  };
+  self.auRemoteConfigInterstitial.onLifecycleEvent = ^(NSDictionary *event) {
+    typeof(self) self = weakSelf;
+    if (!self || self->_disposed || token != self->_generation) return;
+    if ([event[@"event"] isEqual:@"showAttempted"]) self->_presenting = YES;
+    if (self.onLifecycleEvent) {
+      self.onLifecycleEvent([RCTRemoteConfigInterstitialView
+          event:event withReady:self.auRemoteConfigInterstitial.isReady]);
+    }
+  };
+  // manualControl == NO means "prefetch and show as soon as this component mounts": the convenience
+  // form, spelled out rather than hidden behind a load that sometimes presents.
+  if (!self.manualControl) [self prefetchAndShow];
 }
 
-- (void)load {
+- (NSDictionary *)errorPayload:(NSError *)error {
+  return @{@"code": @(error.code), @"message": error.localizedDescription, @"domain": error.domain};
+}
+
+- (UIViewController *)presentationController {
+  return [self reactViewController] ?: self.window.rootViewController;
+}
+
+- (void)prefetch { [self startLoad:NO]; }
+- (void)prefetchAndShow { [self startLoad:YES]; }
+
+- (void)startLoad:(BOOL)showWhenLoaded {
+  if (_disposed) return;
   if (!self.auRemoteConfigInterstitial) {
-    RCTLogError(@"[RCTRemoteConfigInterstitialView] adConfigId must be set "
-                @"before loading");
-    if (_onAdFailedToLoad) {
-      _onAdFailedToLoad(
-          @{@"code" : @(-1), @"message" : @"adConfigId is required"});
+    if (self.onAdFailedToLoad) self.onAdFailedToLoad(@{@"code": @(-1), @"message": @"adConfigId is required", @"domain": @"Audienzz"});
+    return;
+  }
+  // Deliberately NOT short-circuited on ready / loading / presenting. Native owns those
+  // decisions: a ready owner answers a prefetchAndShow by presenting immediately, a load in
+  // flight is joined (and a presentation may be added to it), and a rejected call reports its
+  // own failure. Returning here threw the request away — `prefetchAndShow()` on a ready or
+  // loading owner did nothing at all, silently.
+  _loading = YES;
+  self.auRemoteConfigInterstitial.presentationViewController = [self presentationController];
+  NSUInteger token = _generation;
+  __weak typeof(self) weakSelf = self;
+  void (^completion)(NSError *) = ^(NSError *error) {
+    typeof(self) self = weakSelf;
+    if (!self || self->_disposed || token != self->_generation) return;
+    self->_loading = NO;
+    if (error) {
+      if (self.onAdFailedToLoad) self.onAdFailedToLoad([self errorPayload:error]);
+    } else if (self.onAdLoaded) self.onAdLoaded(@{});
+  };
+  if (showWhenLoaded) {
+    UIViewController *controller = [self presentationController];
+    if (!controller) {
+      self->_loading = NO;
+      if (self.onAdFailedToLoad) self.onAdFailedToLoad(@{@"code": @(-1), @"message": @"No view controller to present from", @"domain": @"Audienzz"});
+      return;
+    }
+    [self.auRemoteConfigInterstitial prefetchAndShowWithCompletionFrom:controller completion:completion];
+  } else {
+    [self.auRemoteConfigInterstitial prefetchWithCompletion:completion];
+  }
+}
+
+- (void)show:(BOOL)eligible {
+  if (!_disposed) [self showOnce:eligible];
+}
+
+- (void)showOnce:(BOOL)eligible {
+  UIViewController *controller = [self presentationController];
+  if (!controller) {
+    if (self.onLifecycleEvent) {
+      self.onLifecycleEvent([RCTRemoteConfigInterstitialView
+          event:@{@"event": @"opportunitySkipped", @"reason": @"inactive", @"configId": self.adConfigId ?: @""}
+          withReady:self.auRemoteConfigInterstitial.isReady]);
     }
     return;
   }
-
-  __weak typeof(self) weakSelf = self;
-  [self.auRemoteConfigInterstitial
-      loadWithCompletion:^(NSError *_Nullable error) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf)
-          return;
-
-        if (error) {
-          RCTLogError(@"[RCTRemoteConfigInterstitialView] Failed to load: %@",
-                      error.localizedDescription);
-          if (strongSelf->_onAdFailedToLoad) {
-            strongSelf->_onAdFailedToLoad(@{
-              @"code" : @(error.code),
-              @"message" : [error localizedDescription]
-            });
-          }
-        } else {
-          if (strongSelf->_onAdLoaded) {
-            strongSelf->_onAdLoaded(@{});
-          }
-          [strongSelf show];
-        }
-      }];
+  [self.auRemoteConfigInterstitial showFrom:controller eligible:eligible];
 }
 
-- (void)show {
-  if (!self.auRemoteConfigInterstitial ||
-      !self.auRemoteConfigInterstitial.isReady) {
-    RCTLogError(@"[RCTRemoteConfigInterstitialView] Ad not ready to show");
-    return;
-  }
-
-  UIViewController *rootViewController =
-      [[[[UIApplication sharedApplication] delegate] window]
-          rootViewController];
-  [self.auRemoteConfigInterstitial showFrom:rootViewController];
+- (void)dispose {
+  if (_disposed) return;
+  _disposed = YES;
+  [self releaseOwner];
 }
-
-#pragma mark - Event Handlers
-
-- (void)setOnAdLoaded:(RCTBubblingEventBlock)onAdLoaded {
-  _onAdLoaded = onAdLoaded;
-}
-
-- (void)setOnAdFailedToLoad:(RCTBubblingEventBlock)onAdFailedToLoad {
-  _onAdFailedToLoad = onAdFailedToLoad;
-}
-
-- (void)setOnAdClicked:(RCTBubblingEventBlock)onAdClicked {
-  _onAdClicked = onAdClicked;
-}
-
-- (void)setOnAdOpened:(RCTBubblingEventBlock)onAdOpened {
-  _onAdOpened = onAdOpened;
-}
-
-- (void)setOnAdClosed:(RCTBubblingEventBlock)onAdClosed {
-  _onAdClosed = onAdClosed;
-}
-
-#pragma mark - GADFullScreenContentDelegate
+// Paper calls invalidate when purging a view; Fabric interop releases its paper view.
+- (void)invalidate { [self dispose]; }
+- (void)dealloc { [self releaseOwner]; }
 
 - (void)adDidRecordClick:(id<GADFullScreenPresentingAd>)ad {
-  if (_onAdClicked) {
-    _onAdClicked(@{});
-  }
+  if (!_disposed && self.onAdClicked) self.onAdClicked(@{});
 }
-
+- (void)adDidRecordImpression:(id<GADFullScreenPresentingAd>)ad {
+  if (!_disposed && self.onAdImpression) self.onAdImpression(@{});
+}
 - (void)adWillPresentFullScreenContent:(id<GADFullScreenPresentingAd>)ad {
-  if (_onAdOpened) {
-    _onAdOpened(@{});
-  }
+  if (!_disposed && self.onAdOpened) self.onAdOpened(@{});
 }
-
 - (void)adDidDismissFullScreenContent:(id<GADFullScreenPresentingAd>)ad {
-  if (_onAdClosed) {
-    _onAdClosed(@{});
-  }
+  _presenting = NO;
+  if (!_disposed && self.onAdClosed) self.onAdClosed(@{});
 }
-
-- (void)ad:(id<GADFullScreenPresentingAd>)ad
-    didFailToPresentFullScreenContentWithError:(NSError *)error {
-  if (_onAdFailedToLoad) {
-    _onAdFailedToLoad(
-        @{@"code" : @(error.code), @"message" : [error localizedDescription]});
-  }
-}
-
 @end

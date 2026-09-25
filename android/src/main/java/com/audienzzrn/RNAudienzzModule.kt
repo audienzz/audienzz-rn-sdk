@@ -27,23 +27,22 @@ import com.google.android.gms.ads.MobileAds
 import org.audienzz.mobile.AudienzzPrebidMobile
 import org.audienzz.mobile.AudienzzTargetingParams
 import org.audienzz.mobile.api.data.AudienzzInitializationStatus
-import org.audienzz.mobile.util.remote.RemoteConfigManager
 
-private const val RN_SDK_VERSION = "0.4.4"
+private const val RN_SDK_VERSION = "0.5.0"
 
 class RNAudienzzModule(reactContext: ReactApplicationContext) :
   ReactNativeModule(reactContext, SERVICE) {
   @ReactMethod
-  fun initialize(companyID: String, enablePpid: Boolean = false, promise: Promise) {
-    AudienzzPrebidMobile.initializeSdk(applicationContext, companyID, enablePpid = enablePpid) { status ->
+  fun initialize(companyID: String, promise: Promise) {
+    AudienzzPrebidMobile.initializeSdk(applicationContext, companyID) { status ->
       when (status) {
-        AudienzzInitializationStatus.SUCCEEDED -> {
+        AudienzzInitializationStatus.SUCCEEDED, AudienzzInitializationStatus.SERVER_STATUS_WARNING -> {
           setupOmid()
           setupRnSdkIdentity()
           val result: WritableMap =
             Arguments.createMap().apply {
-              putString("status", "SUCCEEDED")
-              putString("description", "SDK initialized successfully!")
+              putString("status", status.name)
+              putString("description", status.description ?: "SDK initialized successfully!")
             }
 
           promise.resolve(result)
@@ -51,6 +50,12 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
 
         else -> {
           Log.e(TAG, "SDK initialization error: $status\n${status.description}")
+          // Settle the promise: the failure branch only logged, so `await initialize()` hung
+          // forever with nothing to catch.
+          promise.reject(
+            "INIT_FAILED",
+            status.description ?: "SDK initialization failed with status: $status",
+          )
         }
       }
     }
@@ -66,14 +71,13 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
     AudienzzTargetingParams.setBridgeTargeting("au_rn_v", RN_SDK_VERSION)
   }
 
+  /**
+   * Supply a publisher-owned PPID (e.g. a hashed e-mail). Takes precedence over the SDK-generated
+   * one; pass null to clear and fall back to it. A PPID is always sent — there is no opt-out.
+   */
   @ReactMethod
-  fun isAutomaticPpidEnabled(promise: Promise) {
-    promise.resolve(AudienzzPrebidMobile.ppidManager?.isAutomaticPpidEnabled() ?: false)
-  }
-
-  @ReactMethod
-  fun setAutomaticPpidEnabled(isPpidEnabled: Boolean) {
-    AudienzzPrebidMobile.ppidManager?.setAutomaticPpidEnabled(isPpidEnabled)
+  fun setPublisherPpid(ppid: String?) {
+    AudienzzPrebidMobile.ppidManager?.setPublisherPpid(ppid)
   }
 
   @ReactMethod
@@ -86,48 +90,104 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
     AudienzzPrebidMobile.setSchainObject(schain)
   }
 
-  /**
-   * Enable/disable native automatic screen tracking. It is ON in the native SDK, but a React Native
-   * app has a single host Activity, so auto-tracking would collapse every JS screen into one coarse
-   * page impression. Call `setAutoScreenTracking(false)` **before** [initialize] and report screens
-   * explicitly with [onScreenResumed] for per-route analytics.
-   */
+  /** One greppable AUDZ line per slot decision; see AudienzzDiagnostics. */
   @ReactMethod
-  fun setAutoScreenTracking(enabled: Boolean) {
-    AudienzzPrebidMobile.autoScreenTracking = enabled
+  fun setDiagnosticsEnabled(enabled: Boolean) {
+    AudienzzPrebidMobile.diagnosticsEnabled = enabled
   }
 
   /**
-   * Report the active screen by an opaque route key (your JS navigation route). Fires a
+   * Force smart-refresh v2 on/off, overriding the backend `smartRefreshV2` config for the session.
+   * v2 uses the directional viewport gate; v1 uses the legacy >=20%-visible gate.
+   */
+  @ReactMethod
+  fun setSmartRefreshV2Enabled(enabled: Boolean) {
+    AudienzzPrebidMobile.smartRefreshV2Override = enabled
+  }
+
+  /** When true, a banner blanks its slot during a screen-resume reload. */
+  @ReactMethod
+  fun setBlankOnScreenReload(enabled: Boolean) {
+    AudienzzPrebidMobile.blankOnScreenReload = enabled
+  }
+
+  /** Global GMA ad audio volume for all ad types. Clamped to [0,1]; 0 = muted. */
+  @ReactMethod
+  fun setAppVolume(volume: Float) {
+    AudienzzPrebidMobile.setAppVolume(volume.coerceIn(0f, 1f))
+  }
+
+  /**
+   * Report an ad-bearing screen, dialog, or popup by name (your JS navigation route). Fires a
    * `pageImpression` and starts a fresh page-impression id that ties all ad events on this screen
    * visit together. Call on each navigation to an ad-bearing screen.
    */
   @ReactMethod
-  fun onScreenResumed(routeKey: String) {
-    AudienzzPrebidMobile.onScreenResumed(routeKey)
+  fun pageImpression(name: String) {
+    AudienzzPrebidMobile.pageImpression(name)
+  }
+
+  /**
+   * Report a page whose identity and analytics name differ. Every React Native ad lives in the one
+   * host Activity, so host identity can never separate two routes — the id is the only thing that
+   * can, and a screen name repeats (two articles are both "article").
+   */
+  @ReactMethod
+  fun pageImpressionWithId(pageId: String, name: String) {
+    AudienzzPrebidMobile.pageImpression(pageId, name)
+  }
+
+  /**
+   * Our own registration, so teardown removes ONLY ours and never someone else's.
+   *
+   * Forwards every native page impression to JS -- including the automatic one fired on returning
+   * to the foreground, which never passes through the JS API. Native owns foreground reporting; JS
+   * just page-scopes the ad types the native coordinator doesn't track (rendering banners).
+   */
+  private var pageImpressionObserver: ((String) -> Unit)? = { name ->
+    reactContext
+      .getJSModule(com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+      .emit(PAGE_IMPRESSION_EVENT, name)
+  }
+
+  init {
+    AudienzzPrebidMobile.pageImpressionObserver = pageImpressionObserver
+  }
+
+  override fun invalidate() {
+    // The observer is a process-global singleton capturing the ReactApplicationContext. Without
+    // this, destroying the React instance leaves that context retained and later page impressions
+    // still emitting into a dead bridge.
+    if (AudienzzPrebidMobile.pageImpressionObserver === pageImpressionObserver) {
+      AudienzzPrebidMobile.pageImpressionObserver = null
+    }
+    pageImpressionObserver = null
+    super.invalidate()
   }
 
   @ReactMethod
   fun configureRemote(remoteUrl: String, publisherId: String, promise: Promise) {
-    try {
-      RemoteConfigManager.initialize(
-        publisherId = publisherId,
-        remoteUrl = remoteUrl
+    // Android SDK 0.3.0 hardcodes this endpoint in NetworkModule. The util.remote manager only
+    // stored the supplied URL; the actual HTTP client never read it. Reject unsupported URLs
+    // before initializeRemote starts so development IDs cannot silently go to production.
+    if (remoteUrl.trim().trimEnd('/') != REMOTE_CONFIG_URL) {
+      promise.reject(
+        "UNSUPPORTED_REMOTE_URL",
+        "Android SDK 0.3.0 supports only $REMOTE_CONFIG_URL/. " +
+          "Use a publisher and placement IDs provisioned on that endpoint."
       )
-      promise.resolve(null)
-    } catch (e: Exception) {
-      promise.reject("CONFIGURE_REMOTE_FAILED", e.message, e)
+      return
     }
+    promise.resolve(null)
   }
 
   @ReactMethod
-  fun fetchPublisherConfig(publisherId: String, enablePpid: Boolean, promise: Promise) {
+  fun fetchPublisherConfig(publisherId: String, promise: Promise) {
     AudienzzPrebidMobile.initializeRemoteSdk(
       applicationContext,
-      publisherId,
-      enablePpid = enablePpid
+      publisherId
     ) { status ->
-      if (status == AudienzzInitializationStatus.SUCCEEDED) {
+      if (status != AudienzzInitializationStatus.FAILED) {
         setupOmid()
         setupRnSdkIdentity()
         promise.resolve(null)
@@ -152,5 +212,9 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
   companion object {
     private const val SERVICE = "RNAudienzzModule"
     private const val TAG = "AudienzzSDKInitializer"
+    private const val REMOTE_CONFIG_URL = "https://api.adnz.co/api/ws-sdk-config/public/v1"
+
+    /** Device event carrying the page name of every native page impression. */
+    const val PAGE_IMPRESSION_EVENT = "AudienzzPageImpression"
   }
 }

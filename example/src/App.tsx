@@ -1,7 +1,21 @@
 import * as React from 'react';
-import { ScrollView, Text, TouchableOpacity, View, Platform, StyleSheet, SafeAreaView } from 'react-native';
+import {
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native';
 import RNAudienzz from 'audienzz';
-import { RNTargeting } from 'audienzz';
+import {
+  Audienzz,
+  RNTargeting,
+  audienzzOnNavigationReady,
+  audienzzOnNavigationStateChange,
+  logAppAction,
+} from 'audienzz';
 import { LOREM } from './constants';
 import ErrorHandlingExample from './components/ErrorHandlingExample';
 import OriginalBannerAPIExample from './components/OriginalBannerAPIExample';
@@ -10,93 +24,161 @@ import OriginalRewardedAPIExample from './components/OriginalRewardedAPIExample'
 import LazyLoadingExample from './components/LazyLoadingExample';
 import RenderingInterstitialAPIExample from './components/RenderingInterstitialAPIExample';
 import RemoteConfigExample from './components/RemoteConfigExample';
+import ActionButton from './components/ActionButton';
 import StickyAdExample from './components/StickyAdExample';
-import SmartRefreshBannerExample from './components/SmartRefreshBannerExample';
 import LegacyOriginalView_v0_3_8 from './components/LegacyOriginalView_v0_3_8';
 import TestScreenExample from './components/TestScreenExample';
+import ReloadTabsExample from './components/ReloadTabsExample';
+import { REMOTE_CONFIG } from './remoteConfig';
 
-// Remote config ad units (IDs 118, 192, 267) are only provisioned for iOS on
-// the dev backend — Android returns HTTP 404 for publisher 81.  Use the direct
-// OriginalBanner flow on Android so the initial screen always shows live ads.
-const REMOTE_CONFIG_ENABLED = Platform.OS === 'ios';
-const REMOTE_CONFIG_URL = 'https://api.adnz.co/api/ws-sdk-config/public/v1';
-const PUBLISHER_ID = '81';
+const REMOTE_CONFIG_ENABLED = true;
 
 export default function App() {
   const [initialized, setInitialized] = React.useState(false);
-  const [screen, setScreen] = React.useState<'main' | 'test' | 'sticky' | 'smartRefresh' | 'legacy'>('main');
+  const [initializationError, setInitializationError] =
+    React.useState<string>();
+  const [initializationSlow, setInitializationSlow] = React.useState(false);
+  const [initializationAttempt, setInitializationAttempt] = React.useState(0);
+  const [screen, setScreen] = React.useState<
+    'main' | 'test' | 'sticky' | 'legacy' | 'reloadTabs'
+  >('main');
 
-  React.useEffect(() => {
-    // Single-host RN app: turn off native auto screen tracking (it would collapse every JS screen
-    // into one) and report routes explicitly below. Must run before initialize.
-    RNAudienzz().setAutoScreenTracking(false);
-    if (REMOTE_CONFIG_ENABLED) {
-      RNAudienzz()
-        .initializeRemote(
-          REMOTE_CONFIG_URL,
-          PUBLISHER_ID
-        )
-        .then((value) => {
-          console.log('[SDK] Initialized with remote config:', JSON.stringify(value, null, 2));
-          RNTargeting().addGlobalTargeting('TEST', '1');
-          setInitialized(true);
-        })
-        .catch((error) => {
-          console.error('[SDK] Initialization error:', error);
-        });
-    } else {
-      RNAudienzz()
-        .initialize('Company ID provided for the app by Audienzz')
-        .then((value) => {
-          console.log(JSON.stringify(value, null, 2));
-          RNAudienzz().setSchainObject(`
-                              { "source": 
-                                  { "schain": {
-                                      "ver": "1.0",
-                                      "complete": 1,
-                                      "nodes": [
-                                          {
-                                              "asi": "netpoint-media.de",
-                                              "sid": "np-7255",
-                                              "hp": 1
-                                          }
-                                        ]
-                                      }
-                                  } 
-                              }
-                          `);
-          RNTargeting().addGlobalTargeting('TEST', '1');
-          setInitialized(true);
-        });
-    }
+  // This app has a hand-rolled router rather than React Navigation, so it drives the SDK's
+  // navigation adapter itself. The adapter takes a React-Navigation-shaped state; a custom router
+  // only has to describe which route is focused, and `<AudienzzPage route={{ key }}>` on a screen
+  // then binds to that same key.
+  //
+  // Reporting in the navigation ACTION is the whole point: the destination's low-level banners read
+  // the current page while they are being constructed, and an effect runs after that commit. A
+  // parent effect therefore bound every banner to the page the reader had just left. React offers
+  // no earlier parent hook — effects and layout effects both run child-first.
+  const report = React.useCallback((route: string) => {
+    logAppAction('navigate', { to: route });
+    audienzzOnNavigationStateChange({
+      index: 0,
+      routes: [{ key: route, name: route }],
+    });
   }, []);
 
-  // Report the active screen by route key for per-route page-impression analytics.
+  const goTo = React.useCallback(
+    (next: typeof screen) => {
+      report(next);
+      setScreen(next);
+    },
+    [report]
+  );
+
   React.useEffect(() => {
-    if (initialized) {
-      RNAudienzz().onScreenResumed(screen);
+    let active = true;
+    setInitializationError(undefined);
+    setInitializationSlow(false);
+    // A slow native callback is not proof of failure. Show recovery instructions without
+    // starting another native initialization while the first one is still in flight.
+    const slowTimer = setTimeout(() => {
+      if (active) setInitializationSlow(true);
+    }, 30_000);
+
+    async function initialize() {
+      try {
+        // Overrides precede ad creation; diagnostics are enabled for this test app only.
+        Audienzz.setDiagnosticsEnabled(true);
+        RNAudienzz().setSmartRefreshV2Enabled(true);
+        RNAudienzz().setBlankOnScreenReload(true);
+        const value = REMOTE_CONFIG_ENABLED
+          ? await RNAudienzz().initializeRemote(
+              REMOTE_CONFIG.url,
+              REMOTE_CONFIG.publisherId
+            )
+          : await RNAudienzz().initialize(
+              'Company ID provided for the app by Audienzz'
+            );
+        if (!active) return;
+        console.log('[SDK] Initialized:', JSON.stringify(value, null, 2));
+        if (!REMOTE_CONFIG_ENABLED) {
+          RNAudienzz().setSchainObject(
+            JSON.stringify({
+              source: {
+                schain: {
+                  ver: '1.0',
+                  complete: 1,
+                  nodes: [{ asi: 'netpoint-media.de', sid: 'np-7255', hp: 1 }],
+                },
+              },
+            })
+          );
+        }
+        RNTargeting().addGlobalTargeting('TEST', '1');
+        // Report the opening page BEFORE its banners render, including after a failed attempt.
+        audienzzOnNavigationReady({
+          index: 0,
+          routes: [{ key: 'main', name: 'main' }],
+        });
+        setInitialized(true);
+      } catch (error) {
+        if (!active) return;
+        const code = (error as { code?: string } | null)?.code;
+        setInitializationError(`${code ? `${code}: ` : ''}${String(error)}`);
+        setInitializationSlow(false);
+        console.error('[SDK] Initialization error:', error);
+      } finally {
+        clearTimeout(slowTimer);
+      }
     }
-  }, [screen, initialized]);
+    initialize();
+    return () => {
+      active = false;
+      clearTimeout(slowTimer);
+    };
+  }, [initializationAttempt]);
 
   if (!initialized) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
-          <Text>Initializing SDK...</Text>
+          <Text style={styles.initializationMessage} accessibilityRole="alert">
+            {initializationError
+              ? `SDK initialization failed: ${initializationError}`
+              : initializationSlow
+              ? 'SDK initialization is taking longer than expected (30 seconds).'
+              : 'Initializing SDK...'}
+          </Text>
+          {(initializationError || initializationSlow) && (
+            <>
+              <Text style={styles.initializationHint}>
+                Check the network and proxy settings.
+                {Platform.OS === 'android' &&
+                  ' Using Charles SSL Proxying? Install its CA certificate on this device and use the debug build. See LOCAL_TESTING.md.'}
+                {initializationSlow &&
+                  ' Initialization is still pending. After correcting the connection, fully close and reopen the app if it does not finish.'}
+              </Text>
+              {initializationError && (
+                <ActionButton
+                  labelButton="Retry initialization"
+                  onPress={() => {
+                    setInitializationError(undefined);
+                    setInitializationAttempt((attempt) => attempt + 1);
+                  }}
+                />
+              )}
+            </>
+          )}
         </View>
       </SafeAreaView>
     );
   }
 
   if (screen === 'test') {
-    return <TestScreenExample onBack={() => setScreen('main')} />;
+    return <TestScreenExample onBack={() => goTo('main')} />;
   }
 
   if (screen === 'sticky') {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.mainContainer}>
-          <TouchableOpacity style={styles.backButton} onPress={() => setScreen('main')}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => goTo('main')}
+          >
             <Text style={styles.backButtonText}>← Back</Text>
           </TouchableOpacity>
           <StickyAdExample />
@@ -105,64 +187,71 @@ export default function App() {
     );
   }
 
-  if (screen === 'smartRefresh') {
-    return (
-      <View style={styles.mainContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => setScreen('main')}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <SmartRefreshBannerExample />
-      </View>
-    );
+  if (screen === 'legacy') {
+    return <LegacyOriginalView_v0_3_8 onBack={() => goTo('main')} />;
   }
 
-  if (screen === 'legacy') {
-    return <LegacyOriginalView_v0_3_8 onBack={() => setScreen('main')} />;
+  if (screen === 'reloadTabs') {
+    return <ReloadTabsExample onBack={() => goTo('main')} />;
   }
 
   return REMOTE_CONFIG_ENABLED
-    ? RemoteView(() => setScreen('test'), () => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'))
-    : OriginalView(() => setScreen('test'), () => setScreen('sticky'), () => setScreen('smartRefresh'), () => setScreen('legacy'));
+    ? RemoteView(
+        () => goTo('test'),
+        () => goTo('sticky'),
+        () => goTo('legacy'),
+        () => goTo('reloadTabs')
+      )
+    : OriginalView(
+        () => goTo('test'),
+        () => goTo('sticky'),
+        () => goTo('legacy'),
+        () => goTo('reloadTabs')
+      );
 }
 
-function RemoteView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void) {
+function RemoteView(
+  onOpenTest: () => void,
+  onOpenSticky: () => void,
+  onOpenLegacy: () => void,
+  onOpenReloadTabs: () => void
+) {
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.mainContainer}>
-        <ScrollView
-          style={styles.mainContainer}
-          contentContainerStyle={styles.scrollviewcontentContainerStyle}
-        >
-          <Text style={styles.bigText}>TEST SCREEN</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenTest}>
-            <Text style={styles.navButtonText}>Open Test Screen →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
-          <Text style={styles.bigText}>STICKY AD</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenSticky}>
-            <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
-          <Text style={styles.bigText}>SMART REFRESH</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenSmartRefresh}>
-            <Text style={styles.navButtonText}>Open Smart Refresh Example →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
-          <Text style={styles.bigText}>REMOTE CONFIG</Text>
-          <RemoteConfigExample />
-          <View style={styles.height30} />
-          <Text style={styles.bigText}>LEGACY (v0.3.8)</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenLegacy}>
-            <Text style={styles.navButtonText}>Open Legacy Example →</Text>
-          </TouchableOpacity>
-          <View style={styles.height30} />
-        </ScrollView>
-      </View>
+      <ScrollView
+        style={styles.mainContainer}
+        contentContainerStyle={styles.remoteContent}
+      >
+        <RemoteConfigExample onOpenTestScreen={onOpenTest} />
+        <View style={styles.otherExamples}>
+          <Text style={styles.otherExamplesTitle}>Other examples</Text>
+          <ActionButton
+            labelButton="Sticky ad →"
+            variant="secondary"
+            onPress={onOpenSticky}
+          />
+          <ActionButton
+            labelButton="Reload tabs →"
+            variant="secondary"
+            onPress={onOpenReloadTabs}
+          />
+          <ActionButton
+            labelButton="Legacy (v0.3.8) →"
+            variant="secondary"
+            onPress={onOpenLegacy}
+          />
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
-function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSmartRefresh: () => void, onOpenLegacy: () => void) {
+function OriginalView(
+  onOpenTest: () => void,
+  onOpenSticky: () => void,
+  onOpenLegacy: () => void,
+  onOpenReloadTabs: () => void
+) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
@@ -180,9 +269,9 @@ function OriginalView(onOpenTest: () => void, onOpenSticky: () => void, onOpenSm
             <Text style={styles.navButtonText}>Open Sticky Ad Example →</Text>
           </TouchableOpacity>
           <View style={styles.height30} />
-          <Text style={styles.bigText}>SMART REFRESH</Text>
-          <TouchableOpacity style={styles.navButton} onPress={onOpenSmartRefresh}>
-            <Text style={styles.navButtonText}>Open Smart Refresh Example →</Text>
+          <Text style={styles.bigText}>RELOAD TABS</Text>
+          <TouchableOpacity style={styles.navButton} onPress={onOpenReloadTabs}>
+            <Text style={styles.navButtonText}>Open Reload Tabs Example →</Text>
           </TouchableOpacity>
           <View style={styles.height30} />
           <Text style={styles.bigText}>ORIGINAL</Text>
@@ -227,9 +316,21 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
+    padding: 24,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white',
+  },
+  initializationMessage: {
+    color: '#0F172A',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  initializationHint: {
+    color: '#475569',
+    marginVertical: 16,
+    lineHeight: 22,
+    textAlign: 'center',
   },
   scrollviewcontentContainerStyle: {
     alignItems: 'center',
@@ -240,6 +341,22 @@ const styles = StyleSheet.create({
         paddingBottom: 30,
       },
     }),
+  },
+  remoteContent: {
+    paddingTop: 20,
+    paddingBottom: 32,
+  },
+  otherExamples: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#CBD5E1',
+  },
+  otherExamplesTitle: {
+    marginBottom: 8,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#334155',
   },
   height30: {
     height: 30,

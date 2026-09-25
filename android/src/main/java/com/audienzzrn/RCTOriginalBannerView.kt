@@ -26,16 +26,33 @@ import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.LoadAdError
 import org.audienzz.mobile.AudienzzAdSize
 import org.audienzz.mobile.AudienzzBannerAdUnit
+import org.audienzz.mobile.original.AudienzzAdViewHandler
 
 class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
+  var requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext()
+    private set
+  private var requestContextReserved = false
+
+  fun reserveRequestContext() {
+    if (requestContextReserved) return
+    requestContext = org.audienzz.mobile.targeting.AudienzzAdRequestContext.forSlot(
+      java.util.UUID.randomUUID().toString(), pageKey)
+    requestContextReserved = true
+  }
+
   private var sizes: Array<AudienzzAdSize> = arrayOf()
   private var receivedSize: AdSize = AdSize(1,1)
   private var autoRefreshPeriodMillis: Int? = null
   private var videoPlacement: String = ""
   private var smartRefresh: Boolean = false
   private var prefetchMarginDp: Int = 200
+  // Route key reported to pageImpression when this ad mounted. Every React Native ad lives in the
+  // single host Activity, so the native page coordinator can't tell one route's ads from another's
+  // by host identity — this key is what it matches on instead.
+  private var pageKey: String? = null
 
   private var auBannerView: AudienzzBannerAdUnit? = null
+  private var adViewHandler: AudienzzAdViewHandler? = null
 
   override fun requestLayout() {
     super.requestLayout()
@@ -84,15 +101,48 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
     error.putString("message", loadError.message)
     (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
       .receiveEvent(id, "onAdFailedToLoad", error)
-    auBannerView?.stopAutoRefresh()
+    // Deliberately no refresh stop here. This is a GAM load failure, not a publisher decision, and
+    // stopping on it would be indistinguishable from stopAutoRefresh() — nothing but an explicit
+    // resume would ever clear it, so one transient ad-server error killed the slot for good. The
+    // SDK's refresh controller keeps the normal interval; a persistent Prebid transport failure is
+    // separately bounded by its own backoff.
   }
 
+  // The publisher-facing commands, not visibility reporting. They map to the SDK's durable
+  // publisher pause, so a scroll back into view or a page impression cannot silently undo them.
+  // The ad-unit methods they used to call became no-ops when the SDK took over refresh scheduling.
   fun stopAutoRefresh() {
-    auBannerView?.stopAutoRefresh()
+    adViewHandler?.stopAutoRefresh()
   }
 
   fun resumeAutoRefresh() {
-    auBannerView?.resumeAutoRefresh()
+    adViewHandler?.resumeAutoRefresh()
+  }
+
+  /** Retains the handler created in the manager so [reloadIfVisible] can reload. */
+  fun updatePageKey(value: String?) {
+    pageKey = value
+  }
+
+  fun getPageKey(): String? = pageKey
+
+  fun updateAdViewHandler(value: AudienzzAdViewHandler) {
+    // Retire the predecessor. A prop change rebuilds the ad view and handler, and overwriting the
+    // reference left the old handler registered with the page coordinator and retained by
+    // AppForegroundMonitor — still holding its GAM view and Activity.
+    adViewHandler?.destroy()
+    adViewHandler = value
+  }
+
+  /**
+   * Force a fresh auction now, but only when the banner is actually on screen.
+   * The pageImpression broadcast reaches every mounted banner, including those
+   * on inactive (kept-mounted) screens; skip those so we don't burn an auction.
+   */
+  fun reloadIfVisible() {
+    if (!isShown) return
+    if (!getGlobalVisibleRect(android.graphics.Rect())) return
+    adViewHandler?.reloadAd()
   }
 
   fun updateAuBannerView(value: AudienzzBannerAdUnit) {
@@ -142,5 +192,33 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
   fun setSize(adSize: AdSize){
     receivedSize = adSize
     requestLayout()
+  }
+
+  /**
+   * Tear down the Prebid handler: stops refresh, destroys the ad unit, and — importantly —
+   * deregisters from the page coordinator and AppForegroundMonitor, both of which otherwise keep
+   * this view (and its Activity) reachable after React drops it.
+   */
+  // Handler.removeCallbacks only removes messages whose target is THIS handler instance, so the
+  // scheduling handler has to be the same object that cancels. Constructing a second
+  // Handler(Looper.getMainLooper()) to cancel is a silent no-op even though the Looper matches.
+  private val adCreationHandler = android.os.Handler(android.os.Looper.getMainLooper())
+  private var pendingAdCreation: Runnable? = null
+
+  /** Schedules delayed ad creation so [cancelPendingAdCreation] can actually drop it. */
+  fun scheduleAdCreation(task: Runnable, delayMillis: Long) {
+    cancelPendingAdCreation()
+    pendingAdCreation = task
+    adCreationHandler.postDelayed(task, delayMillis)
+  }
+
+  fun cancelPendingAdCreation() {
+    pendingAdCreation?.let { adCreationHandler.removeCallbacks(it) }
+    pendingAdCreation = null
+  }
+
+  fun destroyAdViewHandler() {
+    adViewHandler?.destroy()
+    adViewHandler = null
   }
 }

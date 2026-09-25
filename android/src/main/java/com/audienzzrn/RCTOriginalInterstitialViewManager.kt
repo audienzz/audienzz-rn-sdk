@@ -34,6 +34,12 @@ class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalIntersti
     return RCTOriginalInterstitialView(reactContext)
   }
 
+  override fun onDropViewInstance(view: RCTOriginalInterstitialView) {
+    super.onDropViewInstance(view)
+    // React Native drops the view on unmount; without this the ad unit outlived it.
+    view.destroyAd()
+  }
+
   override fun onAfterUpdateTransaction(view: RCTOriginalInterstitialView) {
     super.onAfterUpdateTransaction(view)
 
@@ -53,6 +59,7 @@ class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalIntersti
     return mapOf(
       "onAdLoaded" to eventMap("onAdLoaded"),
       "onAdFailedToLoad" to eventMap("onAdFailedToLoad"),
+      "onAdFailedToShow" to eventMap("onAdFailedToShow"),
       "onAdClicked" to eventMap("onAdClicked"),
       "onAdOpened" to eventMap("onAdOpened"),
       "onAdClosed" to eventMap("onAdClosed"),
@@ -86,35 +93,8 @@ class RCTOriginalInterstitialViewManager : SimpleViewManager<RCTOriginalIntersti
     view.updatePropsChanged(true)
   }
 
-  @ReactProp(name = "adFormats")
-  fun setAdFormats(view: RCTOriginalInterstitialView, value: ReadableArray) {
-    val adFormatStrings = mutableListOf<String>()
-
-    for (i in 0 until value.size()) {
-      val apiString = value.getString(i)
-      if (apiString != null) {
-        adFormatStrings.add(apiString)
-      }
-    }
-
-    view.updateAdFormats(adFormatStrings)
-    view.updatePropsChanged(true)
-  }
-
-  @ReactProp(name = "apiParameters")
-  fun setApiParameters(view: RCTOriginalInterstitialView, value: ReadableArray) {
-    val apiStrings = mutableListOf<String>()
-
-    for (i in 0 until value.size()) {
-      val apiString = value.getString(i)
-      if (apiString != null) {
-        apiStrings.add(apiString)
-      }
-    }
-
-    view.updateApiParameters(apiStrings)
-    view.updatePropsChanged(true)
-  }
+  // No adFormats / apiParameters: an interstitial's formats and API frameworks are
+  // backend-controlled, and the native SDK takes no publisher value for either.
 
   @ReactProp(name = "videoProtocols")
   fun setVideoProtocols(view: RCTOriginalInterstitialView, value: ReadableArray) {

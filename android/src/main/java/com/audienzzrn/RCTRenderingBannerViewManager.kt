@@ -19,6 +19,7 @@ package com.audienzz
 
 import android.os.Handler
 import android.os.Looper
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
@@ -36,13 +37,21 @@ class RCTRenderingBannerViewManager : SimpleViewManager<RCTRenderingBannerView>(
     super.onAfterUpdateTransaction(view)
 
     if (view.getPropsChanged()) {
-      Handler(Looper.getMainLooper()).postDelayed({
-        view.createAd()
-      }, 1100)
+      view.scheduleAdCreation(Runnable { view.createAd() }, 1100)
 
     }
 
     view.updatePropsChanged(false)
+  }
+
+  override fun receiveCommand(view: RCTRenderingBannerView, commandId: Int, args: ReadableArray?) {
+    when (commandId) {
+      0 -> view.reloadIfVisible()
+    }
+  }
+
+  override fun getCommandsMap(): Map<String, Int> {
+    return mapOf("reload" to 0)
   }
 
   override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
@@ -101,5 +110,12 @@ class RCTRenderingBannerViewManager : SimpleViewManager<RCTRenderingBannerView>(
 
   companion object {
     const val REACT_CLASS = "RCTRenderingBannerView"
+  }
+
+  override fun onDropViewInstance(view: RCTRenderingBannerView) {
+    super.onDropViewInstance(view)
+    // Unmounting the JS component is how a rendering banner is page-released, so this has to
+    // actually stop the ad — including a creation task still pending in the 1.1s window.
+    view.destroyAd()
   }
 }

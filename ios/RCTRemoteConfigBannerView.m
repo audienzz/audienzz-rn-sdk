@@ -16,9 +16,22 @@
  */
 
 #import "RCTRemoteConfigBannerView.h"
+#import "RCTAudienzzViewUtils.h"
 #import <React/RCTLog.h>
 
+@interface RCTRemoteConfigBannerView ()
+/// The placement the current owner was built for. A prop change that does not change it reuses
+/// the owner, so the SDK can recognise the repeat instead of building a second banner.
+@property(nonatomic, copy) NSString *loadedAdConfigId;
+/// Publisher state requested before the owner existed. `didSetProps` queues creation onto a
+/// background queue and then the main queue, so a command can legitimately arrive while
+/// `auRemoteConfigBannerView` is still nil — and messaging nil silently drops it.
+@property(nonatomic, assign) BOOL pendingPublisherStop;
+@property(nonatomic, assign) BOOL pendingHostCover;
+@end
+
 @implementation RCTRemoteConfigBannerView {
+  AUAdRequestContext *_requestContext;
   RCTBubblingEventBlock _onAdLoaded;
   RCTBubblingEventBlock _onAdFailedToLoad;
   RCTBubblingEventBlock _onAdClicked;
@@ -43,6 +56,10 @@
 
 - (void)didSetProps:(NSArray<NSString *> *)changedProps {
   if (self.propsChanged) {
+    // Reserve in React's mount order, before asynchronous configuration/setup work.
+    if (!_requestContext) {
+      _requestContext = [AUAdRequestContext forSlot:NSUUID.UUID.UUIDString pageKey:self.pageKey];
+    }
     dispatch_async(self.backgroundQueue, ^{
       [self createAd];
     });
@@ -67,15 +84,38 @@
       self->_onAdFailedToLoad(
           @{@"code" : @(-1), @"message" : @"adConfigId is required"});
     }
+    // Balance the wait taken in createAd; returning without this left the semaphore held and
+    // made the next prop change wait out its full timeout.
+    dispatch_semaphore_signal(self.semaphore);
     return;
   }
 
-  self.auRemoteConfigBannerView =
-      [[AURemoteConfigBannerView alloc] initWithAdConfigId:self.adConfigId];
+  // didSetProps fires on every prop change, and each run used to allocate another owner while
+  // its predecessor's banner stayed in this view's subviews — still registered with the page
+  // coordinator and still refreshing. Reuse the owner for the same placement (the SDK coalesces
+  // the repeat), and destroy it before switching to a different one.
+  if (self.auRemoteConfigBannerView != nil &&
+      ![self.loadedAdConfigId isEqualToString:self.adConfigId]) {
+    [self.auRemoteConfigBannerView destroy];
+    self.auRemoteConfigBannerView = nil;
+  }
+  if (self.auRemoteConfigBannerView == nil) {
+    self.auRemoteConfigBannerView =
+        [[AURemoteConfigBannerView alloc] initWithAdConfigId:self.adConfigId];
+    if (!_requestContext) _requestContext = [AUAdRequestContext new];
+    self.auRemoteConfigBannerView.requestContext = _requestContext;
+    self.loadedAdConfigId = self.adConfigId;
+  }
 
-  UIViewController *rootViewController =
-      [[[[UIApplication sharedApplication] delegate] window]
-          rootViewController];
+  // Must precede loadIn:, which is where the ad joins the current page.
+  if (self.pageKey != nil) {
+    [self.auRemoteConfigBannerView setScreen:self.pageKey];
+  }
+
+  UIViewController *rootViewController = [RCTAudienzzViewUtils rootViewControllerForView:self];
+
+  // Before loadIn:, which is where the owner builds the banner and it can request.
+  [self applyPendingPublisherState];
 
   [self.auRemoteConfigBannerView loadIn:self
                                   width:self.bounds.size.width
@@ -84,6 +124,58 @@
                                delegate:self];
 
   dispatch_semaphore_signal(self.semaphore);
+}
+
+/// React Native releases the view when the component unmounts; Android already tears the
+/// placement down in onDropViewInstance, and iOS had no equivalent at all.
+- (void)dealloc {
+  [_auRemoteConfigBannerView destroy];
+}
+
+- (void)reloadIfVisible {
+  // Force a fresh auction now — but only when on screen. The pageImpression
+  // broadcast reaches every mounted banner, including those on inactive
+  // (kept-mounted) screens; skip those so we don't burn an auction.
+  if (self.window == nil || self.isHidden || self.alpha < 0.01) {
+    return;
+  }
+  CGRect frameInWindow = [self convertRect:self.bounds toView:nil];
+  if (!CGRectIntersectsRect(frameInWindow, self.window.bounds)) {
+    return;
+  }
+  [self.auRemoteConfigBannerView reloadAd];
+}
+
+- (void)stopAutoRefresh {
+  self.pendingPublisherStop = YES;
+  [self.auRemoteConfigBannerView stopAutoRefresh];
+}
+
+- (void)resumeAutoRefresh {
+  self.pendingPublisherStop = NO;
+  [self.auRemoteConfigBannerView resumeAutoRefresh];
+}
+
+/// Replays whatever the host asked for before the owner existed. The stop goes on first, before
+/// loadIn: can request.
+- (void)applyPendingPublisherState {
+  if (self.pendingPublisherStop) {
+    [self.auRemoteConfigBannerView stopAutoRefresh];
+  }
+  if (self.pendingHostCover) {
+    [self.auRemoteConfigBannerView pauseSmartRefresh];
+  }
+}
+
+/// A cover the SDK cannot infer — a pointer-transparent veil, a painted overlay. Current state, not
+/// an event, and separate from the publisher pause: clearing one must not clear the other.
+- (void)setCovered:(BOOL)covered {
+  self.pendingHostCover = covered;
+  if (covered) {
+    [self.auRemoteConfigBannerView pauseSmartRefresh];
+  } else {
+    [self.auRemoteConfigBannerView resumeSmartRefresh];
+  }
 }
 
 #pragma mark - Event Handlers
@@ -109,6 +201,13 @@
 }
 
 #pragma mark - GADBannerViewDelegate
+
+- (void)adView:(GADBannerView *)bannerView willChangeAdSizeTo:(GADAdSize)size {
+  // adSize still describes the previous size here. Forward Google's callback dimensions.
+  if (size.size.width > 0 && size.size.height > 0 && self.onAdSizeChanged) {
+    self.onAdSizeChanged(@{@"width": @(size.size.width), @"height": @(size.size.height)});
+  }
+}
 
 - (void)bannerViewDidReceiveAd:(GADBannerView *)bannerView {
   if (_onAdLoaded) {

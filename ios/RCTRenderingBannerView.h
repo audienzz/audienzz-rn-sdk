@@ -22,6 +22,7 @@
 
 - (void)stopAutoRefresh;
 - (void)resumeAutoRefresh;
+- (void)reloadIfVisible;
 
 @property(nonatomic, strong) AUGAMBannerEventHandler *eventHandler;
 @property(nonatomic, strong) AUBannerRenderingView *auBannerView;

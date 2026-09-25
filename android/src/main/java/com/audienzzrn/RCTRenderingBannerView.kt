@@ -77,12 +77,46 @@ class RCTRenderingBannerView(context: Context) : RCTOriginalView(context) {
     auBannerView?.stopRefresh()
   }
 
+  // Handler.removeCallbacks only removes messages whose target is THIS handler instance, so the
+  // scheduling handler has to be the same object that cancels.
+  private val adCreationHandler = android.os.Handler(android.os.Looper.getMainLooper())
+  private var pendingAdCreation: Runnable? = null
+
+  /** Schedules delayed ad creation so [destroyAd] can actually drop it. */
+  fun scheduleAdCreation(task: Runnable, delayMillis: Long) {
+    cancelPendingAdCreation()
+    pendingAdCreation = task
+    adCreationHandler.postDelayed(task, delayMillis)
+  }
+
+  fun cancelPendingAdCreation() {
+    pendingAdCreation?.let { adCreationHandler.removeCallbacks(it) }
+    pendingAdCreation = null
+  }
+
+  /**
+   * Tear the rendering ad down. React dropping the view is not enough on its own: the delayed
+   * creation task can still be pending, and AudienzzBannerView keeps its own refresh running until
+   * it is told to stop.
+   */
+  fun destroyAd() {
+    cancelPendingAdCreation()
+    auBannerView?.stopRefresh()
+    auBannerView?.destroy()
+    auBannerView = null
+    removeAllViews()
+  }
+
   override fun createAd() {
     super.createAd()
 
     val currentActivity = (context as ReactContext).currentActivity
+    if (currentActivity == null) {
+      handleAdFailedToLoad(AudienzzAdException(AudienzzAdException.INTERNAL_ERROR, "No Activity available to load the banner ad"))
+      return
+    }
     val eventHandler =
-      AudienzzGamBannerEventHandler(currentActivity!!, adUnitID, AudienzzAdSize(adWidth, adHeight))
+      AudienzzGamBannerEventHandler(currentActivity, adUnitID, AudienzzAdSize(adWidth, adHeight))
 
     auBannerView = AudienzzBannerView(currentActivity, auConfigID, eventHandler)
     updateAuBannerView(auBannerView!!)
@@ -130,6 +164,25 @@ class RCTRenderingBannerView(context: Context) : RCTOriginalView(context) {
     auBannerView = value
   }
 
+  /**
+   * Force a fresh auction now, but only when the banner is actually on screen.
+   * The pageImpression broadcast reaches every mounted banner, including those
+   * on inactive (kept-mounted) screens; skip those so we don't burn an auction.
+   *
+   * The rendering API (AudienzzBannerView) has no in-place reload primitive, so
+   * a reload tears down the current view and rebuilds a fresh one. The slot
+   * blanks while the new creative loads — matching the native
+   * blankOnScreenReload behavior.
+   */
+  fun reloadIfVisible() {
+    if (!isShown) return
+    if (!getGlobalVisibleRect(android.graphics.Rect())) return
+    auBannerView?.destroy()
+    auBannerView = null
+    removeAllViews()
+    createAd()
+  }
+
   fun updateVideoPlacement(value: String) {
     videoPlacement = value
   }
@@ -142,4 +195,3 @@ class RCTRenderingBannerView(context: Context) : RCTOriginalView(context) {
     adHeight = value
   }
 }
-

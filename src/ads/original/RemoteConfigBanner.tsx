@@ -21,17 +21,22 @@ import {
     UIManager,
     findNodeHandle,
     View,
+    Platform,
     StyleSheet,
     StyleSheet as RNStyleSheet,
 } from 'react-native';
 import type { ViewStyle } from 'react-native';
 import type { RemoteConfigBannerProps } from '../../types';
+import { getCurrentPage, pageKeyOf } from '../../pageRegistry';
 
 const COMPONENT_NAME = 'RNRemoteConfigBanner';
 
 type NativeRemoteConfigBannerProps = RemoteConfigBannerProps & {
     adWidth?: number;
     adHeight?: number;
+    onAdSizeChanged?: (event: any) => void;
+    /** Route key this ad belongs to; see `pageRegistry`. */
+    pageKey?: string | null;
 };
 
 const RNRemoteConfigBannerView =
@@ -53,11 +58,35 @@ const RNRemoteConfigBannerView =
  * />
  * ```
  */
-export class RemoteConfigBanner extends Component<RemoteConfigBannerProps, { height?: number }> {
+export class RemoteConfigBanner extends Component<
+    RemoteConfigBannerProps,
+    { width?: number; height?: number }
+> {
     private nativeRef: any;
 
     state = {
+        width: undefined,
         height: undefined,
+    };
+
+    /**
+     * The page that was current when this banner mounted. Travels to native as
+     * the `pageKey` prop so the page coordinator can match this ad to its
+     * screen by value — host identity can't, since every RN ad shares one host.
+     */
+    private readonly page = getCurrentPage();
+
+    /**
+     * Reload this banner (fresh auction). Broadcast target for
+     * Audienzz.pageImpression; the native command self-filters by visibility.
+     */
+    reload = () => {
+        UIManager.dispatchViewManagerCommand(
+            findNodeHandle(this.nativeRef),
+            // @ts-ignore
+            UIManager.getViewManagerConfig(COMPONENT_NAME).Commands.reload,
+            []
+        );
     };
 
     /**
@@ -75,6 +104,20 @@ export class RemoteConfigBanner extends Component<RemoteConfigBannerProps, { hei
     /**
      * Resumes auto-refresh for this banner ad
      */
+    /**
+     * Report a cover the SDK cannot infer — a pointer-transparent veil, a painted overlay.
+     * Current state, not an event: call it with `false` when the cover goes away. Independent of
+     * `stopAutoRefresh`: clearing one does not clear the other.
+     */
+    setCovered = (covered: boolean) => {
+        UIManager.dispatchViewManagerCommand(
+            findNodeHandle(this.nativeRef),
+            // @ts-ignore
+            UIManager.getViewManagerConfig(COMPONENT_NAME).Commands.setCovered,
+            [covered]
+        );
+    };
+
     resumeAutoRefresh = () => {
         UIManager.dispatchViewManagerCommand(
             findNodeHandle(this.nativeRef),
@@ -84,12 +127,16 @@ export class RemoteConfigBanner extends Component<RemoteConfigBannerProps, { hei
         );
     };
 
-    _onAdLoaded = (event: any) => {
-        const { height } = event.nativeEvent;
-        if (height && height !== this.state.height) {
-            this.setState({ height });
+    _onAdSizeChanged = (event: any) => {
+        const { width, height } = event.nativeEvent;
+        if (width > 0 && height > 0 &&
+            (width !== this.state.width || height !== this.state.height)) {
+            this.setState({ width, height });
         }
+    };
 
+    _onAdLoaded = (event: any) => {
+        this._onAdSizeChanged(event);
         if (this.props.onAdLoaded) {
             this.props.onAdLoaded(event.nativeEvent);
         }
@@ -97,22 +144,28 @@ export class RemoteConfigBanner extends Component<RemoteConfigBannerProps, { hei
 
     render() {
         const { style, onAdLoaded, onAdFailedToLoad, ...otherProps } = this.props;
-        const dynamicStyle = this.state.height ? { height: this.state.height } : {};
         const flattenedStyle = RNStyleSheet.flatten(style) as ViewStyle | undefined;
         const adWidth = typeof flattenedStyle?.width === 'number' ? flattenedStyle.width : undefined;
         const adHeight = typeof flattenedStyle?.height === 'number' ? flattenedStyle.height : undefined;
-        const nativeStyle = adHeight
+        // Numeric dimensions reserve the first load; subsequent creative sizes can differ.
+        // Keep percentage/full-width hosts intact so native can center a narrower creative.
+        const dynamicStyle = this.state.height
+            ? { height: this.state.height, ...(adWidth && this.state.width ? { width: this.state.width } : {}) }
+            : {};
+        const nativeStyle = adHeight || this.state.height
             ? styles.fixedNativeComponent
             : styles.adaptiveNativeComponent;
 
         return (
             <View style={[style, dynamicStyle]}>
                 <RNRemoteConfigBannerView
+                    pageKey={this.props.pageKey ?? pageKeyOf(this.page) ?? undefined}
                     {...otherProps}
                     adWidth={adWidth}
                     adHeight={adHeight}
                     style={nativeStyle}
                     onAdLoaded={this._onAdLoaded}
+                    onAdSizeChanged={Platform.OS === 'ios' ? this._onAdSizeChanged : undefined}
                     onAdFailedToLoad={onAdFailedToLoad}
                     ref={(ref) => {
                         this.nativeRef = ref;
@@ -130,6 +183,6 @@ const styles = StyleSheet.create({
     },
     adaptiveNativeComponent: {
         width: '100%',
-        minHeight: 1,
+        minHeight: 50,
     },
 });

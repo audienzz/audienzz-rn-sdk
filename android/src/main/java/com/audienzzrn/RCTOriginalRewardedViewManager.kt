@@ -33,6 +33,12 @@ class RCTOriginalRewardedViewManager : SimpleViewManager<RCTOriginalRewardedView
     return RCTOriginalRewardedView(reactContext)
   }
 
+  override fun onDropViewInstance(view: RCTOriginalRewardedView) {
+    super.onDropViewInstance(view)
+    // React Native drops the view on unmount; without this the ad unit outlived it.
+    view.destroyAd()
+  }
+
   override fun onAfterUpdateTransaction(view: RCTOriginalRewardedView) {
     super.onAfterUpdateTransaction(view)
 
@@ -52,6 +58,7 @@ class RCTOriginalRewardedViewManager : SimpleViewManager<RCTOriginalRewardedView
     return mapOf(
       "onAdLoaded" to eventMap("onAdLoaded"),
       "onAdFailedToLoad" to eventMap("onAdFailedToLoad"),
+      "onAdFailedToShow" to eventMap("onAdFailedToShow"),
       "onAdClicked" to eventMap("onAdClicked"),
       "onAdOpened" to eventMap("onAdOpened"),
       "onAdClosed" to eventMap("onAdClosed"),

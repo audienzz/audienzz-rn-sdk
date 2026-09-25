@@ -16,12 +16,16 @@
  */
 
 #import "RNAudienzzModule.h"
+// RCTBridgeModule.h only forward-declares RCTBridge; -enqueueJSCall: needs the full definition.
+#import <React/RCTBridge.h>
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 #import <GoogleMobileAds/GoogleMobileAds.h>
 
-static NSString * const kRNSdkVersion = @"0.4.4";
+static NSString * const kRNSdkVersion = @"0.5.0";
 
 @implementation RNAudienzzModule
+
+@synthesize bridge = _bridge;
 
 RCT_EXPORT_MODULE();
 
@@ -29,12 +33,26 @@ RCT_EXPORT_MODULE();
   return dispatch_get_main_queue();
 }
 
+// Forward every native page impression to JS -- including the automatic one fired on returning to
+// the foreground, which never passes through the JS API. Native owns foreground reporting; JS just
+// page-scopes the ad types the native coordinator doesn't track (rendering banners).
+- (void)setBridge:(RCTBridge *)bridge {
+  _bridge = bridge;
+  __weak __typeof(self) weakSelf = self;
+  [Audienzz shared].pageImpressionObserver = ^(NSString *name) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [weakSelf.bridge enqueueJSCall:@"RCTDeviceEventEmitter"
+                              method:@"emit"
+                                args:@[ @"AudienzzPageImpression", name ?: @"" ]
+                          completion:NULL];
+    });
+  };
+}
+
 RCT_EXPORT_METHOD(initialize: (NSString *)companyId
-                  enablePPID: (BOOL)enablePPID
                     resolver: (RCTPromiseResolveBlock)resolve
                     rejecter: (RCTPromiseRejectBlock)reject) {
   [self initializeWithCompanyId:companyId
-                     enablePPID:enablePPID
                        resolver:resolve
                        rejecter:reject];
 }
@@ -46,12 +64,10 @@ RCT_EXPORT_METHOD(setSchainObject: (NSString *)schain
 }
 
 - (void)initializeWithCompanyId:(NSString *)companyId
-                     enablePPID:(BOOL)enablePPID
                        resolver:(RCTPromiseResolveBlock)resolve
                        rejecter:(RCTPromiseRejectBlock)reject {
   [[Audienzz shared]
       configureSDK_RNWithCompanyId:companyId
-                        enablePPID:enablePPID
                         completion:^{
                           NSDictionary *result = @{
                             @"status" : @"SUCCEEDED",
@@ -72,29 +88,47 @@ RCT_EXPORT_METHOD(setSchainObject: (NSString *)schain
   resolve(nil);
 }
 
-RCT_EXPORT_METHOD(isAutomaticPpidEnabled: (RCTPromiseResolveBlock)
-                        resolve rejecter: (RCTPromiseRejectBlock)reject) {
-  NSNumber *getAutomaticPpidEnabled =
-      [NSNumber numberWithBool:[[PPIDManager shared] getAutomaticPpidEnabled]];
-  resolve(getAutomaticPpidEnabled);
+// Supply a publisher-owned PPID (e.g. a hashed e-mail). Takes precedence over the
+// SDK-generated one; pass null to clear and fall back to it. A PPID is always
+// sent -- there is no opt-out.
+RCT_EXPORT_METHOD(setPublisherPpid: (nullable NSString *)ppid) {
+  [[PPIDManager shared] setPublisherPPID:ppid];
 }
 
-RCT_EXPORT_METHOD(setAutomaticPpidEnabled: (BOOL)isPpidEnabled) {
-  [[PPIDManager shared] setAutomaticPpidEnabled:isPpidEnabled];
+// One greppable AUDZ line per slot decision; see AUDiagnostics.
+RCT_EXPORT_METHOD(setDiagnosticsEnabled: (BOOL)enabled) {
+  [[Audienzz shared] setDiagnosticsEnabled:enabled];
 }
 
-// Enable/disable native automatic screen tracking. It is ON in the native SDK, but a React Native
-// app has a single host UIViewController, so auto-tracking would collapse every JS screen into one
-// coarse page impression. Call setAutoScreenTracking(false) before initialize() and report screens
-// explicitly with onScreenResumed(routeKey) for per-route analytics.
-RCT_EXPORT_METHOD(setAutoScreenTracking: (BOOL)enabled) {
-  [Audienzz shared].autoScreenTracking = enabled;
+// Force smart-refresh v2 on/off, overriding the backend smartRefreshV2 config for the session.
+// v2 uses the directional viewport gate; v1 uses the legacy >=20%-visible gate.
+RCT_EXPORT_METHOD(setSmartRefreshV2Enabled: (BOOL)enabled) {
+  // The Swift property is a tri-state `Bool?`, which Objective-C cannot see; the SDK exposes this
+  // setter for it.
+  [[Audienzz shared] setSmartRefreshV2Override:enabled];
 }
 
-// Report the active screen by an opaque route key (your JS navigation route). Fires a
+// When true, a banner blanks its slot during a screen-resume reload.
+RCT_EXPORT_METHOD(setBlankOnScreenReload: (BOOL)enabled) {
+  [Audienzz shared].blankOnScreenReload = enabled;
+}
+
+// Global GMA ad audio volume for all ad types. Clamped to [0,1]; 0 = muted.
+RCT_EXPORT_METHOD(setAppVolume: (float)volume) {
+  [[Audienzz shared] setAppVolume:volume];
+}
+
+// Report an ad-bearing screen, dialog, or popup by name (your JS navigation route). Fires a
 // pageImpression and starts a fresh page-impression id tying all ad events on this visit together.
-RCT_EXPORT_METHOD(onScreenResumed: (NSString *)routeKey) {
-  [[Audienzz shared] onScreenResumedWithKey:routeKey];
+RCT_EXPORT_METHOD(pageImpression: (NSString *)name) {
+  [[Audienzz shared] pageImpressionWithName:name];
+}
+
+// Report a page whose identity and analytics name differ. Every React Native ad lives in the one
+// host view controller, so host identity can never separate two routes — the id is the only thing
+// that can, and a screen name repeats (two articles are both "article").
+RCT_EXPORT_METHOD(pageImpressionWithId: (NSString *)pageId name: (NSString *)name) {
+  [[Audienzz shared] pageImpressionWithPageId:pageId name:name];
 }
 
 RCT_EXPORT_METHOD(getPpid: (RCTPromiseResolveBlock)resolve
@@ -119,7 +153,6 @@ RCT_EXPORT_METHOD(configureRemote : (NSString *)remoteUrl publisherId : (
 }
 
 RCT_EXPORT_METHOD(fetchPublisherConfig: (NSString *)publisherId
-                            enablePPID: (BOOL)enablePPID
                               resolver: (RCTPromiseResolveBlock)resolve
                               rejecter: (RCTPromiseRejectBlock)reject) {
   // GMAS removed the `sdkVersion` string; build it from `versionNumber`.
@@ -130,7 +163,6 @@ RCT_EXPORT_METHOD(fetchPublisherConfig: (NSString *)publisherId
                           (long)gamVersionNumber.patchVersion];
   [[Audienzz shared]
       configureWithRemoteSDKWithGadMobileAdsVersion:gamVersion
-                               enablePPID:enablePPID
                         completionHandler:^(NSError *_Nullable error) {
                           if (error != nil) {
                             reject(@"FETCH_FAILED",

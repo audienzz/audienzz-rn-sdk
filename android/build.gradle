@@ -68,6 +68,8 @@ android {
     }
   }
 
+  testOptions { unitTests.includeAndroidResources = true }
+
   lintOptions {
     disable "GradleCompatible"
   }
@@ -78,7 +80,20 @@ android {
   }
 }
 
+// Local-native testing hook. The DEFAULT is the published pin below; setting
+// `audienzzNativeVersion` (see example/android/gradle.properties) swaps in a build you published
+// with `./gradlew :Audienzz:publishToMavenLocal` in the android-sdk checkout.
+//
+// Deliberately a property rather than an edit: this file ships inside the npm package, and a
+// hardcoded `-local` version or a stray `mavenLocal()` in it would follow every publisher who
+// installs the SDK.
+def audienzzNativeVersion = project.findProperty("audienzzNativeVersion") ?: "0.3.0"
+def audienzzUsesLocalNative = project.hasProperty("audienzzNativeVersion")
+
 repositories {
+  if (audienzzUsesLocalNative) {
+    mavenLocal()
+  }
   google()
   mavenCentral()
 }
@@ -86,11 +101,14 @@ repositories {
 def kotlin_version = getExtOrDefault("kotlinVersion")
 
 dependencies {
+  testImplementation "junit:junit:4.13.2"
+  testImplementation "org.robolectric:robolectric:4.14.1"
+  testImplementation "io.mockk:mockk:1.13.16"
   // For < 0.71, this will be from the local maven repo
   // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-android:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation "com.google.android.gms:play-services-ads:25.1.0"
-  implementation "com.audienzz:sdk:0.2.0"
+  implementation "com.audienzz:sdk:$audienzzNativeVersion"
 }
