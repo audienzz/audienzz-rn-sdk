@@ -182,6 +182,12 @@ Repeat **Prefetch → ready → Show → dismiss** at least three times without 
 Each cycle must load new inventory, show once and return to not-ready. Capture the full error
 and `AUDZ interstitial` events if a show is skipped. The example displays structured errors.
 
+A skipped show with `ready: true` keeps the prefetched ad. Pressing **Prefetch** again should
+say **ready to show — using prefetched ad**, without another network request; **Show** can retry
+at a later eligible opportunity. This is different from a load being stuck. If Android reports
+`reason: inactive` after returning from an interstitial, verify that the APK includes the native
+foreground fix above: the default published 0.3.0 dependency still has that bug.
+
 The sticky example uses five `RemoteConfigBanner` instances with the same fixed placement as
 the main screen. Lazy loading and prefetch distance come only from the backend (`lazyLoad`
 defaults to `true`, `prefetchDistanceDp` to `200`); the example supplies no delivery overrides.

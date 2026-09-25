@@ -115,6 +115,12 @@ export default function RemoteConfigExample({
           labelButton="Prefetch"
           variant="secondary"
           onPress={() => {
+            // A skipped show keeps its inventory. Native coalesces another prefetch, so there
+            // may be no new load callback (Android). Keep the UI ready instead of waiting for it.
+            if (interstitial.current?.isReady()) {
+              setStatus('ready to show — using prefetched ad');
+              return;
+            }
             setStatus('loading…');
             interstitial.current?.prefetch();
           }}
