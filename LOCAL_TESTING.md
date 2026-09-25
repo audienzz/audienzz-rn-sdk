@@ -34,6 +34,26 @@ is `0.3.0`, so nothing about the shipped package depends on it.
 Re-publish after every native change; Gradle caches by version, so either re-publish over
 `0.3.0-local` or bump the suffix.
 
+Keep the override in `example/android/gradle.properties` (uncommitted) for the whole testing
+session. A one-off `-P` flag only affects that Gradle invocation: the next plain `yarn android`
+uses the published SDK again unless the property is still configured. Metro reloads update
+JavaScript, not the native SDK inside an installed APK. After changing native versions, rebuild
+and reinstall the app.
+
+To check what the next build will use:
+
+```bash
+cd ~/Documents/audienzz-rn-sdk/example/android
+./gradlew :app:dependencyInsight --dependency com.audienzz:sdk --configuration debugRuntimeClasspath
+```
+
+**Repeated interstitial test:** published Android **0.3.0** does not contain the foreground fix
+from this branch. It can falsely report background after a translucent interstitial closes,
+then reject the second `show()` as `opportunitySkipped: inactive` despite `ready: true`. Test
+three complete `Prefetch` → `Show` → dismiss cycles using a native build containing that fix.
+Also confirm a real Home/return transition still pauses and resumes banner refresh. The fixed
+SDK must be released and the default bridge pin updated before this is fixed for publishers.
+
 ## iOS — one environment variable
 
 ```bash
