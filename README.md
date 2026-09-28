@@ -5,8 +5,8 @@
 > refresh and interstitial APIs used by this bridge. The examples use published dependencies
 > by default. Optional local development overrides are described in [LOCAL_TESTING.md](LOCAL_TESTING.md).
 
-> **Unreleased fixes on this branch:** adaptive iOS loading, banner-only slot numbering,
-> and iOS analytics delivery need the matching native fixes.
+> **Unreleased native changes:** adaptive iOS loading, banner-only slot numbering,
+> and immediate analytics delivery with durable retries need the matching native fixes.
 > Until native releases and bridge pins are updated, use the local native overrides in
 > [LOCAL_TESTING.md](LOCAL_TESTING.md#pending-native-fixes-in-this-branch).
 

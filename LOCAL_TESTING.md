@@ -201,15 +201,18 @@ To return to released dependencies, unset `AUDIENZZ_IOS_SDK_PATH`, restore the c
 
 ## Pending native fixes in this branch
 
-iOS analytics delivery also needs the native branch fix. Published 0.4.0 can stop sending after
+Immediate analytics delivery with durable retries requires rebuilding against the matching
+native branch checkout on each platform.
+iOS analytics delivery also needs the native HTTP-204 fix. Published 0.4.0 can stop sending after
 an empty or non-JSON collector reply. Rebuild with `AUDIENZZ_IOS_SDK_PATH` set to the patched
 checkout; a Metro reload cannot update the native transport.
 
 For analytics checks, configure the device network proxy, enable SSL proxying for
-`api.adnz.co:443`, and filter Charles for `/api/ws-clickstream-collector/submit/batch`. Allow
-15 seconds for a partial batch. The patched native SDKs log
-`AUDZ analytics queued/sending/sent/failed/dropped` with no event payloads when diagnostics
-are enabled. `sent` confirms HTTP success, not dashboard ingestion.
+`api.adnz.co:443`, and filter Charles for `/api/ws-clickstream-collector/submit/batch`.
+Current-branch natives send each event immediately after persistence, with one request in flight.
+With diagnostics enabled, the patched native SDKs log
+`AUDZ analytics queued/sending/sent/failed/retryScheduled/dropped` without event payloads.
+`sent` confirms HTTP success, not dashboard ingestion.
 
 Android Prebid-outage fallback and recovery after a translucent interstitial also require the
 native branch checkout. They are not in the published Android 0.3.0 pin. Rebuild with the local
