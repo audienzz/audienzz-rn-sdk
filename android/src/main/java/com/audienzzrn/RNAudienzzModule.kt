@@ -33,6 +33,15 @@ private const val RN_SDK_VERSION = "0.5.0"
 class RNAudienzzModule(reactContext: ReactApplicationContext) :
   ReactNativeModule(reactContext, SERVICE) {
   @ReactMethod
+  fun configureAnalytics(publisherId: String?, environment: String, promise: Promise) {
+    if (AudienzzPrebidMobile.configureAnalytics(publisherId, environment)) {
+      promise.resolve(null)
+    } else {
+      promise.reject("INVALID_ENVIRONMENT", "Expected production, staging or test")
+    }
+  }
+
+  @ReactMethod
   fun initialize(companyID: String, promise: Promise) {
     AudienzzPrebidMobile.initializeSdk(applicationContext, companyID) { status ->
       when (status) {

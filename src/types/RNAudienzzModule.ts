@@ -4,6 +4,8 @@ export type AudienzzInitStatus = {
 };
 
 export interface RNAudienzzModule {
+  /** Configure analytics before SDK init. Remote init supplies publisherId automatically. */
+  configureAnalytics(publisherId: string | null, environment: 'production' | 'staging' | 'test'): Promise<void>;
   initialize(companyId: string): Promise<AudienzzInitStatus>;
 
   setPublisherPpid(ppid: string | null): void;

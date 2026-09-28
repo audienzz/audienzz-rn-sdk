@@ -7,6 +7,7 @@ jest.mock(
   () => {
     const sdk = {
       initializeRemote: jest.fn(),
+      configureAnalytics: jest.fn().mockResolvedValue(undefined),
       setDiagnosticsEnabled: jest.fn(),
       setSmartRefreshV2Enabled: jest.fn(),
       setBlankOnScreenReload: jest.fn(),

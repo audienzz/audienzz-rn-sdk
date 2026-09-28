@@ -84,6 +84,7 @@ export default function App() {
         Audienzz.setDiagnosticsEnabled(true);
         RNAudienzz().setSmartRefreshV2Enabled(true);
         RNAudienzz().setBlankOnScreenReload(true);
+        await Audienzz.configureAnalytics(null, 'test');
         const value = REMOTE_CONFIG_ENABLED
           ? await RNAudienzz().initializeRemote(
               REMOTE_CONFIG.url,

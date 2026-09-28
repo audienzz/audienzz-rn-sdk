@@ -8,6 +8,10 @@ import {
 } from './pageRegistry';
 
 class RNAudienzzClass implements RNAudienzzModule {
+  configureAnalytics(publisherId: string | null, environment: 'production' | 'staging' | 'test'): Promise<void> {
+    return NativeModulesCombined.AudienzzModule.configureAnalytics(publisherId, environment);
+  }
+
   initialize(companyId: string) {
     return NativeModulesCombined.AudienzzModule.initialize(companyId);
   }

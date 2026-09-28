@@ -49,6 +49,17 @@ RCT_EXPORT_MODULE();
   };
 }
 
+RCT_EXPORT_METHOD(configureAnalytics:(nullable NSString *)publisherId
+                  environment:(NSString *)environment
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+  if ([[Audienzz shared] configureAnalyticsWithPublisherId:publisherId environment:environment]) {
+    resolve(nil);
+  } else {
+    reject(@"INVALID_ENVIRONMENT", @"Expected production, staging or test", nil);
+  }
+}
+
 RCT_EXPORT_METHOD(initialize: (NSString *)companyId
                     resolver: (RCTPromiseResolveBlock)resolve
                     rejecter: (RCTPromiseRejectBlock)reject) {
