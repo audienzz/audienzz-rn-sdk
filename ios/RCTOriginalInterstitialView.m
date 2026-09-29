@@ -241,6 +241,10 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
 }
 
 - (void)adWillDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
+  // Keep the SDK delegate alive through didDismiss, where native recovers the page.
+}
+
+- (void)adDidDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
   [self.auInterstitialView removeFromSuperview];
   self.auInterstitialView = nil;
 
@@ -249,8 +253,5 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
   }
 }
 
-- (void)adDidDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
-  NSLog(@"Ad did dismiss full screen content.");
-}
 
 @end

@@ -89,6 +89,26 @@ static GADRequest *RewardedRequest;
                                  class_getInstanceMethod(GAMBannerView.class, @selector(audit_loadRequest:)));
 }
 
+- (void)testOriginalInterstitialRetainsNativeOwnerUntilCompletedDismissal {
+  RCTOriginalInterstitialView *view = [RCTOriginalInterstitialView new];
+  AUInterstitialView *owner = [[AUInterstitialView alloc] initWithConfigId:@"test"
+      isLazyLoad:NO minWidthPerc:80 minHeightPerc:80];
+  [view setValue:owner forKey:@"auInterstitialView"];
+  [view addSubview:owner];
+  __block NSUInteger closed = 0;
+  view.onAdClosed = ^(NSDictionary *body) { closed++; };
+  id<GADFullScreenPresentingAd> ad = (id)[NSObject new];
+  [view adWillDismissFullScreenContent:ad];
+  XCTAssertEqual([view valueForKey:@"auInterstitialView"], owner);
+  XCTAssertEqual(owner.superview, view);
+  XCTAssertEqual(closed, 0u);
+  [view adDidDismissFullScreenContent:ad];
+  XCTAssertNil([view valueForKey:@"auInterstitialView"]);
+  XCTAssertNil(owner.superview);
+  XCTAssertEqual(closed, 1u);
+  [owner destroy];
+}
+
 - (void)tearDown {
   method_exchangeImplementations(class_getInstanceMethod(AURewardedView.class, @selector(createAdWith:adUnitID:)),
                                  class_getInstanceMethod(AURewardedView.class, @selector(audit_createAdWith:adUnitID:)));

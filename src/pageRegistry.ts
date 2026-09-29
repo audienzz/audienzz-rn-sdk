@@ -250,7 +250,7 @@ export function getCurrentPage(): AudienzzPageHandle | null {
   return currentPage;
 }
 
-/** View revision, bumped on navigation and foreground ad recovery; not au_page_seq. */
+/** View revision, bumped on navigation and foreground/interstitial ad recovery; not au_page_seq. */
 export function getPageEpoch(): number {
   return epoch;
 }
@@ -264,7 +264,7 @@ export function unsubscribe(listener: PageListener): void {
 }
 
 /**
- * Notify mounted banners after navigation or foreground recovery. The legacy
+ * Notify mounted banners after navigation or foreground/interstitial recovery. The legacy
  * `AudienzzPageImpression` channel is a view-refresh signal, not an analytics event.
  * Its local revision advances on recovery while native page ID/sequence/counters stay intact.
  */

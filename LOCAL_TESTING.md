@@ -268,3 +268,20 @@ publisher's users; the host app owns its ATT/CMP flow and usage-description text
 
 Test a fresh install with Allow and Deny separately, plus relaunch and background/foreground.
 A zero IDFA after Deny is expected; do not use it as proof that ad loading failed.
+
+## Same-page interstitial return (unreleased)
+
+Use `feature/foreground-page-continuity` in both native checkouts and this bridge, with the local
+overrides above. Published Android 0.3.1 / iOS 0.4.1 do not contain this policy yet; update pins after
+publication before releasing these bridge changes.
+
+- Show/dismiss three successive prefetched interstitials: one banner replacement per return,
+  optional blanking until Google responds, no extra analytics `pageImpression`.
+- Compare `page_impression_id`, `au_page_seq`, `au_slot`: unchanged; banner refresh count advances.
+- Navigate during the ad, dismiss while backgrounded, and background/foreground before dismissal:
+  no old-page revival or duplicate reload; no requests while covered/backgrounded.
+- Keep a banner manually paused or off-screen: dismissal must not bypass either hold.
+- Prefetch on A, show on B: interstitial events keep A; banner recovery belongs to B.
+
+The existing bridge page callback is a view lifecycle notification, not evidence that an analytics
+page event was sent. Inspect the collector payload separately.
