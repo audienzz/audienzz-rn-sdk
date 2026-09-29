@@ -15,6 +15,7 @@
 */
 
 import { DeviceEventEmitter } from 'react-native';
+import { logDiagnostic } from './diagnostics';
 
 // Page-scoped ad ownership for the React Native bridge.
 //
@@ -275,6 +276,13 @@ export function unsubscribe(listener: PageListener): void {
 function notifyPageImpression(page: string): void {
   epoch += 1;
   listeners.forEach((listener) => listener(page, epoch));
+  // Confirm native reports, including interstitial returns and foreground recovery.
+  // This is not analytics delivery; `route` is not the analytics page_impression_id.
+  logDiagnostic('page', 'impression', {
+    route: page,
+    epoch,
+    source: 'native',
+  });
 }
 
 /**
