@@ -176,13 +176,13 @@ class RNAudienzzModule(reactContext: ReactApplicationContext) :
 
   @ReactMethod
   fun configureRemote(remoteUrl: String, publisherId: String, promise: Promise) {
-    // Android SDK 0.3.0 hardcodes this endpoint in NetworkModule. The util.remote manager only
+    // Android SDK 0.3.1 hardcodes this endpoint in NetworkModule. The util.remote manager only
     // stored the supplied URL; the actual HTTP client never read it. Reject unsupported URLs
     // before initializeRemote starts so development IDs cannot silently go to production.
     if (remoteUrl.trim().trimEnd('/') != REMOTE_CONFIG_URL) {
       promise.reject(
         "UNSUPPORTED_REMOTE_URL",
-        "Android SDK 0.3.0 supports only $REMOTE_CONFIG_URL/. " +
+        "Android SDK 0.3.1 supports only $REMOTE_CONFIG_URL/. " +
           "Use a publisher and placement IDs provisioned on that endpoint."
       )
       return

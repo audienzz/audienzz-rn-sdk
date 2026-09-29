@@ -1,12 +1,12 @@
 # Running this example against the LOCAL native SDKs
 
-The bridge and example use published `com.audienzz:sdk:0.3.0` and
-`AudienzziOSSDK ~> 0.4.0` by default. No native checkout is needed for normal builds.
+The bridge and example use published `com.audienzz:sdk:0.3.1` and
+`AudienzziOSSDK ~> 0.4.1` by default. No native checkout is needed for normal builds.
 The overrides below are optional and only for developing native changes.
 
 The example's endpoint, publisher and placement IDs live together in `example/src/remoteConfig.ts`.
 It uses production publisher **35**, fixed banner **46**, adaptive banner **48**, and interstitial
-**47** on both platforms. Android SDK 0.3.0 always fetches configuration from production; it cannot
+**47** on both platforms. Android SDK 0.3.1 always fetches configuration from production; it cannot
 use the development publisher **81** or placements **118/192/267**. The bridge rejects unsupported
 URLs instead of silently sending those IDs to production.
 
@@ -16,23 +16,23 @@ Publish the native SDK to your local Maven repository once:
 
 ```bash
 cd ~/Documents/audienzz-android-sdk
-sed -i '' 's/audienzzSdkVersion = "0.3.0"/audienzzSdkVersion = "0.3.0-local"/' Audienzz/build.gradle.kts
+sed -i '' 's/audienzzSdkVersion = "0.3.1"/audienzzSdkVersion = "0.3.1-local"/' Audienzz/build.gradle.kts
 ./gradlew :Audienzz:publishToMavenLocal
 ```
 
 After publishing a local build, add this temporary override to `example/android/gradle.properties`
-(or pass `-PaudienzzNativeVersion=0.3.0-local` when invoking Gradle):
+(or pass `-PaudienzzNativeVersion=0.3.1-local` when invoking Gradle):
 
 ```properties
-audienzzNativeVersion=0.3.0-local
+audienzzNativeVersion=0.3.1-local
 ```
 
 That property is what switches `android/build.gradle` over and adds `mavenLocal()`. **Delete the
 line to go back to the published pin**, and before releasing — the default in `android/build.gradle`
-is `0.3.0`, so nothing about the shipped package depends on it.
+is `0.3.1`, so nothing about the shipped package depends on it.
 
 Re-publish after every native change; Gradle caches by version, so either re-publish over
-`0.3.0-local` or bump the suffix.
+`0.3.1-local` or bump the suffix.
 
 Keep the override in `example/android/gradle.properties` (uncommitted) for the whole testing
 session. A one-off `-P` flag only affects that Gradle invocation: the next plain `yarn android`
@@ -47,12 +47,10 @@ cd ~/Documents/audienzz-rn-sdk/example/android
 ./gradlew :app:dependencyInsight --dependency com.audienzz:sdk --configuration debugRuntimeClasspath
 ```
 
-**Repeated interstitial test:** published Android **0.3.0** does not contain the foreground fix
-from this branch. It can falsely report background after a translucent interstitial closes,
-then reject the second `show()` as `opportunitySkipped: inactive` despite `ready: true`. Test
-three complete `Prefetch` → `Show` → dismiss cycles using a native build containing that fix.
-Also confirm a real Home/return transition still pauses and resumes banner refresh. The fixed
-SDK must be released and the default bridge pin updated before this is fixed for publishers.
+**Repeated interstitial test:** Android **0.3.1**, selected by default, includes the foreground
+fix for translucent interstitials. Android 0.3.0 could reject a second `show()` as
+`opportunitySkipped: inactive` despite `ready: true`. Test three complete
+`Prefetch` → `Show` → dismiss cycles and a real Home/return transition with the published pin.
 
 ## iOS — one environment variable
 
@@ -197,32 +195,23 @@ To return to released dependencies, unset `AUDIENZZ_IOS_SDK_PATH`, restore the c
 1. Delete `audienzzNativeVersion` from `example/android/gradle.properties`.
 2. `unset AUDIENZZ_IOS_SDK_PATH` and `pod install`.
 3. Build both platforms against the published dependencies. The current required releases are
-   Android 0.3.0 and iOS 0.4.0; no local override should be active.
+   Android 0.3.1 and iOS 0.4.1; no local override should be active.
 
-## Pending native fixes in this branch
+## Published native fixes and analytics checks
 
-Immediate analytics delivery with durable retries requires rebuilding against the matching
-native branch checkout on each platform.
-iOS analytics delivery also needs the native HTTP-204 fix. Published 0.4.0 can stop sending after
-an empty or non-JSON collector reply. Rebuild with `AUDIENZZ_IOS_SDK_PATH` set to the patched
-checkout; a Metro reload cannot update the native transport.
+Android `0.3.1` and iOS `0.4.1`, selected by default, include immediate analytics delivery
+with persistent retries, page-impression attribution, adaptive banner fixes, and banner-only
+slot numbering. iOS includes the HTTP-204 analytics fix and late adaptive-size notifications;
+Android includes Prebid-outage fallback and foreground recovery after translucent interstitials.
+No local native checkout is required. Rebuild and reinstall the example after upgrading;
+Metro reload does not replace the native SDKs.
 
 For analytics checks, configure the device network proxy, enable SSL proxying for
 `api.adnz.co:443`, and filter Charles for `/api/ws-clickstream-collector/submit/batch`.
-Current-branch natives send each event immediately after persistence, with one request in flight.
-With diagnostics enabled, the patched native SDKs log
+The native SDKs send each event immediately after persistence, with one request in flight.
+With diagnostics enabled, they log
 `AUDZ analytics queued/sending/sent/failed/retryScheduled/dropped` without event payloads.
 `sent` confirms HTTP success, not dashboard ingestion.
-
-Android Prebid-outage fallback and recovery after a translucent interstitial also require the
-native branch checkout. They are not in the published Android 0.3.0 pin. Rebuild with the local
-native override to test them; restarting Metro alone does not update the native SDK.
-
-Adaptive iOS bootstrap and banner-only slot numbering require the matching native
-`feature/page-impression-api` checkouts. Flutter also calls the new `forInterstitial` context
-factory, so these changes cannot compile against the old published native pins.
-Use the local overrides below while testing. Release native Android and iOS first, then update
-both bridge dependency pins and lockfiles before publishing the bridges. Do not ship local pins.
 
 ### Android outage and repeated-interstitial checks
 
@@ -241,7 +230,7 @@ A skipped show with `ready: true` keeps the prefetched ad. Pressing **Prefetch**
 say **ready to show — using prefetched ad**, without another network request; **Show** can retry
 at a later eligible opportunity. This is different from a load being stuck. If Android reports
 `reason: inactive` after returning from an interstitial, verify that the APK includes the native
-foreground fix above: the default published 0.3.0 dependency still has that bug.
+foreground fix above: use the default published 0.3.1 dependency and rebuild the APK.
 
 The sticky example uses five `RemoteConfigBanner` instances with the same fixed placement as
 the main screen. Lazy loading and prefetch distance come only from the backend (`lazyLoad`
@@ -262,14 +251,12 @@ the backend's list of sizes. Sticky slots must also follow the returned size.
 Placement 48 currently sends `type: INLINE`, `widthStrategy: CUSTOM`, `customWidth: 320`.
 That width is **320 dp**, not 320 physical pixels. Test at more than one device density and
 verify the full creative height, horizontal centering, and lazy loading before first fill.
-The custom-width/type fix requires a native Android build containing it; the default 0.3.0 pin
-does not include it. Use the local-native override above until a new native version is released.
+The custom-width/type fix is included in the default Android 0.3.1 pin.
 
 For iOS inline banners, also test a size arriving after the load callback and a creative changing
 height after display. The slot must retain its placeholder until a positive creative size arrives,
 then update both UIKit and React Native layout without another auction or `onAdLoaded` event.
-This requires the native iOS sizing fix and the RN size-event bridge from this branch; the
-published iOS 0.4.0 dependency does not include the native fix.
+This uses the native iOS sizing fix in the default 0.4.1 pin and the RN size-event bridge.
 
 ## ATT in the iOS example
 

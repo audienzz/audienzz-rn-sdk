@@ -1,14 +1,14 @@
 # Audienzz React Native SDK
 
-> **Native dependencies:** Android `com.audienzz:sdk:0.3.0` (Maven Central) and
-> iOS `AudienzziOSSDK ~> 0.4.0` (CocoaPods). These releases provide the page ownership,
+> **Native dependencies:** Android `com.audienzz:sdk:0.3.1` (Maven Central) and
+> iOS `AudienzziOSSDK ~> 0.4.1` (CocoaPods). These releases provide the page ownership,
 > refresh and interstitial APIs used by this bridge. The examples use published dependencies
 > by default. Optional local development overrides are described in [LOCAL_TESTING.md](LOCAL_TESTING.md).
 
-> **Unreleased native changes:** adaptive iOS loading, banner-only slot numbering,
-> and immediate analytics delivery with durable retries need the matching native fixes.
-> Until native releases and bridge pins are updated, use the local native overrides in
-> [LOCAL_TESTING.md](LOCAL_TESTING.md#pending-native-fixes-in-this-branch).
+> These native releases include adaptive banner fixes, banner-only slot numbering,
+> immediate analytics delivery with durable retries, and page-impression attribution.
+> Android also includes interstitial foreground recovery and Google fallback when Prebid fails.
+> Rebuild the app after upgrading; Metro reload does not replace the native SDKs.
 
 ## Quick integration (remote config + `pageImpression`)
 
@@ -22,7 +22,7 @@ npm install audienzz          # or: yarn add audienzz
 cd ios && pod install
 ```
 
-Use the package release that requires **Android 0.3.0 / iOS 0.4.0** (this branch). Older React Native
+Use the package release that requires **Android 0.3.1 / iOS 0.4.1** (this branch). Older React Native
 releases do not include the managed APIs below. The native SDKs require **Android API 24** and
 **iOS 15.0**; use a higher deployment target if your React Native version requires it.
 
@@ -50,12 +50,12 @@ Await this once after consent, before mounting the ad-bearing navigation tree. H
 with your startup error/retry UI; keep app content available if initialization fails. Initialization
 does not report a page — the real navigation state in step 3 does that.
 
-Android server-status warnings resolve initialization so Google ads can still load. Full fallback
-when Prebid initialization fails requires the pending native release; see
-[local native testing and outage checks](LOCAL_TESTING.md#pending-native-fixes-in-this-branch).
+Android server-status warnings resolve initialization so Google ads can still load. Android
+`0.3.1` also permits Google-only demand when Prebid initialization fails; see
+[outage checks](LOCAL_TESTING.md#android-outage-and-repeated-interstitial-checks).
 An unavailable remote placement configuration or Google endpoint remains an error.
 
-**Android 0.3.0 supports the production configuration URL shown above only.** The bridge rejects
+**Android 0.3.1 supports the production configuration URL shown above only.** The bridge rejects
 other URLs with `UNSUPPORTED_REMOTE_URL`; earlier versions silently ignored them. Use publisher
 and placement IDs from the same environment. The example uses production publisher `35`, banner
 placements `46` / `48`, and interstitial `47`; development publisher `81` does not exist there.
@@ -1036,7 +1036,7 @@ Commands return `void` because the React Native bridge is asynchronous. Observe 
 
 Without `manualControl`, mounting performs `prefetchAndShow()` — the same behaviour as before, now named for what it does. The new flow applies to **RemoteConfigInterstitial**; the lower-level Original and Rendering interstitial components retain their existing APIs. Native presentation exclusion covers SDK-managed remote interstitials, not unrelated fullscreen ads presented outside this API.
 
-**Native dependency:** these commands require Android 0.3.0 and iOS 0.4.0, the published versions selected by this bridge.
+**Native dependency:** these commands require Android 0.3.1 and iOS 0.4.1, the published versions selected by this bridge.
 
 ## Sticky Ad Wrapper
 
@@ -1215,5 +1215,5 @@ Remote initialization supplies the ws-sdk-config `publisher_id` automatically (i
 The collector resolves company and website IDs. Analytics defaults to `environment=production`;
 set `test` or `staging` before initializing a non-production app. Our examples use `test`.
 See [the analytics contract](docs/analytics-contract.md) for configuration, currency provenance,
-missing Prebid metadata and release requirements. These additions require the upcoming native
-releases; current published native pins do not provide them.
+missing Prebid metadata and release requirements. These additions are included in the required
+Android `0.3.1` and iOS `0.4.1` native releases.
