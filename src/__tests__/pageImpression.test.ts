@@ -80,6 +80,19 @@ describe('Audienzz.pageImpression', () => {
     expect(registry.getPageEpoch()).toBe(1);
   });
 
+  it('foreground recovery refreshes views without reporting a new analytics page', () => {
+    Audienzz.pageImpression('Article');
+    DeviceEventEmitter.emit(PAGE_IMPRESSION_EVENT, 'Article');
+    const page = registry.getCurrentPage();
+    const before = registry.getPageEpoch();
+    const seen: Array<[string, number]> = [];
+    registry.subscribe((id, revision) => seen.push([id, revision]));
+    DeviceEventEmitter.emit(PAGE_IMPRESSION_EVENT, 'Article');
+    expect(seen).toEqual([['Article', before + 1]]);
+    expect(registry.getCurrentPage()).toBe(page);
+    expect(nativeCalls).toEqual([{ pageId: 'Article', name: 'Article' }]);
+  });
+
   it('notifies subscribers once for one explicit impression', () => {
     const seen: string[] = [];
     registry.subscribe((page) => seen.push(page));

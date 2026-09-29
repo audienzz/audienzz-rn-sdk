@@ -33,8 +33,8 @@ RCT_EXPORT_MODULE();
   return dispatch_get_main_queue();
 }
 
-// Forward every native page impression to JS -- including the automatic one fired on returning to
-// the foreground, which never passes through the JS API. Native owns foreground reporting; JS just
+// Forward native navigation and ad recovery to JS, including app return to
+// the foreground, which never passes through the JS API. Native owns foreground recovery; JS just
 // page-scopes the ad types the native coordinator doesn't track (rendering banners).
 - (void)setBridge:(RCTBridge *)bridge {
   _bridge = bridge;

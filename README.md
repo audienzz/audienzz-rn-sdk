@@ -196,6 +196,15 @@ See [test flows and local setup](LOCAL_TESTING.md) before shipping.
 
 **Audienzz React Native SDK** is a React Native wrapper around the native Android/iOS Audienzz SDKs (Original and Rendering APIs).
 
+**App background/foreground is the same page visit.** With the native foreground-continuity
+update, minimizing and reopening the app refreshes its active banners (and blanks them when
+blanking is enabled), but sends no new `pageImpression` analytics event. The existing
+`page_impression_id`, `au_page_seq` and `au_slot` remain; each replacement request advances the
+slot's `hb_refresh_count` and gets a fresh auction ID. Visibility, page ownership and publisher
+pause still apply. Do not call `pageImpression` from app-resume callbacks just because the app
+became active. Report actual navigation, including ad-free screens, back navigation and a new
+article. An explicit call still starts a new page impression, even for the same screen.
+
 ## Installation
 
 ### Package manager

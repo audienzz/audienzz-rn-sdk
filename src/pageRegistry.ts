@@ -250,7 +250,7 @@ export function getCurrentPage(): AudienzzPageHandle | null {
   return currentPage;
 }
 
-/** Page counter, bumped on every page impression. */
+/** View revision, bumped on navigation and foreground ad recovery; not au_page_seq. */
 export function getPageEpoch(): number {
   return epoch;
 }
@@ -264,21 +264,16 @@ export function unsubscribe(listener: PageListener): void {
 }
 
 /**
- * Record a page transition and notify mounted banners.
- *
- * Driven by the native `AudienzzPageImpression` device event, not by the JS
- * API, so it fires for EVERY real page impression — including the automatic one
- * native emits on returning to the foreground, which never passes through
- * `Audienzz.pageImpression`. Rendering banners page-scope themselves off this;
- * without it they missed foreground recreation entirely. One owner also means a
- * transition can't be counted twice.
+ * Notify mounted banners after navigation or foreground recovery. The legacy
+ * `AudienzzPageImpression` channel is a view-refresh signal, not an analytics event.
+ * Its local revision advances on recovery while native page ID/sequence/counters stay intact.
  */
 function notifyPageImpression(page: string): void {
   epoch += 1;
   listeners.forEach((listener) => listener(page, epoch));
   // Confirm native reports, including interstitial returns and foreground recovery.
   // This is not analytics delivery; `route` is not the analytics page_impression_id.
-  logDiagnostic('page', 'impression', {
+  logDiagnostic('page', 'adsUpdated', {
     route: page,
     epoch,
     source: 'native',
