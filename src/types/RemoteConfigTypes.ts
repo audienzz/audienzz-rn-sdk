@@ -27,7 +27,7 @@ export interface PrebidConfig {
 
 /** Fallback refresh interval used when `refreshTimeSeconds` is absent or null
  *  in the remote payload. Matches the default on Android, iOS, and Flutter. */
-export const DEFAULT_REFRESH_TIME_SECONDS = 30;
+export const DEFAULT_REFRESH_TIME_SECONDS = 10;
 
 /** Fallback prefetch distance used when `prefetchDistanceDp` is absent or null
  *  in the remote payload. Maps to `prefetchMarginDp` on Android and
@@ -36,7 +36,7 @@ export const DEFAULT_PREFETCH_DISTANCE_DP = 200;
 
 export interface AdConfig {
     adType: string;
-    /** Seconds between auto-refresh cycles.
+    /** Eligible seconds between auto-refresh cycles; 0 disables periodic refresh.
      *  `undefined` when absent or null in the remote payload.
      *  The native SDK applies {@link DEFAULT_REFRESH_TIME_SECONDS} as a fallback. */
     refreshTimeSeconds?: number;
