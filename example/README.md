@@ -11,7 +11,7 @@ Install dependencies from the repository root:
 yarn install
 ```
 
-The example defaults to published **Android 0.3.2 / iOS 0.4.2**; no sibling checkout is needed.
+The example defaults to published **Android 0.3.3 / iOS 0.4.3**; no sibling checkout is needed.
 For iOS, run `pod install` in `example/ios` before building. Optional local native testing is
 documented in [LOCAL_TESTING.md](../LOCAL_TESTING.md). Then start Metro:
 

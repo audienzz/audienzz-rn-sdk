@@ -1,17 +1,16 @@
 # Audienzz React Native SDK
 
-> **Native dependencies:** Android `com.audienzz:sdk:0.3.2` (Maven Central) and
-> iOS `AudienzziOSSDK ~> 0.4.2` (CocoaPods). The library and examples use these published
+> **Native dependencies:** Android `com.audienzz:sdk:0.3.3` (Maven Central) and
+> iOS `AudienzziOSSDK ~> 0.4.3` (CocoaPods). The library and examples use these published
 > releases by default, including analytics batching, foreground/interstitial page continuity,
 > cold-start attribution and one `viewability.start` per creative.
 >
 > Rebuild after upgrading; Metro reload does not replace native SDKs. Optional local native
 > testing is documented in [LOCAL_TESTING.md](LOCAL_TESTING.md).
 
-> **Upcoming refresh timing:** native `main` now counts eligible time only, with a backend interval
-> defaulting to 10 seconds. The pinned native releases above still use wall-clock timing (and the
-> old 30-second clamp). Test the new timing using [local natives](LOCAL_TESTING.md); production
-> adoption requires the next native releases and updated wrapper pins.
+> **Refresh timing:** these native releases count only eligible time. Remote banners use backend
+> `config.refreshTimeSeconds`, defaulting to 10 seconds when missing/null; an explicit backend
+> value of `30` still means 30 eligible seconds. Pauses preserve the remaining interval.
 
 ## Quick integration (remote config + `pageImpression`)
 
@@ -61,11 +60,11 @@ order, including its error/retry screen. Foreground and interstitial returns sti
 native recovery; they do not need another page report.
 
 Android server-status warnings resolve initialization so Google ads can still load. Android
-`0.3.2` also permits Google-only demand when Prebid initialization fails; see
+`0.3.3` also permits Google-only demand when Prebid initialization fails; see
 [outage checks](LOCAL_TESTING.md#android-outage-and-repeated-interstitial-checks).
 An unavailable remote placement configuration or Google endpoint remains an error.
 
-**Android 0.3.2 supports the production configuration URL shown above only.** The bridge rejects
+**Android 0.3.3 supports the production configuration URL shown above only.** The bridge rejects
 other URLs with `UNSUPPORTED_REMOTE_URL`; earlier versions silently ignored them. Use publisher
 and placement IDs from the same environment. The example uses production publisher `35`, banner
 placements `46` / `48`, and interstitial `47`; development publisher `81` does not exist there.
@@ -166,8 +165,8 @@ The page wrapper binds the banner to its route instance and waits for navigation
 screens and pre-mounted navigator tabs need no extra focus reporting. For custom navigation,
 follow the [managed integration](#the-managed-integration-recommended) and its explicit `active` contract.
 
-Periodic refresh is backend-controlled through `config.refreshTimeSeconds`. With the upcoming
-native release, missing/null means 10 eligible seconds and 0 disables periodic refresh. A banner
+Periodic refresh is backend-controlled through `config.refreshTimeSeconds`. Missing/null means
+10 eligible seconds and 0 disables periodic refresh. A banner
 that earns 6 seconds, then stays hidden for 40 seconds, needs 4 more eligible seconds. Loading
 time is excluded; page/foreground/interstitial recovery remains unchanged.
 
@@ -805,8 +804,8 @@ import {
 | `videoPlacement`          | OpenRTB 2.5 Placement Type for the auction. **Default:** `’inBanner’`.                                                                                                                                                                                                                                                                        |    No    | ‘inBanner’ &#124; ‘inArticle’ &#124; ‘inFeed’ &#124; ‘interstitial’                                                                                                                                                           | `OriginalBanner`                                             |
 | `isReserved`              | The property that can be used to determine how the banner will appear. With or without reserved space. _Note: May be useful if the ad will be used where there is a lot of static content._ **Default:** `false`.                                                                                                                             |    No    | boolean                                                                                                                                                                                                                       | `OriginalBanner`                                             |
 | `isAdaptive`              | The property that can be used to work with multiply size banner. **Default:** `false`.                                                                                                                             |    No    | boolean                                                                                                                                                                                                                       | `OriginalBanner`                                             |
-| `refreshTimeMillis`       | Auto-refresh interval in milliseconds. The upcoming native release honors positive values without the old 30 000 ms minimum and counts eligible time only; 0 disables periodic refresh. To manually stop or resume refresh call `stopAutoRefresh()` / `resumeAutoRefresh()` on the component ref. (Replaces deprecated `autoRefreshPeriodMillis`.)                                                                                                              |    No    | number                                                                                                                                                                                                                        | `OriginalBanner`                                             |
-| `smartRefresh`            | When `true`, gates refresh on the selected v1/v2 viewport rule. With the upcoming native release, pausing preserves elapsed eligible time and excludes hidden time; resume waits the remaining interval. Requires `refreshTimeMillis`. **Default:** `false`. |    No    | boolean                                                                                                                                                                                                                       | `OriginalBanner`                                             |
+| `refreshTimeMillis`       | Auto-refresh interval in milliseconds. The native SDK honors positive values without the old 30 000 ms minimum and counts eligible time only; 0 disables periodic refresh. To manually stop or resume refresh call `stopAutoRefresh()` / `resumeAutoRefresh()` on the component ref. (Replaces deprecated `autoRefreshPeriodMillis`.)                                                                                                              |    No    | number                                                                                                                                                                                                                        | `OriginalBanner`                                             |
+| `smartRefresh`            | When `true`, gates refresh on the selected v1/v2 viewport rule. Pausing preserves elapsed eligible time and excludes hidden time; resume waits the remaining interval. Requires `refreshTimeMillis`. **Default:** `false`. |    No    | boolean                                                                                                                                                                                                                       | `OriginalBanner`                                             |
 | `prefetchMargin`          | Distance in logical pixels (pt on iOS, dp on Android) ahead of the viewport at which the Prebid demand fetch is triggered. Only effective when `isLazyLoad={true}`. Has no practical effect inside `FlatList`/recycled lists — use `isLazyLoad={false}` there instead. **Default:** `200`.                                                   |    No    | number                                                                                                                                                                                                                        | `OriginalBanner`                                             |
 | `minSizesPercentage`      | Optional parameter to specify the minimum width/height percent an ad may occupy of a device’s screen. **Default:** `[80, 60]` // [width, height].                                                                                                                                                                                             |    No    | [number, number]                                                                                                                                                                                                              | `OriginalInterstitial`                                       |
 | `onAdLoaded`              | A callback triggered when an ad is received.                                                                                                                                                                                                                                                                                                  |    No    | onAdLoaded?(size: AdSize): void                                                                                                                                                                                                           | `OriginalBanner`, `OriginalInterstitial`, `OriginalRewarded` |
@@ -1067,7 +1066,7 @@ Commands return `void` because the React Native bridge is asynchronous. Observe 
 
 Without `manualControl`, mounting performs `prefetchAndShow()` — the same behaviour as before, now named for what it does. The new flow applies to **RemoteConfigInterstitial**; the lower-level Original and Rendering interstitial components retain their existing APIs. Native presentation exclusion covers SDK-managed remote interstitials, not unrelated fullscreen ads presented outside this API.
 
-**Native dependency:** these commands require Android 0.3.2 and iOS 0.4.2, the published versions selected by this bridge.
+**Native dependency:** these commands require Android 0.3.3 and iOS 0.4.3, the published versions selected by this bridge.
 
 ## Sticky Ad Wrapper
 
@@ -1247,4 +1246,4 @@ The collector resolves company and website IDs. Analytics defaults to `environme
 set `test` or `staging` before initializing a non-production app. Our examples use `test`.
 See [the analytics contract](docs/analytics-contract.md) for configuration, currency provenance,
 missing Prebid metadata and release requirements. These additions are included in the required
-Android `0.3.2` and iOS `0.4.2` native releases.
+Android `0.3.3` and iOS `0.4.3` native releases.
