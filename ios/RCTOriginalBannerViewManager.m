@@ -28,6 +28,7 @@ RCT_EXPORT_MODULE(RCTOriginalBannerView)
     return [[RCTOriginalBannerView alloc] init];
 }
 
+RCT_EXPORT_VIEW_PROPERTY(pageKey, NSString)
 RCT_EXPORT_VIEW_PROPERTY(isLazyLoad, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(adFormats, NSArray)
 RCT_EXPORT_VIEW_PROPERTY(playbackMethod, NSArray)
@@ -68,6 +69,16 @@ RCT_EXPORT_METHOD(resumeAutoRefresh:(nonnull NSNumber *)reactTag) {
         UIView *view = [uiManager viewForReactTag:reactTag];
         if ([view isKindOfClass:[RCTOriginalBannerView class]]) {
             [(RCTOriginalBannerView *)view resumeAutoRefresh];
+        }
+    });
+}
+
+RCT_EXPORT_METHOD(reload:(nonnull NSNumber *)reactTag) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        RCTUIManager *uiManager = self.bridge.uiManager;
+        UIView *view = [uiManager viewForReactTag:reactTag];
+        if ([view isKindOfClass:[RCTOriginalBannerView class]]) {
+            [(RCTOriginalBannerView *)view reloadIfVisible];
         }
     });
 }

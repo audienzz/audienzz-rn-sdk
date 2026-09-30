@@ -22,9 +22,14 @@
 
 - (void)stopAutoRefresh;
 - (void)resumeAutoRefresh;
+- (void)reloadIfVisible;
 
 @property(nonatomic, strong) GAMBannerView *bannerView;
 @property(nonatomic, strong) AUBannerView *auBannerView;
+// Route key reported to pageImpression when this ad mounted. Every React Native ad lives in the
+// single host view controller, so the native page coordinator can't tell one route's ads from
+// another's by host identity — this key is what it matches on instead.
+@property(nonatomic, copy) NSString *pageKey;
 @property(nonatomic, strong) NSArray *sizes;
 @property(nonatomic, assign) CGFloat width;
 @property(nonatomic, assign) CGFloat height;

@@ -61,7 +61,6 @@ const LazyLoadingExample = () => {
         <OriginalInterstitial
           adUnitId="/96628199/de_audienzz.ch_v2/multi-size"
           auConfigId="37116627"
-          adFormats={['banner']}
           onAdClosed={() => setShowInterstitialHtml(false)}
           onAdFailedToLoad={() => setShowInterstitialHtml(false)}
         />
@@ -80,7 +79,6 @@ const LazyLoadingExample = () => {
         <OriginalInterstitial
           adUnitId="/96628199/de_audienzz.ch_v2/multi-size"
           auConfigId="37116627"
-          adFormats={['video']}
           onAdClosed={() => setShowInterstitialVideo(false)}
           onAdFailedToLoad={() => setShowInterstitialVideo(false)}
         />

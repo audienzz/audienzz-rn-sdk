@@ -1,7 +1,7 @@
 import type { AdEvents } from './AdEvents';
 import type { BaseAdProps } from './BaseAdProps';
 import type { Parameters } from './Parameters';
-import type { AdSize, MinSizePercentage, RewardEarnedEvent } from './Types';
+import type { AdError, AdSize, MinSizePercentage, RewardEarnedEvent } from './Types';
 
 export interface OriginalBannerProps
   extends BaseAdProps,
@@ -26,12 +26,19 @@ export interface OriginalBannerProps
   prefetchMargin?: number;
 }
 
+/**
+ * An interstitial's formats and API frameworks are not props: they are backend-controlled, and a
+ * hand-built interstitial asks for banner and video with MRAID 1/2/3 + OMID 1.
+ */
 export interface OriginalInterstitialProps
   extends Omit<BaseAdProps, 'style'>,
-  Omit<Parameters, 'videoPlacement'>,
+  Omit<Parameters, 'videoPlacement' | 'adFormats' | 'apiParameters'>,
   AdEvents {
   sizes?: AdSize[];
   minSizePercentage?: MinSizePercentage;
+  /** A loaded ad failed to present full-screen (for example, the app went to the background).
+   *  Distinct from a failure to load an ad. */
+  onAdFailedToShow?(error: AdError): void;
 }
 
 export interface OriginalRewardedProps
@@ -42,4 +49,7 @@ export interface OriginalRewardedProps
   >,
   AdEvents {
   onUserEarnedReward?(reward: RewardEarnedEvent): void;
+  /** A loaded ad failed to present full-screen (for example, the app went to the background).
+   *  Distinct from a failure to load an ad. */
+  onAdFailedToShow?(error: AdError): void;
 }

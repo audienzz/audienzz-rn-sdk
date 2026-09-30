@@ -28,11 +28,53 @@ RCT_EXPORT_MODULE(RNRemoteConfigBanner)
   return [[RCTRemoteConfigBannerView alloc] init];
 }
 
+RCT_EXPORT_VIEW_PROPERTY(pageKey, NSString)
 RCT_EXPORT_VIEW_PROPERTY(adConfigId, NSString)
 RCT_EXPORT_VIEW_PROPERTY(onAdLoaded, RCTBubblingEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(onAdSizeChanged, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdClicked, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdOpened, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdClosed, RCTBubblingEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onAdFailedToLoad, RCTBubblingEventBlock)
+
+RCT_EXPORT_METHOD(reload:(nonnull NSNumber *)reactTag) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        RCTUIManager *uiManager = self.bridge.uiManager;
+        UIView *view = [uiManager viewForReactTag:reactTag];
+        if ([view isKindOfClass:[RCTRemoteConfigBannerView class]]) {
+            [(RCTRemoteConfigBannerView *)view reloadIfVisible];
+        }
+    });
+}
+
+RCT_EXPORT_METHOD(stopAutoRefresh:(nonnull NSNumber *)reactTag) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        RCTUIManager *uiManager = self.bridge.uiManager;
+        UIView *view = [uiManager viewForReactTag:reactTag];
+        if ([view isKindOfClass:[RCTRemoteConfigBannerView class]]) {
+            [(RCTRemoteConfigBannerView *)view stopAutoRefresh];
+        }
+    });
+}
+
+RCT_EXPORT_METHOD(setCovered:(nonnull NSNumber *)reactTag covered:(BOOL)covered) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        RCTUIManager *uiManager = self.bridge.uiManager;
+        UIView *view = [uiManager viewForReactTag:reactTag];
+        if ([view isKindOfClass:[RCTRemoteConfigBannerView class]]) {
+            [(RCTRemoteConfigBannerView *)view setCovered:covered];
+        }
+    });
+}
+
+RCT_EXPORT_METHOD(resumeAutoRefresh:(nonnull NSNumber *)reactTag) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        RCTUIManager *uiManager = self.bridge.uiManager;
+        UIView *view = [uiManager viewForReactTag:reactTag];
+        if ([view isKindOfClass:[RCTRemoteConfigBannerView class]]) {
+            [(RCTRemoteConfigBannerView *)view resumeAutoRefresh];
+        }
+    });
+}
 
 @end

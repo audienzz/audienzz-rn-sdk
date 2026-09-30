@@ -1,6 +1,6 @@
 {
   "name": "audienzz",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "description": "React Native implementation of the Audienzz SDK",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -51,6 +51,7 @@
     "@react-native-community/cli": "18.0.0",
     "@react-native-community/cli-platform-android": "18.0.0",
     "@react-native-community/cli-platform-ios": "18.0.0",
+    "@react-native/babel-preset": "0.79.3",
     "@react-native/eslint-config": "0.79.3",
     "@release-it/conventional-changelog": "^5.0.0",
     "@types/jest": "29.5.13",
@@ -87,7 +88,12 @@
     "modulePathIgnorePatterns": [
       "<rootDir>/example/node_modules",
       "<rootDir>/lib/"
-    ]
+    ],
+    "moduleNameMapper": {
+      "^react-native$": "<rootDir>/node_modules/react-native",
+      "^react$": "<rootDir>/node_modules/react",
+      "^react/(.*)$": "<rootDir>/node_modules/react/$1"
+    }
   },
   "commitlint": {
     "extends": [

@@ -1,22 +1,12 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import {
-  Animated,
-  Dimensions,
-  Platform,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { OriginalBanner } from 'audienzz';
+import { Animated, PixelRatio, Platform, StyleSheet, Text, View } from 'react-native';
+import { RemoteConfigBanner } from 'audienzz';
 import { AudienzzStickyAdWrapper } from '../../../src/components/AudienzzStickyAdWrapper';
+import { REMOTE_CONFIG } from '../remoteConfig';
 
-// Ad configuration — mirrors the iOS StickyAdExampleViewController constants.
-const AD_UNIT_ID = '/96628199/testapp_publisher/banner_test_ad_unit';
-const AU_CONFIG_ID = '15624474';
+// Reserve layout before loading; delivery settings come from the remote placement.
 const AD_SIZE = { width: 300, height: 250 };
 const MAX_HEIGHT = 450;
-const REFRESH_MILLIS = 30_000;
-const VISIBILITY_THRESHOLD = 0.2;
 
 // Rows at which an ad slot is inserted (1-based paragraph index).
 const AD_SLOT_ROWS = [6, 12, 18, 24, 30];
@@ -41,23 +31,24 @@ function Paragraph({ index }: { index: number }) {
 /**
  * Demonstrates `AudienzzStickyAdWrapper` in a static `ScrollView`.
  *
- * Each banner has smartRefresh enabled: the native layer pauses Prebid
- * auto-refresh when < 20 % of the ad is visible, and resumes (stale-aware)
- * when it comes back into view.  The green/red indicator mirrors the native
- * state using JS-side measureInWindow checks on every scroll event.
+ * Remote config controls lazy loading and prefetch distance. Native owns refresh.
+ * These indicators estimate geometry only; lifecycle, covers and publisher
+ * pauses may also block refresh. They are not a native scheduler status.
  */
 export default function StickyAdExample() {
   const scrollY = useRef(new Animated.Value(0)).current;
+  const viewportRef = useRef<View>(null);
+  const measurement = useRef(0);
 
   // One View ref per ad slot for visibility measurement.
   const bannerRefs = useRef<(View | null)[]>(
-    Array(AD_SLOT_ROWS.length).fill(null),
+    Array(AD_SLOT_ROWS.length).fill(null)
   );
   const [loaded, setLoaded] = useState<boolean[]>(
-    Array(AD_SLOT_ROWS.length).fill(false),
+    Array(AD_SLOT_ROWS.length).fill(false)
   );
   const [active, setActive] = useState<boolean[]>(
-    Array(AD_SLOT_ROWS.length).fill(false),
+    Array(AD_SLOT_ROWS.length).fill(false)
   );
 
   // -------------------------------------------------------------------------
@@ -65,23 +56,34 @@ export default function StickyAdExample() {
   // -------------------------------------------------------------------------
 
   const checkVisibility = useCallback(() => {
-    const windowHeight = Dimensions.get('window').height;
-    bannerRefs.current.forEach((ref, idx) => {
-      if (!ref) return;
-      ref.measureInWindow((_x, y, _w, height) => {
-        if (height === 0) return;
-        const visibleTop = Math.max(0, y);
-        const visibleBottom = Math.min(windowHeight, y + height);
-        const fraction = Math.max(0, visibleBottom - visibleTop) / height;
-        const isActive = fraction >= VISIBILITY_THRESHOLD;
-        setActive(prev => {
-          if (prev[idx] === isActive) return prev;
-          const next = [...prev];
-          next[idx] = isActive;
-          return next;
+    const sample = ++measurement.current;
+    viewportRef.current?.measureInWindow(
+      (viewportX, viewportY, viewportWidth, viewportHeight) => {
+        if (sample !== measurement.current) return;
+        bannerRefs.current.forEach((ref, idx) => {
+          ref?.measureInWindow((x, y, width, height) => {
+            if (sample !== measurement.current) return;
+            const visibleBottom = Math.min(
+              viewportY + viewportHeight,
+              y + height
+            );
+            const isActive =
+              height > 0 &&
+              viewportHeight > 0 &&
+              Math.min(viewportX + viewportWidth, x + width) > Math.max(viewportX, x) &&
+              // Native's top tolerance is one physical pixel, not one React Native point.
+              Math.max(0, viewportY - y) * PixelRatio.get() < 1 &&
+              visibleBottom - y >= height / 2;
+            setActive((prev) => {
+              if (prev[idx] === isActive) return prev;
+              const next = [...prev];
+              next[idx] = isActive;
+              return next;
+            });
+          });
         });
-      });
-    });
+      }
+    );
   }, []);
 
   // Poll visibility on a timer instead of the scroll listener.
@@ -89,12 +91,35 @@ export default function StickyAdExample() {
   // 5 bridge calls + full-tree re-renders at 10 fps, which jankifies scroll.
   useEffect(() => {
     const id = setInterval(checkVisibility, 500);
-    return () => clearInterval(id);
+    return () => { clearInterval(id); measurement.current++; };
   }, [checkVisibility]);
 
   // -------------------------------------------------------------------------
   // Build row list
   // -------------------------------------------------------------------------
+
+  const indicator = (idx: number) =>
+    loaded[idx] && (
+      <View
+        style={[
+          styles.indicator,
+          active[idx] ? styles.indicatorActive : styles.indicatorInactive,
+        ]}
+      >
+        <Text
+          style={[
+            styles.indicatorText,
+            active[idx]
+              ? styles.indicatorTextActive
+              : styles.indicatorTextInactive,
+          ]}
+        >
+          {`Ad ${idx + 1} — viewport ${
+            active[idx] ? 'eligible' : 'outside'
+          } (estimate)`}
+        </Text>
+      </View>
+    );
 
   const rows: React.JSX.Element[] = [];
   for (let i = 1; i <= 35; i += 1) {
@@ -109,61 +134,35 @@ export default function StickyAdExample() {
           maxHeight={MAX_HEIGHT}
           stickyTopOffset={0}
         >
-          <View
-            ref={el => {
-              bannerRefs.current[slotIdx] = el;
-            }}
-            collapsable={false}
-            style={styles.bannerHost}
-          >
-            {/* Active / inactive indicator — shown once the ad has loaded */}
-            {loaded[slotIdx] && (
-              <View
-                style={[
-                  styles.indicator,
-                  active[slotIdx]
-                    ? styles.indicatorActive
-                    : styles.indicatorInactive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.indicatorText,
-                    active[slotIdx]
-                      ? styles.indicatorTextActive
-                      : styles.indicatorTextInactive,
-                  ]}
-                >
-                  {active[slotIdx]
-                    ? `● Ad ${slotIdx + 1} — Active (refreshing)`
-                    : `○ Ad ${slotIdx + 1} — Inactive (paused)`}
-                </Text>
-              </View>
-            )}
-
-            <OriginalBanner
-              adUnitId={AD_UNIT_ID}
-              auConfigId={AU_CONFIG_ID}
-              sizes={[AD_SIZE]}
-              adFormats={['banner']}
-              isLazyLoad={false}
-              smartRefresh={true}
-              refreshTimeMillis={REFRESH_MILLIS}
-              onAdLoaded={() => {
-                console.log(`[StickyAdExample] Ad ${i} loaded`);
-                setLoaded(prev => {
-                  const next = [...prev];
-                  next[slotIdx] = true;
-                  return next;
-                });
-                setTimeout(checkVisibility, 150);
+          <View style={styles.bannerHost}>
+            {indicator(slotIdx)}
+            <View
+              testID={`sticky-banner-${slotIdx}`}
+              ref={(el) => {
+                bannerRefs.current[slotIdx] = el;
               }}
-              onAdFailedToLoad={error =>
-                console.log(`[StickyAdExample] Ad ${i} failed:`, error)
-              }
-            />
+              collapsable={false}
+            >
+              <RemoteConfigBanner
+                adConfigId={REMOTE_CONFIG.fixedBannerId}
+                style={AD_SIZE}
+                onAdLoaded={() => {
+                  console.log(`[StickyAdExample] Ad ${i} loaded`);
+                  setLoaded((prev) => {
+                    const next = [...prev];
+                    next[slotIdx] = true;
+                    return next;
+                  });
+                  setTimeout(checkVisibility, 150);
+                }}
+                onAdFailedToLoad={(error) =>
+                  console.log(`[StickyAdExample] Ad ${i} failed:`, error)
+                }
+              />
+            </View>
+            {indicator(slotIdx)}
           </View>
-        </AudienzzStickyAdWrapper>,
+        </AudienzzStickyAdWrapper>
       );
     }
   }
@@ -173,25 +172,30 @@ export default function StickyAdExample() {
   // -------------------------------------------------------------------------
 
   return (
-    <Animated.ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.contentContainer}
-      onScroll={Animated.event(
-        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: true },
-      )}
-      scrollEventThrottle={16}
-    >
-      {/* Header */}
-      <Text style={styles.title}>Sticky Ad Example</Text>
-      <Text style={styles.subtitle}>
-        Scroll down — each banner stays pinned within its reserved area as you
-        scroll past it, then exits at the bottom. Smart refresh pauses when
-        {'<'} 20 % is visible and resumes stale-aware on return.
-      </Text>
+    <View testID="sticky-viewport" ref={viewportRef} collapsable={false} style={styles.scroll}>
+      <Animated.ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.contentContainer}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
+      >
+        {/* Header */}
+        <Text style={styles.title}>Sticky Ad Example</Text>
+        <Text style={styles.subtitle}>
+          Scroll down — each banner stays pinned within its reserved area as you
+          scroll past it, then exits at the bottom. Remote configuration controls
+          when ads load and how far ahead they prefetch.
+          Refresh requires the top edge on screen and at least half the banner
+          visible. The indicators above and below each ad estimate viewport
+          eligibility.
+        </Text>
 
-      {rows}
-    </Animated.ScrollView>
+        {rows}
+      </Animated.ScrollView>
+    </View>
   );
 }
 

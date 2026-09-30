@@ -4,6 +4,9 @@ import { OriginalInterstitial } from 'audienzz';
 import ActionButton from './ActionButton';
 import { getRandomConfigIdInterstitial } from '../utils';
 
+// An interstitial's formats and API frameworks are backend-controlled, so all three request
+// banner + video with MRAID 1/2/3 + OMID 1; they differ only in their other settings
+// (sizes, slot ids, impOrtbConfig).
 const OriginalInterstitialAPIExample = () => {
   const [isInterstitialBanner, setIsInterstitialBanner] = React.useState(false);
   const [isInterstitialVideo, setIsInterstitialVideo] = React.useState(false);
@@ -44,7 +47,6 @@ const OriginalInterstitialAPIExample = () => {
         <OriginalInterstitial
           adUnitId={interstitialAdUnitTestID}
           auConfigId={interstitialTestConfigID}
-          adFormats={['banner']}
           isLazyLoad={false}
           sizes={[{width: 333, height: 333}, {width: 444, height: 444}]}
           pbAdSlot="pbAdSlot"
@@ -68,7 +70,6 @@ const OriginalInterstitialAPIExample = () => {
         <OriginalInterstitial
           adUnitId={interstitialAdUnitTestID}
           auConfigId={interstitialTestConfigID}
-          adFormats={['video']}
           isLazyLoad={false}
           impOrtbConfig={`{
           "banner": {

@@ -20,7 +20,17 @@
 #import <GoogleMobileAds/GoogleMobileAds.h>
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 
+@interface RCTOriginalRewardedView ()
+/// What the current rewarded ad was built for. A prop change that does not change it reuses the ad
+/// already held instead of buying another one.
+@property(nonatomic, copy) NSString *loadedIdentity;
+@end
+
 @implementation RCTOriginalRewardedView
+
+- (void)dealloc {
+  [_auRewardedView destroy];
+}
 
 - (void)createAd {
   dispatch_semaphore_wait(self.semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)));
@@ -32,9 +42,29 @@
 
 - (void)internalCreateAd {
   [super internalCreateAd];
-  
-  GADRequest *request = [GADRequest request];
-  
+
+  // Props land incrementally and creation runs on a debounce: without both identifiers this would
+  // build an ad from empty defaults. The next prop transaction retries.
+  if (self.adUnitID.length == 0 || self.auConfigID.length == 0) {
+    NSLog(@"[Audienzz] Rewarded ad creation skipped — adUnitID/auConfigID not ready");
+    return;
+  }
+
+  // didSetProps fires on every prop change, and each run allocated another AURewardedView and
+  // started another auction. Keep the ad already held unless the placement itself changed.
+  NSString *identity = [NSString stringWithFormat:@"%@|%@", self.auConfigID, self.adUnitID];
+  if (_auRewardedView != nil && [identity isEqualToString:self.loadedIdentity]) {
+    return;
+  }
+  if (_auRewardedView != nil) {
+    [_auRewardedView destroy];
+    [_auRewardedView removeFromSuperview];
+    _auRewardedView = nil;
+  }
+  self.loadedIdentity = identity;
+
+  GAMRequest *request = [GAMRequest request];
+
   _auRewardedView = [[AURewardedView alloc] initWithConfigId: self.auConfigID isLazyLoad:self.isLazyLoad];
   
   if(self.pbAdSlot != nil) {
@@ -47,15 +77,21 @@
     [_auRewardedView setImpOrtbConfigWithOrtbConfig:self.impOrtbConfig];
   }
   
+  // Full-screen video is an interstitial placement; the shared view leaves it unset.
+  [self.videoParameters setPlacement:AUPlacementInterstitial];
+  [self.videoParameters setPlcmnt:AUPlcmntInterstitial];
   _auRewardedView.videoParameters = self.videoParameters;
   _auRewardedView.frame = CGRectMake(0, 0, 10, 10);
   
   [self addSubview:_auRewardedView];
-  [_auRewardedView createAdWith:request adUnitID:self.adUnitID];
-  
+
+  // Installed BEFORE createAdWith:, which issues the first request itself when not lazy.
   __weak typeof(self) weakSelf = self;
   _auRewardedView.onLoadRequest = ^(id _Nonnull request) {
     __strong typeof(weakSelf) self = weakSelf;
+    if (self == nil) {
+      return;
+    }
     if (![request isKindOfClass:[GADRequest class]]) {
       NSLog(@"Failed request unwrap");
       return;
@@ -86,6 +122,9 @@
       }
     }];
   };
+
+  [_auRewardedView createAdWith:request adUnitID:self.adUnitID];
+
 }
 
 
@@ -93,7 +132,13 @@
 
 - (void)ad:(nonnull id<GADFullScreenPresentingAd>)ad
 didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
-  NSLog(@"Ad did fail to present full screen content. %@", error.localizedDescription);
+  // Surfaced, not only logged: a bid won and then not shown has to be observable.
+  [self.auRewardedView removeFromSuperview];
+  self.auRewardedView = nil;
+  self.loadedIdentity = nil;
+  if (self.onAdFailedToShow) {
+    self.onAdFailedToShow(@{@"code": @(error.code), @"message": [error localizedDescription]});
+  }
 }
 
 - (void)adWillPresentFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {
@@ -112,10 +157,14 @@ didFailToPresentFullScreenContentWithError:(nonnull NSError *)error {
   [self.auRewardedView removeFromSuperview];
   self.auRewardedView = nil;
   
+  self.loadedIdentity = nil;
   if (self.onAdClosed) {
-    NSDictionary *rewardDict = @{@"type": self.reward.type, @"amount": self.reward.amount};
-    self.onAdClosed(rewardDict);
+    // Dismissed without earning: `reward` is nil, and a dictionary literal with a nil value throws.
+    NSString *rewardType = self.reward.type ?: @"";
+    NSNumber *rewardAmount = self.reward.amount ?: @0;
+    self.onAdClosed(@{@"type": rewardType, @"amount": rewardAmount});
   }
+  self.reward = nil;
 }
 
 - (void)adDidDismissFullScreenContent:(nonnull id<GADFullScreenPresentingAd>)ad {

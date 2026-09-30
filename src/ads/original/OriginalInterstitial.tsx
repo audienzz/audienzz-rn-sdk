@@ -15,66 +15,38 @@
 
 */
 
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
-import {
-  requireNativeComponent,
-  UIManager,
-  findNodeHandle,
-} from 'react-native';
+import React from 'react';
+import { requireNativeComponent, UIManager } from 'react-native';
 import type { OriginalInterstitialProps, AdError } from '../../types';
 import { LINKING_ERROR } from '../../constants';
 
 const ComponentName = 'RCTOriginalInterstitialView';
 const NativeComponent = requireNativeComponent<any>(ComponentName);
 
-export interface OriginalInterstitialHandle {
-  /** Displays the loaded interstitial ad. Call this after `onAdLoaded` fires. */
-  show(): void;
-}
-
-export const OriginalInterstitial = forwardRef<
-  OriginalInterstitialHandle,
-  OriginalInterstitialProps
->((props, ref) => {
+// Presents itself as soon as it loads: there is no imperative `show()`. The ref handle this
+// used to expose dispatched a command neither view manager implements, so it did nothing.
+// `onAdLoaded` reports availability, `onAdOpened` reports presentation, and
+// `onAdFailedToShow` reports a failed presentation.
+export const OriginalInterstitial = (props: OriginalInterstitialProps) => {
   const {
     adUnitId,
     auConfigId,
     gpId,
     minSizePercentage = [80, 60],
-    playbackMethod = ['AutoPlaySoundOn'],
+    // Muted autoplay, as the native interstitial default.
+    playbackMethod = ['AutoPlaySoundOff'],
     isLazyLoad = true,
-    // Default to display-only. Including 'video' makes the imp advertise a video
-    // mediatype, so exchanges may answer a plain interstitial with a VAST creative
-    // that the fullscreen interstitial renderer can't display cleanly (observed as
-    // blank/broken interstitials that had to be booked directly in GAM). Video is
-    // now opt-in: pass adFormats={['banner', 'video']} or {['video']} explicitly.
-    adFormats = ['banner'],
-    apiParameters = ['MRAID_1', 'MRAID_2', 'MRAID_3', 'OMID_1'],
     videoProtocols = ['VAST_2_0'],
     videoBitrate = [300, 1500],
     videoDuration = [5, 30],
     onAdFailedToLoad,
+    onAdFailedToShow,
     ...restProps
   } = props;
-
-  const nativeRef = useRef<any>(null);
 
   if (UIManager.getViewManagerConfig(ComponentName) == null) {
     throw new Error(LINKING_ERROR);
   }
-
-  useImperativeHandle(ref, () => ({
-    show() {
-      const node = findNodeHandle(nativeRef.current);
-      if (node != null) {
-        UIManager.dispatchViewManagerCommand(
-          node,
-          UIManager.getViewManagerConfig(ComponentName).Commands.show ?? 'show',
-          []
-        );
-      }
-    },
-  }));
 
   const handleAdFailedToLoad = (
     event: AdError | { nativeEvent: { code: number; message: string } }
@@ -83,22 +55,27 @@ export const OriginalInterstitial = forwardRef<
     onAdFailedToLoad?.(error);
   };
 
+  const handleAdFailedToShow = (
+    event: AdError | { nativeEvent: { code: number; message: string } }
+  ) => {
+    const error: AdError = 'nativeEvent' in event ? event.nativeEvent : event;
+    onAdFailedToShow?.(error);
+  };
+
   return (
     <NativeComponent
-      ref={nativeRef}
       {...restProps}
       adUnitID={adUnitId}
       auConfigID={auConfigId}
       gpID={gpId}
       playbackMethod={playbackMethod}
       isLazyLoad={isLazyLoad}
-      adFormats={adFormats}
-      apiParameters={apiParameters}
       videoProtocols={videoProtocols}
       videoBitrate={videoBitrate}
       videoDuration={videoDuration}
       minSizesPercentage={minSizePercentage}
       onAdFailedToLoad={handleAdFailedToLoad}
+      onAdFailedToShow={handleAdFailedToShow}
     />
   );
-});
+};

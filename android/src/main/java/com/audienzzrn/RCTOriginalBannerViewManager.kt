@@ -54,7 +54,11 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     super.onAfterUpdateTransaction(reactViewGroup)
 
     if (reactViewGroup.getPropsChanged()) {
-      Handler(Looper.getMainLooper()).postDelayed({ requestAd(reactViewGroup) }, 1100)
+      reactViewGroup.reserveRequestContext()
+      // Retained so teardown can cancel it: React can drop the view inside this window, and the
+      // task would then build an ad — handler, coordinator registration and all — for a view that
+      // no longer exists.
+      reactViewGroup.scheduleAdCreation(Runnable { requestAd(reactViewGroup) }, 1100)
     }
 
     reactViewGroup.updatePropsChanged(false)
@@ -62,6 +66,9 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
 
   override fun onDropViewInstance(reactViewGroup: RCTOriginalBannerView) {
     super.onDropViewInstance(reactViewGroup)
+
+    reactViewGroup.cancelPendingAdCreation()
+    reactViewGroup.destroyAdViewHandler()
 
     val adView = getAdView(reactViewGroup)
 
@@ -80,11 +87,12 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     when (commandId) {
       0 -> view.stopAutoRefresh()
       1 -> view.resumeAutoRefresh()
+      2 -> view.reloadIfVisible()
     }
   }
 
   override fun getCommandsMap(): Map<String, Int> {
-    return mapOf(STOP_AUTO_REFRESH to 0, RESUME_AUTO_REFRESH to 1)
+    return mapOf(STOP_AUTO_REFRESH to 0, RESUME_AUTO_REFRESH to 1, RELOAD to 2)
   }
 
   override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
@@ -180,6 +188,9 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
   }
 
   private fun requestAd(reactViewGroup: RCTOriginalBannerView) {
+    // Retire before any early return. Replacing only in updateAdViewHandler left the old
+    // scheduler alive if the Activity or required props disappeared during reconstruction.
+    reactViewGroup.destroyAdViewHandler()
     val adView = initAdView(reactViewGroup)
     val isLazyLoad = reactViewGroup.isLazyLoad
     val isAdaptive = reactViewGroup.isAdaptive
@@ -294,7 +305,13 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
       val handler = AudienzzAdViewHandler(
         adView = adView,
         adUnit = auBannerView,
+        requestContext = reactViewGroup.requestContext,
       )
+      // Retain the handler on the view so the reload command (pageImpression
+      // broadcast) can force a fresh auction via handler.reloadAd().
+      reactViewGroup.updateAdViewHandler(handler)
+      // Must precede load(), which is where the ad joins the current page.
+      handler.setScreen(reactViewGroup.getPageKey())
       handler.load(
         withLazyLoading = isLazyLoad,
         prefetchMarginDp = reactViewGroup.getPrefetchMarginDp(),
@@ -420,6 +437,12 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     view.updatePropsChanged(true)
   }
 
+  @ReactProp(name = "pageKey")
+  fun setPageKey(view: RCTOriginalBannerView, value: String?) {
+    view.updatePageKey(value)
+    view.updatePropsChanged(true)
+  }
+
   @ReactProp(name = "adUnitID")
   fun setAdUnitID(view: RCTOriginalBannerView, value: String) {
     view.updateAdUnitID(value)
@@ -479,5 +502,6 @@ class RCTOriginalBannerViewManager : SimpleViewManager<RCTOriginalBannerView>() 
     const val REACT_CLASS = "RCTOriginalBannerView"
     const val STOP_AUTO_REFRESH = "stopAutoRefresh"
     const val RESUME_AUTO_REFRESH = "resumeAutoRefresh"
+    const val RELOAD = "reload"
   }
 }

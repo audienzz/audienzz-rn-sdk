@@ -35,7 +35,7 @@ import org.audienzz.mobile.util.lazyAdLoader
 class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
   private var auRewardedView: AudienzzRewardedVideoAdUnit? = null
   private var rewardedAd: RewardedAd? = null
-  private lateinit var reward: RewardItem
+  private var reward: RewardItem? = null
 
   fun handleAdLoaded() {
     (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
@@ -69,9 +69,50 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
       .receiveEvent(id, "onAdOpened", null)
   }
 
+  private fun handleAdFailedToShow(adError: AdError) {
+    val error: WritableMap = Arguments.createMap()
+    error.putInt("code", adError.code)
+    error.putString("message", adError.message)
+    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdFailedToShow", error)
+  }
+
+  private fun emitFailedToLoad(code: Int, message: String) {
+    val error: WritableMap = Arguments.createMap()
+    error.putInt("code", code)
+    error.putString("message", message)
+    (context as ReactContext).getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdFailedToLoad", error)
+  }
+
+  /** What the current rewarded ad was built for; a prop change that keeps it reuses the ad. */
+  private var loadedIdentity: String? = null
+
+  /** Releases the rewarded ad this view owns. Safe to call more than once. */
+  fun destroyAd() {
+    auRewardedView?.destroy()
+    auRewardedView = null
+    loadedIdentity = null
+  }
+
   override fun createAd() {
     super.createAd()
 
+    // onAfterUpdateTransaction re-runs this on every prop change, and each run built another ad
+    // unit and started another auction. Keep the ad already held unless the placement changed.
+    val identity = "$auConfigID|$adUnitID"
+    if (auRewardedView != null && identity == loadedIdentity) return
+
+    // Resolved once, up front: with no foreground Activity nothing can be loaded or shown, so
+    // report a load failure rather than force-unwrap it later and crash.
+    val activity = (context as? ReactContext)?.currentActivity
+    if (activity == null) {
+      emitFailedToLoad(-1, "No foreground Activity available to load the rewarded ad")
+      return
+    }
+
+    auRewardedView?.destroy()
+    loadedIdentity = identity
     auRewardedView = AudienzzRewardedVideoAdUnit(auConfigID)
     val handler = AudienzzRewardedVideoAdHandler(
       auRewardedView!!,
@@ -88,8 +129,6 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
     auRewardedView?.impOrtbConfig = impOrtbConfig
     auRewardedView?.videoParameters = videoParameters
 
-    val activity = (context as? ReactContext)?.currentActivity
-
     this.lazyAdLoader(
       adHandler = handler,
       adLoadCallback = object : AudienzzRewardedAdLoadCallback() {
@@ -98,10 +137,8 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
 
           handleAdLoaded()
 
-          if (activity != null) {
-            rewardedAd?.show(activity) { rewardItem ->
-              reward = rewardItem
-            }
+          rewardedAd?.show(activity) { rewardItem ->
+            reward = rewardItem
           }
         }
 
@@ -115,15 +152,17 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
         }
 
         override fun onAdDismissedFullScreenContent() {
-          val rewardAmount = reward.amount
-          val rewardType = reward.type
+          // Dismissed without earning a reward: `reward` was never set. Report zero instead of
+          // crashing on an uninitialized property.
+          val earned = reward
+          handleAdClosed(earned?.type ?: "", earned?.amount ?: 0)
 
-          handleAdClosed(rewardType, rewardAmount)
-
+          reward = null
           rewardedAd = null
         }
 
-        override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+        override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+          handleAdFailedToShow(adError)
           rewardedAd = null
         }
 
@@ -133,7 +172,7 @@ class RCTOriginalRewardedView(context: Context) : RCTOriginalView(context) {
       },
       resultCallback = { resultCode, request, listener ->
         RewardedAd.load(
-          activity!!,
+          activity,
           adUnitID,
           request,
           listener,

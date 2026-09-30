@@ -64,7 +64,11 @@ class RCTRenderingRewardedView(context: Context) : RCTOriginalView(context) {
     super.createAd()
 
     val currentActivity = (context as ReactContext).currentActivity
-    val eventHandler = AudienzzGamRewardedEventHandler(currentActivity!!, adUnitID)
+    if (currentActivity == null) {
+      handleAdFailedToLoad(AudienzzAdException(AudienzzAdException.INTERNAL_ERROR, "No Activity available to load the rewarded ad"))
+      return
+    }
+    val eventHandler = AudienzzGamRewardedEventHandler(currentActivity, adUnitID)
 
     auRewardedView = AudienzzRewardedAdUnit(currentActivity, auConfigID, eventHandler)
 

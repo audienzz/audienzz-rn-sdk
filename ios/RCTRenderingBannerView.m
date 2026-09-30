@@ -55,12 +55,37 @@
     self.propsChanged = YES;
 }
 
+// Inert for a rendering banner, deliberately. Prebid's rendering BannerView schedules its own
+// refresh through AutoRefreshManager and already gates every tick on its own visibility check; it
+// exposes stopRefresh() but no resume (the flag clears itself on the next bid request), so a
+// pause/resume pair cannot be built on it without tearing the view down. Page scoping for rendering
+// banners is done by unmounting the native view instead — see the pageImpression handling below.
 - (void)stopAutoRefresh {
     [_auBannerView.adUnitConfiguration stopAutoRefresh];
 }
 
 - (void)resumeAutoRefresh {
     [_auBannerView.adUnitConfiguration resumeAutoRefresh];
+}
+
+- (void)reloadIfVisible {
+    // Force a fresh auction now — but only when on screen. The pageImpression
+    // broadcast reaches every mounted banner, including those on inactive
+    // (kept-mounted) screens; skip those so we don't burn an auction.
+    if (self.window == nil || self.isHidden || self.alpha < 0.01) {
+        return;
+    }
+    CGRect frameInWindow = [self convertRect:self.bounds toView:nil];
+    if (!CGRectIntersectsRect(frameInWindow, self.window.bounds)) {
+        return;
+    }
+    // The rendering API (AUBannerRenderingView) has no in-place reload primitive,
+    // so a reload tears down the current view and builds a fresh one. The slot
+    // blanks for a frame while the new creative loads — matching the native
+    // blankOnScreenReload behavior.
+    [self.auBannerView removeFromSuperview];
+    self.auBannerView = nil;
+    [self internalCreateAd];
 }
 
 - (void)createAd {
