@@ -70,6 +70,9 @@ class RCTOriginalBannerView(context: Context) : RCTOriginalView(context) {
     val heightMeasureSpec = MeasureSpec.makeMeasureSpec(heightPx, MeasureSpec.EXACTLY)
     measure(MeasureSpec.makeMeasureSpec(widthPx, MeasureSpec.EXACTLY), heightMeasureSpec)
     layout(left, top, right, top + heightPx)
+    // Yoga bypasses Android's layout traversal. GAM needs its notification after the
+    // native children are laid out, otherwise impressions can wait until a scroll.
+    viewTreeObserver.takeIf { it.isAlive }?.dispatchOnGlobalLayout()
   }
 
   fun handleAdLoaded(adSize: AdSize) {

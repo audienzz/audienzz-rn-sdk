@@ -46,6 +46,9 @@ class RCTRenderingBannerView(context: Context) : RCTOriginalView(context) {
     val heightMeasureSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
     measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), heightMeasureSpec)
     layout(left, top, right, top + height)
+    // Match the Original/Remote banner bridges: Yoga's manual layout must notify
+    // the ad's geometry observers even when the user never scrolls.
+    viewTreeObserver.takeIf { it.isAlive }?.dispatchOnGlobalLayout()
   }
 
   fun handleAdLoaded() {
