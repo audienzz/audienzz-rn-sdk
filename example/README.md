@@ -11,8 +11,9 @@ Install dependencies from the repository root:
 yarn install
 ```
 
-This branch uses **local native SDKs**. Follow [LOCAL_TESTING.md](../LOCAL_TESTING.md) to publish
-Android locally and install the iOS development pod before building. Then start Metro:
+The example defaults to published **Android 0.3.2 / iOS 0.4.2**; no sibling checkout is needed.
+For iOS, run `pod install` in `example/ios` before building. Optional local native testing is
+documented in [LOCAL_TESTING.md](../LOCAL_TESTING.md). Then start Metro:
 
 ```sh
 cd example
@@ -26,7 +27,7 @@ yarn android
 # Or: yarn ios
 ```
 
-After native SDK changes, republish the Android local artifact / rebuild the app. For iOS Podfile
+After native SDK changes, rebuild the app. For iOS Podfile
 or dependency changes, rerun `pod install` in `example/ios`. Fast Refresh cannot update native code.
 
 The app uses production publisher **35**, remote banners **46 / 48**, and interstitial **47** on
@@ -44,7 +45,7 @@ errors are shown on the startup screen with a retry action.
 
 Navigation reports the opening destination before its ads load, and reports subsequent visits,
 including back navigation. App return and SDK interstitial dismissal recover banners without a
-new analytics page when using the current local native SDKs. Do not add another `pageImpression`
+new analytics page when using the published native SDKs. Do not add another `pageImpression`
 call to those callbacks.
 
 Visibility labels describe eligibility, not proof that an auction or impression occurred. Use

@@ -1,15 +1,12 @@
 # Audienzz React Native SDK
 
-> **Native dependencies:** Android `com.audienzz:sdk:0.3.1` (Maven Central) and
-> iOS `AudienzziOSSDK ~> 0.4.1` (CocoaPods). These releases provide the page ownership,
-> refresh and interstitial APIs. **This testing branch builds the examples from the sibling
-> Android/iOS native checkouts**, including the newer batching, page-continuity and
-> cold-start fixes. See [LOCAL_TESTING.md](LOCAL_TESTING.md). Update the package pins to new native
-> releases before publishing this wrapper.
-
-> Rebuild after native changes; Metro reload does not replace native SDKs. The automatic
-> return behavior below requires the newer native code; the published `0.3.1` / `0.4.1` pins
-> alone do not include page continuity. Do not ship the example’s local dependency overrides.
+> **Native dependencies:** Android `com.audienzz:sdk:0.3.2` (Maven Central) and
+> iOS `AudienzziOSSDK ~> 0.4.2` (CocoaPods). The library and examples use these published
+> releases by default, including analytics batching, foreground/interstitial page continuity,
+> cold-start attribution and one `viewability.start` per creative.
+>
+> Rebuild after upgrading; Metro reload does not replace native SDKs. Optional local native
+> testing is documented in [LOCAL_TESTING.md](LOCAL_TESTING.md).
 
 ## Quick integration (remote config + `pageImpression`)
 
@@ -59,11 +56,11 @@ order, including its error/retry screen. Foreground and interstitial returns sti
 native recovery; they do not need another page report.
 
 Android server-status warnings resolve initialization so Google ads can still load. Android
-`0.3.1` also permits Google-only demand when Prebid initialization fails; see
+`0.3.2` also permits Google-only demand when Prebid initialization fails; see
 [outage checks](LOCAL_TESTING.md#android-outage-and-repeated-interstitial-checks).
 An unavailable remote placement configuration or Google endpoint remains an error.
 
-**Android 0.3.1 supports the production configuration URL shown above only.** The bridge rejects
+**Android 0.3.2 supports the production configuration URL shown above only.** The bridge rejects
 other URLs with `UNSUPPORTED_REMOTE_URL`; earlier versions silently ignored them. Use publisher
 and placement IDs from the same environment. The example uses production publisher `35`, banner
 placements `46` / `48`, and interstitial `47`; development publisher `81` does not exist there.
@@ -1060,7 +1057,7 @@ Commands return `void` because the React Native bridge is asynchronous. Observe 
 
 Without `manualControl`, mounting performs `prefetchAndShow()` — the same behaviour as before, now named for what it does. The new flow applies to **RemoteConfigInterstitial**; the lower-level Original and Rendering interstitial components retain their existing APIs. Native presentation exclusion covers SDK-managed remote interstitials, not unrelated fullscreen ads presented outside this API.
 
-**Native dependency:** these commands require Android 0.3.1 and iOS 0.4.1, the published versions selected by this bridge.
+**Native dependency:** these commands require Android 0.3.2 and iOS 0.4.2, the published versions selected by this bridge.
 
 ## Sticky Ad Wrapper
 
@@ -1240,4 +1237,4 @@ The collector resolves company and website IDs. Analytics defaults to `environme
 set `test` or `staging` before initializing a non-production app. Our examples use `test`.
 See [the analytics contract](docs/analytics-contract.md) for configuration, currency provenance,
 missing Prebid metadata and release requirements. These additions are included in the required
-Android `0.3.1` and iOS `0.4.1` native releases.
+Android `0.3.2` and iOS `0.4.2` native releases.

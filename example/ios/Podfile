@@ -14,9 +14,9 @@ ENV['RCT_NEW_ARCH_ENABLED'] = '0'
 use_frameworks!
 
 target 'AudienzzrnExample' do
-  # Testing branch: use the sibling native checkout. An empty environment override
-  # selects the published pin; the library podspec itself keeps its release dependency.
-  audienzz_local_ios_sdk = ENV.fetch('AUDIENZZ_IOS_SDK_PATH', '../../../audienzz-ios-sdk')
+  # Use the published release by default. Set AUDIENZZ_IOS_SDK_PATH explicitly
+  # to test a local native checkout; see LOCAL_TESTING.md.
+  audienzz_local_ios_sdk = ENV.fetch('AUDIENZZ_IOS_SDK_PATH', '')
   unless audienzz_local_ios_sdk.empty?
     unless File.file?(File.expand_path(File.join(audienzz_local_ios_sdk, 'AudienzziOSSDK.podspec'), __dir__))
       raise "Audienzz native checkout not found at #{audienzz_local_ios_sdk}. See LOCAL_TESTING.md."
@@ -24,9 +24,9 @@ target 'AudienzzrnExample' do
     Pod::UI.puts "[Audienzz] using LOCAL iOS SDK at #{audienzz_local_ios_sdk}".yellow
     pod 'AudienzziOSSDK', :path => audienzz_local_ios_sdk
   else
-    pod 'AudienzziOSSDK', '~> 0.4.1'
+    pod 'AudienzziOSSDK', '~> 0.4.2'
   end
-  # AudienzziOSSDK 0.4.1 builds against STOCK PrebidMobile (no fork) — its analytics
+  # AudienzziOSSDK 0.4.2 builds against STOCK PrebidMobile (no fork) — its analytics
   # use the fork-free economics path. Pin 3.3.1+ for the UserUniqueID(uniqueId:) API;
   # GMAS 13 raises the min iOS deployment target to 15.
   pod 'PrebidMobile',                 '~> 3.3.1'
