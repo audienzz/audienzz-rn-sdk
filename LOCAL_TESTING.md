@@ -1,73 +1,55 @@
 # Running this example against the LOCAL native SDKs
 
-The bridge and example use published `com.audienzz:sdk:0.3.1` and
-`AudienzziOSSDK ~> 0.4.1` by default. No native checkout is needed for normal builds.
-The overrides below are optional and only for developing native changes.
+On `feature/page-impression-api`, the example uses local native SDKs:
+`../audienzz-android-sdk` and `../audienzz-ios-sdk` (relative to this repository).
+Publish Android locally as described below; iOS links directly to source. Use current native
+`main` branches, which include analytics batching, foreground/interstitial
+page continuity, and cold-start attribution fixes. The library package pins remain Android
+`0.3.1` / iOS `~> 0.4.1`; those published versions predate these changes. Publish new natives
+and update the package pins before releasing this wrapper.
 
-The example's endpoint, publisher and placement IDs live together in `example/src/remoteConfig.ts`.
+The example's endpoint, publisher and placement IDs live in `example/src/remoteConfig.ts`.
 It uses production publisher **35**, fixed banner **46**, adaptive banner **48**, and interstitial
-**47** on both platforms. Android SDK 0.3.1 always fetches configuration from production; it cannot
-use the development publisher **81** or placements **118/192/267**. The bridge rejects unsupported
-URLs instead of silently sending those IDs to production.
+**47** on both platforms.
 
-## Android — one Gradle property
+## Android — local Maven build
 
-Publish the native SDK to your local Maven repository once:
-
-```bash
-cd ~/Documents/audienzz-android-sdk
-sed -i '' 's/audienzzSdkVersion = "0.3.1"/audienzzSdkVersion = "0.3.1-local"/' Audienzz/build.gradle.kts
-./gradlew :Audienzz:publishToMavenLocal
-```
-
-After publishing a local build, add this temporary override to `example/android/gradle.properties`
-(or pass `-PaudienzzNativeVersion=0.3.1-local` when invoking Gradle):
-
-```properties
-audienzzNativeVersion=0.3.1-local
-```
-
-That property is what switches `android/build.gradle` over and adds `mavenLocal()`. **Delete the
-line to go back to the published pin**, and before releasing — the default in `android/build.gradle`
-is `0.3.1`, so nothing about the shipped package depends on it.
-
-Re-publish after every native change; Gradle caches by version, so either re-publish over
-`0.3.1-local` or bump the suffix.
-
-Keep the override in `example/android/gradle.properties` (uncommitted) for the whole testing
-session. A one-off `-P` flag only affects that Gradle invocation: the next plain `yarn android`
-uses the published SDK again unless the property is still configured. Metro reloads update
-JavaScript, not the native SDK inside an installed APK. After changing native versions, rebuild
-and reinstall the app.
-
-To check what the next build will use:
+The example's `gradle.properties` selects `audienzzNativeVersion=0.3.1-local`.
+Publish current native sources before the first build, and again after native edits:
 
 ```bash
-cd ~/Documents/audienzz-rn-sdk/example/android
-./gradlew :app:dependencyInsight --dependency com.audienzz:sdk --configuration debugRuntimeClasspath
+cd ../audienzz-android-sdk
+./gradlew :Audienzz:publishToMavenLocal \
+  -I ../audienzz-rn-sdk/example/android/publish-local-native.gradle
+cd ../audienzz-rn-sdk/example/android
+./gradlew :app:dependencyInsight --dependency com.audienzz:sdk \
+  --configuration debugRuntimeClasspath --refresh-dependencies
 ```
 
-**Repeated interstitial test:** Android **0.3.1**, selected by default, includes the foreground
-fix for translucent interstitials. Android 0.3.0 could reject a second `show()` as
-`opportunitySkipped: inactive` despite `ready: true`. Test three complete
-`Prefetch` → `Show` → dismiss cycles and a real Home/return transition with the published pin.
+The init script changes only the local publication coordinate and disables signing for that
+local build. It does not edit the native release version or publish anything remotely. Resolution
+must show `com.audienzz:sdk:0.3.1-local`. Keep the property set while testing so a plain app rebuild
+continues using the local artifact. Republish and use `--refresh-dependencies` after native edits;
+hot reload does not replace native code. A missing local artifact fails dependency resolution.
 
-## iOS — one environment variable
+Direct Gradle source substitution is not used: native and wrapper builds use different Android
+Gradle plugin versions. To verify a future published release, remove `audienzzNativeVersion`
+and update the library's released dependency pin first.
+
+## iOS — local development pod
+
+The example Podfile defaults to `../../../audienzz-ios-sdk`:
 
 ```bash
-export AUDIENZZ_IOS_SDK_PATH=~/Documents/audienzz-ios-sdk
-cd audienzz-rn-sdk/example/ios && pod install
+cd example/ios
+pod install
 ```
 
-To go back:
-
-```bash
-unset AUDIENZZ_IOS_SDK_PATH
-cd audienzz-rn-sdk/example/ios && pod install
-```
-
-`pod install` prints when it uses the local checkout. The environment variable lets you switch
-sources without editing the committed `Podfile`; the generated lockfile records the selected source.
+It prints `[Audienzz] using LOCAL iOS SDK`. CocoaPods compiles sources from that checkout.
+Rebuild after native edits; rerun `pod install` after adding/removing native source files.
+`AUDIENZZ_IOS_SDK_PATH=/another/checkout pod install` selects a different checkout.
+An empty override (`AUDIENZZ_IOS_SDK_PATH='' pod install`) selects the released dependency.
+Keep the same override on subsequent CocoaPods/Flutter invocations when testing a released SDK.
 
 ## Run
 
@@ -172,43 +154,31 @@ SDK initialization callback alone does not guarantee the remote configuration do
 
 ## A note on `Podfile.lock`
 
-Running `pod install` with `AUDIENZZ_IOS_SDK_PATH` set rewrites `example/ios/Podfile.lock` to point
-at your checkout, so the file will show as modified while you are testing. **Do not commit it** —
-an absolute path in a tracked lock only resolves on one machine. Keep that local lockfile while
-using the local Pods. Restoring only `Podfile.lock` leaves it different from `Pods/Manifest.lock`
-and breaks `yarn ios` with **The sandbox is not in sync with the Podfile.lock**.
-
-To repair that error while testing native changes:
-
-```bash
-cd ~/Documents/audienzz-rn-sdk/example/ios
-AUDIENZZ_IOS_SDK_PATH=~/Documents/audienzz-ios-sdk pod install
-cd ..
-yarn ios
-```
-
-To return to released dependencies, unset `AUDIENZZ_IOS_SDK_PATH`, restore the committed
-`Podfile.lock`, and run `pod install` again. Both lockfiles and the installed SDK must agree.
+`example/ios/Podfile.lock` is tracked and records the portable sibling checkout path.
+Do not commit an absolute path when using an alternate checkout.
+Keep it in sync with `Pods/Manifest.lock` by running `pod install` after changing sources.
+Restoring only one lockfile causes Xcode's "sandbox is not in sync" build failure.
 
 ## Before releasing
 
-1. Delete `audienzzNativeVersion` from `example/android/gradle.properties`.
-2. `unset AUDIENZZ_IOS_SDK_PATH` and `pod install`.
-3. Build both platforms against the published dependencies. The current required releases are
-   Android 0.3.1 and iOS 0.4.1; no local override should be active.
+1. Publish the native changes and update both library dependency pins.
+2. Remove the example's `audienzzNativeVersion` property and restore the Podfile's released default.
+3. Run `pod install`, rebuild both platforms against the published dependencies, and rerun the
+   bridge suites. No local native source override should remain active in release verification.
 
 ## Published native fixes and analytics checks
 
-Android `0.3.1` and iOS `0.4.1`, selected by default, include immediate analytics delivery
+Published Android `0.3.1` and iOS `0.4.1` include immediate analytics delivery
 with persistent retries, page-impression attribution, adaptive banner fixes, and banner-only
 slot numbering. iOS includes the HTTP-204 analytics fix and late adaptive-size notifications;
 Android includes Prebid-outage fallback and foreground recovery after translucent interstitials.
-No local native checkout is required. Rebuild and reinstall the example after upgrading;
+This testing branch uses local native main for the newer changes. Rebuild and reinstall;
 Metro reload does not replace the native SDKs.
 
 For analytics checks, configure the device network proxy, enable SSL proxying for
 `api.adnz.co:443`, and filter Charles for `/api/ws-clickstream-collector/submit/batch`.
-The native SDKs send each event immediately after persistence, with one request in flight.
+The local native SDKs persist events and batch by auction after 2 seconds without new events.
+The backend batch cap defaults to 10 and cannot exceed 15, with one request in flight.
 With diagnostics enabled, they log
 `AUDZ analytics queued/sending/sent/failed/retryScheduled/dropped` without event payloads.
 `sent` confirms HTTP success, not dashboard ingestion.
@@ -230,7 +200,7 @@ A skipped show with `ready: true` keeps the prefetched ad. Pressing **Prefetch**
 say **ready to show — using prefetched ad**, without another network request; **Show** can retry
 at a later eligible opportunity. This is different from a load being stuck. If Android reports
 `reason: inactive` after returning from an interstitial, verify that the APK includes the native
-foreground fix above: use the default published 0.3.1 dependency and rebuild the APK.
+foreground fix above: use the configured local native main checkout and rebuild the APK.
 
 The sticky example uses five `RemoteConfigBanner` instances with the same fixed placement as
 the main screen. Lazy loading and prefetch distance come only from the backend (`lazyLoad`
@@ -251,12 +221,12 @@ the backend's list of sizes. Sticky slots must also follow the returned size.
 Placement 48 currently sends `type: INLINE`, `widthStrategy: CUSTOM`, `customWidth: 320`.
 That width is **320 dp**, not 320 physical pixels. Test at more than one device density and
 verify the full creative height, horizontal centering, and lazy loading before first fill.
-The custom-width/type fix is included in the default Android 0.3.1 pin.
+The custom-width/type fix is included in Android 0.3.1 and local native main.
 
 For iOS inline banners, also test a size arriving after the load callback and a creative changing
 height after display. The slot must retain its placeholder until a positive creative size arrives,
 then update both UIKit and React Native layout without another auction or `onAdLoaded` event.
-This uses the native iOS sizing fix in the default 0.4.1 pin and the RN size-event bridge.
+This uses the native iOS sizing fix in iOS 0.4.1 and local native main, plus the RN size-event bridge.
 
 ## ATT in the iOS example
 
@@ -271,9 +241,9 @@ A zero IDFA after Deny is expected; do not use it as proof that ad loading faile
 
 ## Same-page interstitial return (unreleased)
 
-Use `feature/foreground-page-continuity` in both native checkouts and this bridge, with the local
-overrides above. Published Android 0.3.1 / iOS 0.4.1 do not contain this policy yet; update pins after
-publication before releasing these bridge changes.
+Use current native `main` in both sibling checkouts and this wrapper branch. Published Android
+0.3.1 / iOS 0.4.1 do not contain this policy yet; update pins after publication before releasing
+these bridge changes.
 
 - Show/dismiss three successive prefetched interstitials: one banner replacement per return,
   optional blanking until Google responds, no extra analytics `pageImpression`.

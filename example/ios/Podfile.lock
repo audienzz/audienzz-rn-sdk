@@ -1703,7 +1703,7 @@ PODS:
 
 DEPENDENCIES:
   - audienzz (from `../..`)
-  - AudienzziOSSDK (~> 0.4.1)
+  - AudienzziOSSDK (from `../../../audienzz-ios-sdk`)
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
@@ -1781,7 +1781,6 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - AudienzziOSSDK
     - Google-Mobile-Ads-SDK
     - GoogleAds-IMA-iOS-SDK
     - GoogleUserMessagingPlatform
@@ -1793,6 +1792,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   audienzz:
     :path: "../.."
+  AudienzziOSSDK:
+    :path: "../../../audienzz-ios-sdk"
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   DoubleConversion:
@@ -2016,6 +2017,6 @@ SPEC CHECKSUMS:
   SQLite.swift: c914f905e13b6318cdc07fd66661db14c6cdd330
   Yoga: b2eaabf17044cd4273a661b14eb83f9fd2c90491
 
-PODFILE CHECKSUM: 39ea2202e077921ccf419d7b3fada16b7bd5f03e
+PODFILE CHECKSUM: 80d5140d64e72b12cc9d770155a4fda6b980a97a
 
 COCOAPODS: 1.16.2
