@@ -33,7 +33,7 @@ import { ADS } from '../ads_constants';
  * The wrapper is what reports: toggling `active` is the page impression. An
  * explicit `pageImpression(...)` here as well would report one tab switch twice.
  *
- * Uses the same 300x250 unit (wuobgeuc) as TestScreenExample so logs line up.
+ * Uses a directly configured 300x250 unit (wuobgeuc) to exercise tab ownership.
  */
 
 const TAB_KEYS = { A: 'reloadTabA', B: 'reloadTabB' } as const;
