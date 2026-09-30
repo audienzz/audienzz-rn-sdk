@@ -50,6 +50,12 @@ Await this once after consent, before mounting the ad-bearing navigation tree. H
 with your startup error/retry UI; keep app content available if initialization fails. Initialization
 does not report a page — the real navigation state in step 3 does that.
 
+Cold-start order is **await initialization → report the opening page → mount its ads**. Keep that
+order after a retry too. Do not mount banners during initialization and then report their page in
+the initialization callback: native deferred auctions may resume first. The example follows this
+order, including its error/retry screen. Foreground and interstitial returns still use the existing
+native recovery; they do not need another page report.
+
 Android server-status warnings resolve initialization so Google ads can still load. Android
 `0.3.1` also permits Google-only demand when Prebid initialization fails; see
 [outage checks](LOCAL_TESTING.md#android-outage-and-repeated-interstitial-checks).
