@@ -1,79 +1,52 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Audienzz React Native example
 
-# Getting Started
+For publisher integration, start with the [five-step guide](../README.md#quick-integration-remote-config--pageimpression).
+This app also contains lower-level and legacy examples for regression testing.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+## Run
 
-## Step 1: Start the Metro Server
+Install dependencies from the repository root:
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+```sh
+yarn install
+```
 
-To start Metro, run the following command from the _root_ of your React Native project:
+This branch uses **local native SDKs**. Follow [LOCAL_TESTING.md](../LOCAL_TESTING.md) to publish
+Android locally and install the iOS development pod before building. Then start Metro:
 
-```bash
-# using npm
-npm start
-
-# OR using Yarn
+```sh
+cd example
 yarn start
 ```
 
-## Step 2: Start your Application
+In another terminal, from `example`:
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
-
-```bash
-# using npm
-npm run android
-
-# OR using Yarn
+```sh
 yarn android
+# Or: yarn ios
 ```
 
-### For iOS
+After native SDK changes, republish the Android local artifact / rebuild the app. For iOS Podfile
+or dependency changes, rerun `pod install` in `example/ios`. Fast Refresh cannot update native code.
 
-```bash
-# using npm
-npm run ios
+The app uses production publisher **35**, remote banners **46 / 48**, and interstitial **47** on
+both platforms. IDs and endpoint live in [remoteConfig.ts](src/remoteConfig.ts). It adds `TEST=1`
+targeting; ad-ops configuration determines which creatives match that targeting. Initialization
+errors are shown on the startup screen with a retry action.
 
-# OR using Yarn
-yarn ios
-```
+## Screens
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+- **Main:** fixed and adaptive RemoteBanners, scrolling content, and the separate Prefetch /
+  Show / Prefetch and show interstitial actions.
+- **Test Screen:** a RemoteBanner using placement **46**, opened from below either main banner.
+- **Sticky ad:** remote banners in a sticky scrolling layout.
+- **Reload tabs / Legacy:** additional lifecycle and older-integration regression checks.
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+Navigation reports the opening destination before its ads load, and reports subsequent visits,
+including back navigation. App return and SDK interstitial dismissal recover banners without a
+new analytics page when using the current local native SDKs. Do not add another `pageImpression`
+call to those callbacks.
 
-## Step 3: Modifying your App
-
-Now that you have successfully run the app, let's modify it.
-
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
-
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Visibility labels describe eligibility, not proof that an auction or impression occurred. Use
+`AUDZ` logs in Android logcat or the iOS native console. See [diagnostics and device checks](../LOCAL_TESTING.md#sdk-diagnostics),
+including Charles setup, stationary loads and repeated interstitials.
