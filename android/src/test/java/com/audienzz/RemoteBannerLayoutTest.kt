@@ -110,4 +110,23 @@ class RemoteBannerLayoutTest {
     assertEquals(0, banner.top)
     assertEquals(px(250), creative.height)
   }
+
+  @Test fun `native child layout notifies geometry observers without scrolling`() {
+    view.updateAdWidth(300)
+    view.updateAdHeight(250)
+    load()
+    val observedHeights = mutableListOf<Int>()
+    // GAM observes global layout to discover a newly visible creative. Yoga's manual
+    // measure/layout alone does not dispatch this Android traversal notification.
+    view.viewTreeObserver.addOnGlobalLayoutListener {
+      observedHeights.add(creative.height)
+    }
+    for (size in listOf(AdSize(300, 250), AdSize(320, 50), AdSize(300, 250))) {
+      servedSize = size
+      creative.layoutParams = FrameLayout.LayoutParams(px(size.width), px(size.height))
+      listener.onAdLoaded()
+      reactLayout(size.width, size.height)
+    }
+    assertEquals(listOf(px(250), px(50), px(250)), observedHeights)
+  }
 }

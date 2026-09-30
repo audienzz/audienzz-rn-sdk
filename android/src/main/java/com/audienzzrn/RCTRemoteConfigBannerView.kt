@@ -56,6 +56,9 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
       MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
     )
     layout(left, top, right, bottom)
+    // React Native bypasses the platform layout traversal for this native subtree.
+    // Notify geometry observers (including GAM) after its children have their final bounds.
+    viewTreeObserver.takeIf { it.isAlive }?.dispatchOnGlobalLayout()
   }
 
   fun updateConfigId(value: String) {
