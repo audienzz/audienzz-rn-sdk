@@ -17,6 +17,11 @@
 The recommended path: Audienzz supplies your publisher and placement IDs, the backend configures
 delivery, and managed components own each banner's lifecycle. Five steps.
 
+**Start here for RemoteBanners and remote interstitials.** Use `AudienzzBanner` below: it creates
+a remote banner and applies backend delivery settings. `OriginalBanner` is an advanced integration
+and does not inherit those settings. Ask Audienzz for your **publisher ID** and **banner/interstitial
+configuration IDs**; use your own Google Mobile Ads **app ID**.
+
 ### 1. Install
 
 ```sh
@@ -24,10 +29,14 @@ npm install audienzz          # or: yarn add audienzz
 cd ios && pod install
 ```
 
-The examples below target **this branch’s managed APIs**. Check your package release before copying
-them; the native pins alone do not identify the wrapper API version. Older React Native
-releases do not include the managed APIs below. The native SDKs require **Android API 24** and
-**iOS 15.0**; use a higher deployment target if your React Native version requires it.
+Use the **React Native release or test build supplied by Audienzz with this guide**. These examples
+describe `feature/page-impression-api`; the package-manager command installs a published package,
+which may not yet contain these managed APIs. Updating the native dependencies alone does not add
+them to an older React Native wrapper. The native SDKs require **Android API 24** and **iOS 15.0**;
+use a higher deployment target if your React Native version requires it.
+
+When upgrading, run `pod update AudienzziOSSDK --repo-update` from your app's `ios` directory,
+then rebuild the app on both platforms. Metro reload cannot update native dependencies.
 
 Add your GAM/AdMob app ID to `AndroidManifest.xml` as `com.google.android.gms.ads.APPLICATION_ID`
 and to `Info.plist` as `GADApplicationIdentifier` — see [Setup](#setup). In GAM, leave each banner
@@ -165,10 +174,13 @@ The page wrapper binds the banner to its route instance and waits for navigation
 screens and pre-mounted navigator tabs need no extra focus reporting. For custom navigation,
 follow the [managed integration](#the-managed-integration-recommended) and its explicit `active` contract.
 
-Periodic refresh is backend-controlled through `config.refreshTimeSeconds`. Missing/null means
-10 eligible seconds and 0 disables periodic refresh. A banner
-that earns 6 seconds, then stays hidden for 40 seconds, needs 4 more eligible seconds. Loading
-time is excluded; page/foreground/interstitial recovery remains unchanged.
+Periodic refresh uses backend `config.refreshTimeSeconds`: missing/null means **10 seconds**,
+`0` disables periodic refresh, and an explicit value such as `7` or `30` is respected.
+The clock starts after loading completes and advances only while the banner is attached, on the
+active page, in the foreground, allowed by the viewport gate, and not paused or covered by an SDK
+interstitial or a reported overlay. Hidden time does not count; returning resumes the remaining
+time. With `7`, the next request starts after **seven eligible seconds**, then needs time to load.
+Navigation/foreground/interstitial recovery is separate from this timer.
 
 ### 5. Show an interstitial
 
@@ -221,6 +233,14 @@ without it, the classic viewport gate applies. Page ownership works in both mode
 Report custom covers the SDK cannot see through the managed banner ref's `reportCover(true)` and
 clear it when the cover disappears. For a whole retained page, set `AudienzzPage.active` to `false`.
 See [test flows and local setup](LOCAL_TESTING.md) before shipping.
+
+### Verify the integration
+
+- Open the app directly on an ad screen: the navigation integration reports one page before its first ad request.
+- Scroll a banner off-screen and back: periodic refresh pauses, then counts the remaining eligible time.
+- Navigate to an ad-free screen and back: the hidden page stops requesting; each visit gets a new PI.
+- Background/restore the app and show/dismiss an interstitial: eligible banners recover without a
+  new PI. Try `prefetch()` → `show()` twice with the same interstitial owner.
 
 ---
 
@@ -505,15 +525,19 @@ SDK or load any ads:
 
 1. Show your CMP and obtain the user's choice.
 2. Forward the consent signals (GDPR subject, TCF consent string, purpose
-   consents) via `RNTargeting()`.
-3. **Then** call `RNAudienzz().initialize(...)` and load ads.
+   consents) via `Targeting`.
+3. **Then** initialize using the [remote startup flow](#2-initialize-once-at-app-startup),
+   report the current page and mount its ads. Manual integrations use `Audienzz.initialize(...)` instead.
 
 Initializing or loading ads before consent will request ads without the consent
 signals.
 
 ### Initialize the Audienzz React Native SDK
 
-Initialize once at app startup, after consent and before creating ads. PPID is controlled by the backend publisher configuration; initialization has no PPID argument.
+The following is the **manual configuration** entry point. Remote integrations use
+`Audienzz.initializeRemote(...)` from the quick guide; do not run both startup flows.
+Initialize once after consent, before creating ads. PPID is controlled by the backend publisher
+configuration; initialization has no PPID argument.
 
 ```js
 import RNAudienzz from 'audienzz';
@@ -679,7 +703,8 @@ defect `AudienzzPage` exists to remove, and it is why moving navigation side eff
 not the answer either.
 
 Notes:
-- `pageImpression(name)` mints a handle for you. Two calls with the same name are two pages.
+- `pageImpression(name)` keeps the same screen ownership key for that name. Each explicit call
+  creates a new analytics visit (`page_impression_id`), so do not call it twice for one navigation.
 - A page impression is the whole transition: native releases every banner that is not on the
   incoming page and re-auctions the ones that are. **Do not also reload manually** — that gives one
   transition two owners and two auctions, the second discarding the creative the first just fetched.
