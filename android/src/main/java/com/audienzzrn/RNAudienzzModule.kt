@@ -28,7 +28,7 @@ import org.audienzz.mobile.AudienzzPrebidMobile
 import org.audienzz.mobile.AudienzzTargetingParams
 import org.audienzz.mobile.api.data.AudienzzInitializationStatus
 
-private const val RN_SDK_VERSION = "0.5.0"
+private const val RN_SDK_VERSION = "0.6.0"
 
 class RNAudienzzModule(reactContext: ReactApplicationContext) :
   ReactNativeModule(reactContext, SERVICE) {
