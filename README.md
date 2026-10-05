@@ -9,8 +9,9 @@
 > testing is documented in [LOCAL_TESTING.md](LOCAL_TESTING.md).
 
 > **Refresh timing:** these native releases count only eligible time. Remote banners use backend
-> `config.refreshTimeSeconds`, defaulting to 10 seconds when missing/null; an explicit backend
-> value of `30` still means 30 eligible seconds. Pauses preserve the remaining interval.
+> `config.refreshTimeSeconds`: an explicit value of `30` means 30 eligible seconds, and a
+> missing/`null` value (or `0`) means **no periodic refresh** for that placement. Pauses preserve
+> the remaining interval.
 
 ## Quick integration (remote config + `pageImpression`)
 
@@ -165,8 +166,8 @@ The page wrapper binds the banner to its route instance and waits for navigation
 screens and pre-mounted navigator tabs need no extra focus reporting. For custom navigation,
 follow the [managed integration](#the-managed-integration-recommended) and its explicit `active` contract.
 
-Periodic refresh is backend-controlled through `config.refreshTimeSeconds`. Missing/null means
-10 eligible seconds and 0 disables periodic refresh. A banner
+Periodic refresh is backend-controlled through `config.refreshTimeSeconds`. Missing/null or `0`
+means no periodic refresh. A banner
 that earns 6 seconds, then stays hidden for 40 seconds, needs 4 more eligible seconds. Loading
 time is excluded; page/foreground/interstitial recovery remains unchanged.
 
