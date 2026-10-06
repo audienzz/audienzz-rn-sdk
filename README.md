@@ -1,7 +1,7 @@
 # Audienzz React Native SDK
 
-> **Native dependencies:** Android `com.audienzz:sdk:0.3.3` (Maven Central) and
-> iOS `AudienzziOSSDK ~> 0.4.3` (CocoaPods). The library and examples use these published
+> **Native dependencies:** Android `com.audienzz:sdk:0.3.4` (Maven Central) and
+> iOS `AudienzziOSSDK ~> 0.4.4` (CocoaPods). The library and examples use these published
 > releases by default, including analytics batching, foreground/interstitial page continuity,
 > cold-start attribution and one `viewability.start` per creative.
 >
@@ -9,8 +9,9 @@
 > testing is documented in [LOCAL_TESTING.md](LOCAL_TESTING.md).
 
 > **Refresh timing:** these native releases count only eligible time. Remote banners use backend
-> `config.refreshTimeSeconds`, defaulting to 10 seconds when missing/null; an explicit backend
-> value of `30` still means 30 eligible seconds. Pauses preserve the remaining interval.
+> `config.refreshTimeSeconds`: an explicit value of `30` means 30 eligible seconds, and a
+> missing/`null` value (or `0`) means **no periodic refresh** for that placement. Pauses preserve
+> the remaining interval.
 
 ## Quick integration (remote config + `pageImpression`)
 
@@ -165,8 +166,8 @@ The page wrapper binds the banner to its route instance and waits for navigation
 screens and pre-mounted navigator tabs need no extra focus reporting. For custom navigation,
 follow the [managed integration](#the-managed-integration-recommended) and its explicit `active` contract.
 
-Periodic refresh is backend-controlled through `config.refreshTimeSeconds`. Missing/null means
-10 eligible seconds and 0 disables periodic refresh. A banner
+Periodic refresh is backend-controlled through `config.refreshTimeSeconds`. Missing/null or `0`
+means no periodic refresh. A banner
 that earns 6 seconds, then stays hidden for 40 seconds, needs 4 more eligible seconds. Loading
 time is excluded; page/foreground/interstitial recovery remains unchanged.
 
@@ -1066,7 +1067,7 @@ Commands return `void` because the React Native bridge is asynchronous. Observe 
 
 Without `manualControl`, mounting performs `prefetchAndShow()` — the same behaviour as before, now named for what it does. The new flow applies to **RemoteConfigInterstitial**; the lower-level Original and Rendering interstitial components retain their existing APIs. Native presentation exclusion covers SDK-managed remote interstitials, not unrelated fullscreen ads presented outside this API.
 
-**Native dependency:** these commands require Android 0.3.3 and iOS 0.4.3, the published versions selected by this bridge.
+**Native dependency:** these commands require Android 0.3.3+ and iOS 0.4.3+; this bridge selects Android 0.3.4 and iOS 0.4.4.
 
 ## Sticky Ad Wrapper
 
