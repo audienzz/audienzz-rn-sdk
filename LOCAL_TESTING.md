@@ -1,6 +1,6 @@
 # Testing the examples and optional local native SDKs
 
-The library and examples default to published Android `0.3.3` and iOS `~> 0.4.3`.
+The library and examples default to published Android `0.3.4` and iOS `~> 0.4.4`.
 No sibling checkout is required. These releases include analytics batching, foreground/interstitial
 page continuity, cold-start attribution, Android bridge page recovery, and one `viewability.start`
 per creative. Local native testing is an explicit opt-in described below.
@@ -24,7 +24,7 @@ recovery separately from periodic timing.
 
 ## Android — optional local Maven build
 
-Published Android `0.3.3` is the default. To test native edits, publish the sibling checkout:
+Published Android `0.3.4` is the default. To test native edits, publish the sibling checkout:
 
 ```bash
 cd ../audienzz-android-sdk
@@ -33,12 +33,12 @@ cd ../audienzz-android-sdk
 cd ../audienzz-rn-sdk/example/android
 ./gradlew :app:dependencyInsight --dependency com.audienzz:sdk \
   --configuration debugRuntimeClasspath --refresh-dependencies \
-  -PaudienzzNativeVersion=0.3.3-local
+  -PaudienzzNativeVersion=0.3.4-local
 ```
 
 The init script changes only the local publication coordinate and disables signing for that
 local build. It does not edit the native release version or publish anything remotely. Resolution
-must show `com.audienzz:sdk:0.3.3-local`. Supply the same Gradle property when building, or temporarily
+must show `com.audienzz:sdk:0.3.4-local`. Supply the same Gradle property when building, or temporarily
 uncomment it in `example/android/gradle.properties` for Flutter/React Native CLI builds. Do not
 commit that override. Republish and use `--refresh-dependencies` after native edits; Metro reload
 does not replace native code. A missing local artifact fails dependency resolution.
@@ -48,7 +48,7 @@ Gradle plugin versions. Remove the property to return to the published dependenc
 
 ## iOS — optional local development pod
 
-The example Podfile defaults to the published `AudienzziOSSDK ~> 0.4.3`. To test native edits:
+The example Podfile defaults to the published `AudienzziOSSDK ~> 0.4.4`. To test native edits:
 
 ```bash
 cd example/ios
@@ -255,7 +255,7 @@ A zero IDFA after Deny is expected; do not use it as proof that ad loading faile
 
 ## Same-page interstitial return
 
-Published Android `0.3.3` and iOS `0.4.3`, selected by this wrapper branch, include this policy.
+Published Android `0.3.3` and iOS `0.4.3` and newer include this policy.
 
 - Show/dismiss three successive prefetched interstitials: one banner replacement per return,
   optional blanking until Google responds, no extra analytics `pageImpression`.

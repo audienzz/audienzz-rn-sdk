@@ -1,7 +1,7 @@
 # Audienzz React Native SDK
 
-> **Native dependencies:** Android `com.audienzz:sdk:0.3.3` (Maven Central) and
-> iOS `AudienzziOSSDK ~> 0.4.3` (CocoaPods). The library and examples use these published
+> **Native dependencies:** Android `com.audienzz:sdk:0.3.4` (Maven Central) and
+> iOS `AudienzziOSSDK ~> 0.4.4` (CocoaPods). The library and examples use these published
 > releases by default, including analytics batching, foreground/interstitial page continuity,
 > cold-start attribution and one `viewability.start` per creative.
 >
@@ -1067,7 +1067,7 @@ Commands return `void` because the React Native bridge is asynchronous. Observe 
 
 Without `manualControl`, mounting performs `prefetchAndShow()` — the same behaviour as before, now named for what it does. The new flow applies to **RemoteConfigInterstitial**; the lower-level Original and Rendering interstitial components retain their existing APIs. Native presentation exclusion covers SDK-managed remote interstitials, not unrelated fullscreen ads presented outside this API.
 
-**Native dependency:** these commands require Android 0.3.3 and iOS 0.4.3, the published versions selected by this bridge.
+**Native dependency:** these commands require Android 0.3.3+ and iOS 0.4.3+; this bridge selects Android 0.3.4 and iOS 0.4.4.
 
 ## Sticky Ad Wrapper
 
