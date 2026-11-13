@@ -19,7 +19,7 @@
 #import <AudienzziOSSDK/AudienzziOSSDK-Swift.h>
 #import <React/RCTComponent.h>
 
-@interface RCTRemoteConfigBannerView : RCTOriginalView <GADAdSizeDelegate>
+@interface RCTRemoteConfigBannerView : RCTOriginalView
 
 @property(nonatomic, strong) NSString *adConfigId;
 @property(nonatomic, strong) AURemoteConfigBannerView *auRemoteConfigBannerView;

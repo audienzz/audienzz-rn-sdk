@@ -45,6 +45,12 @@
     self.semaphore = dispatch_semaphore_create(0);
     self.backgroundQueue =
         dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    // Google draws a new creative at its own size before this host learns the size to show: while
+    // the SDK holds GAM's size back to find the Prebid creative's (up to 1 s), and for the trip
+    // through JS that resizes this host. Unclipped, a taller creative drew over the content below
+    // meanwhile (ad grown, the next view not yet moved). Clipped, the slot changes size in one step,
+    // together with the content after it.
+    self.clipsToBounds = YES;
   }
   return self;
 }
@@ -105,6 +111,15 @@
     if (!_requestContext) _requestContext = [AUAdRequestContext new];
     self.auRemoteConfigBannerView.requestContext = _requestContext;
     self.loadedAdConfigId = self.adConfigId;
+    // The size the slot shows, including the Prebid creative's when GAM served a bid through a
+    // creative of another size. GAM's own size callback (adSizeDelegate) reports GAM's size and,
+    // forwarded after this one, would undo that correction; this view is deliberately not one.
+    __weak RCTRemoteConfigBannerView *weakSelf = self;
+    self.auRemoteConfigBannerView.onAdSizeChanged = ^(CGSize size) {
+      RCTRemoteConfigBannerView *strongSelf = weakSelf;
+      if (strongSelf == nil || size.width <= 0 || size.height <= 0 || !strongSelf.onAdSizeChanged) return;
+      strongSelf.onAdSizeChanged(@{@"width" : @(size.width), @"height" : @(size.height)});
+    };
   }
 
   // Must precede loadIn:, which is where the ad joins the current page.
@@ -201,13 +216,6 @@
 }
 
 #pragma mark - GADBannerViewDelegate
-
-- (void)adView:(GADBannerView *)bannerView willChangeAdSizeTo:(GADAdSize)size {
-  // adSize still describes the previous size here. Forward Google's callback dimensions.
-  if (size.size.width > 0 && size.size.height > 0 && self.onAdSizeChanged) {
-    self.onAdSizeChanged(@{@"width": @(size.size.width), @"height": @(size.size.height)});
-  }
-}
 
 - (void)bannerViewDidReceiveAd:(GADBannerView *)bannerView {
   if (_onAdLoaded) {

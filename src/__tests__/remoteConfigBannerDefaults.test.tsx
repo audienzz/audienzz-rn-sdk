@@ -75,7 +75,7 @@ describe('RemoteConfigBanner loaded dimensions', () => {
       act(() => { tree = renderer.create(<RemoteConfigBanner adConfigId="46" style={style as any} />); });
       for (const size of [{ width: 300, height: 250 }, { width: 320, height: 50 }, { width: 300, height: 600 }]) {
         act(() => {
-          tree.root.findByType('MockRemoteConfigBanner' as any).props.onAdLoaded({ nativeEvent: size });
+          tree.root.findByType('MockRemoteConfigBanner' as any).props.onAdSizeChanged({ nativeEvent: size });
         });
         const outer = tree.root.findByType('View' as any);
         const resolvedStyle = Object.assign({}, ...outer.props.style);
@@ -87,4 +87,39 @@ describe('RemoteConfigBanner loaded dimensions', () => {
       act(() => { tree.unmount(); });
     }
   );
+});
+
+describe('RemoteConfigBanner sized to the Prebid creative', () => {
+  const Platform = require('react-native').Platform;
+  afterEach(() => { Platform.OS = 'ios'; });
+
+  function mount() {
+    let tree!: renderer.ReactTestRenderer;
+    act(() => { tree = renderer.create(<RemoteConfigBanner adConfigId="48" style={{ width: '100%', height: 250 }} />); });
+    const native = () => tree.root.findByType('MockRemoteConfigBanner' as any);
+    const height = () => Object.assign({}, ...tree.root.findByType('View' as any).props.style).height;
+    return { tree, native, height };
+  }
+
+  it('iOS: takes the size native shows, not GAM size at load', () => {
+    const { tree, native, height } = mount();
+    // A 320x50 Prebid bid served through a 300x250 GAM creative: native holds GAM's size and
+    // reports only the Prebid creative's.
+    act(() => native().props.onAdLoaded({ nativeEvent: { width: 300, height: 250 } }));
+    act(() => native().props.onAdSizeChanged({ nativeEvent: { width: 320, height: 50 } }));
+    expect(height()).toBe(50);
+    act(() => native().props.onAdLoaded({ nativeEvent: { width: 300, height: 600 } }));
+    expect(height()).toBe(50);
+    act(() => tree.unmount());
+  });
+
+  it('Android: a resize after onAdLoaded reaches the host', () => {
+    Platform.OS = 'android';
+    const { tree, native, height } = mount();
+    act(() => native().props.onAdLoaded({ nativeEvent: { width: 300, height: 250 } }));
+    expect(height()).toBe(250);
+    act(() => native().props.onAdSizeChanged({ nativeEvent: { width: 320, height: 50 } }));
+    expect(height()).toBe(50);
+    act(() => tree.unmount());
+  });
 });
