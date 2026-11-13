@@ -1,6 +1,6 @@
 PODS:
   - audienzz (0.6.2):
-    - AudienzziOSSDK (~> 0.4.5)
+    - AudienzziOSSDK (~> 0.4.7)
     - DoubleConversion
     - glog
     - hermes-engine
@@ -24,7 +24,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - AudienzziOSSDK (0.4.5):
+  - AudienzziOSSDK (0.4.7):
     - Google-Mobile-Ads-SDK (~> 13.0)
     - GoogleAds-IMA-iOS-SDK (~> 3.26)
     - PrebidMobile (~> 3.3)
@@ -1703,7 +1703,7 @@ PODS:
 
 DEPENDENCIES:
   - audienzz (from `../..`)
-  - AudienzziOSSDK (~> 0.4.5)
+  - AudienzziOSSDK (~> 0.4.7)
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
@@ -1936,8 +1936,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  audienzz: 5db478595e84967edc863fc89a2cc20d3827ffe9
-  AudienzziOSSDK: a10905cd97cdba4b23fc926cd4d4d45353f262e5
+  audienzz: 528ebca388cdabfeb3301b53979104c3d5a3d81c
+  AudienzziOSSDK: 026ad329f25f6708dfa570de65f8c0d4fc32d78f
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
@@ -2016,6 +2016,6 @@ SPEC CHECKSUMS:
   SQLite.swift: c914f905e13b6318cdc07fd66661db14c6cdd330
   Yoga: b2eaabf17044cd4273a661b14eb83f9fd2c90491
 
-PODFILE CHECKSUM: 55589e47531c36e0b7d181af907d2e92485c2790
+PODFILE CHECKSUM: 7097521dc2be347039938c8a032f0381c0ea316b
 
 COCOAPODS: 1.16.2
