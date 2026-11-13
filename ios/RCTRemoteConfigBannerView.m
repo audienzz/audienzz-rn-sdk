@@ -45,6 +45,12 @@
     self.semaphore = dispatch_semaphore_create(0);
     self.backgroundQueue =
         dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    // Google draws a new creative at its own size before this host learns the size to show: while
+    // the SDK holds GAM's size back to find the Prebid creative's (up to 1 s), and for the trip
+    // through JS that resizes this host. Unclipped, a taller creative drew over the content below
+    // meanwhile (ad grown, the next view not yet moved). Clipped, the slot changes size in one step,
+    // together with the content after it.
+    self.clipsToBounds = YES;
   }
   return self;
 }
