@@ -152,6 +152,10 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
     // joins the current page. setScreen stores it as a pending key until the handler exists.
     pageKey?.let { bannerView.setScreen(it) }
 
+    // The banner can be resized after onAdLoaded (to the Prebid creative GAM served through a
+    // creative of another size); onAdLoaded alone left the host at GAM's size.
+    bannerView.onAdSizeChanged = { size -> handleAdSizeChanged(size) }
+
     bannerView.setAdListener(object : AdListener() {
       override fun onAdLoaded() {
         val size = bannerView.getAdSize()
@@ -212,16 +216,7 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
   }
 
   private fun handleAdLoaded(adSize: AdSize?) {
-    if (adSize != null && adSize.width > 0 && adSize.height > 0) {
-      // The reservation is only a placeholder. A 320x50 fill must not remain in a centered
-      // 300x250 child after JS shrinks the host to 50 dp (which placed the ad ABOVE its slot).
-      remoteConfigBannerView?.layoutParams = LayoutParams(
-        adSize.getWidthInPixels(context),
-        adSize.getHeightInPixels(context),
-        Gravity.TOP or Gravity.CENTER_HORIZONTAL
-      )
-      requestLayout()
-    }
+    fitChildTo(adSize)
 
     val size: WritableMap = Arguments.createMap()
     if (adSize != null) {
@@ -235,6 +230,31 @@ class RCTRemoteConfigBannerView(context: Context) : FrameLayout(context) {
     (context as ReactContext)
       .getJSModule(RCTEventEmitter::class.java)
       .receiveEvent(id, "onAdLoaded", size)
+  }
+
+  /**
+   * The reservation is only a placeholder. A 320x50 fill must not remain in a centered 300x250
+   * child after JS shrinks the host to 50 dp (which placed the ad ABOVE its slot).
+   */
+  private fun fitChildTo(adSize: AdSize?) {
+    if (adSize == null || adSize.width <= 0 || adSize.height <= 0) return
+    remoteConfigBannerView?.layoutParams = LayoutParams(
+      adSize.getWidthInPixels(context),
+      adSize.getHeightInPixels(context),
+      Gravity.TOP or Gravity.CENTER_HORIZONTAL
+    )
+    requestLayout()
+  }
+
+  private fun handleAdSizeChanged(adSize: AdSize) {
+    if (adSize.width <= 0 || adSize.height <= 0) return
+    fitChildTo(adSize)
+    val size: WritableMap = Arguments.createMap()
+    size.putInt("width", adSize.width)
+    size.putInt("height", adSize.height)
+    (context as ReactContext)
+      .getJSModule(RCTEventEmitter::class.java)
+      .receiveEvent(id, "onAdSizeChanged", size)
   }
 
   private fun handleAdFailed(message: String) {

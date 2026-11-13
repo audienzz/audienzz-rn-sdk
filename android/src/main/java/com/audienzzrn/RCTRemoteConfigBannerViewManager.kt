@@ -70,6 +70,7 @@ class RCTRemoteConfigBannerViewManager : SimpleViewManager<RCTRemoteConfigBanner
 
     return mapOf(
       "onAdLoaded" to eventMap("onAdLoaded"),
+      "onAdSizeChanged" to eventMap("onAdSizeChanged"),
       "onAdClicked" to eventMap("onAdClicked"),
       "onAdClosed" to eventMap("onAdClosed"),
       "onAdFailedToLoad" to eventMap("onAdFailedToLoad")

@@ -136,7 +136,12 @@ export class RemoteConfigBanner extends Component<
     };
 
     _onAdLoaded = (event: any) => {
-        this._onAdSizeChanged(event);
+        // iOS reports every size through onAdSizeChanged, the shown one: GAM's size at load can be
+        // the one native holds back while it finds the Prebid creative's, and sizing to it here
+        // made the slot bounce (250 -> 600 -> 250). Android reports only a later resize there.
+        if (Platform.OS === 'android') {
+            this._onAdSizeChanged(event);
+        }
         if (this.props.onAdLoaded) {
             this.props.onAdLoaded(event.nativeEvent);
         }
@@ -165,7 +170,7 @@ export class RemoteConfigBanner extends Component<
                     adHeight={adHeight}
                     style={nativeStyle}
                     onAdLoaded={this._onAdLoaded}
-                    onAdSizeChanged={Platform.OS === 'ios' ? this._onAdSizeChanged : undefined}
+                    onAdSizeChanged={this._onAdSizeChanged}
                     onAdFailedToLoad={onAdFailedToLoad}
                     ref={(ref) => {
                         this.nativeRef = ref;
