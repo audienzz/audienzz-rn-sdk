@@ -111,6 +111,11 @@
     if (!_requestContext) _requestContext = [AUAdRequestContext new];
     self.auRemoteConfigBannerView.requestContext = _requestContext;
     self.loadedAdConfigId = self.adConfigId;
+    // React Native sizes this view (Yoga, from onAdSizeChanged below), so the SDK must constrain
+    // only the banner inside it. Older SDKs lack the switch and keep their container constraints.
+    if ([self.auRemoteConfigBannerView respondsToSelector:@selector(setHostSizesContainer:)]) {
+      [self.auRemoteConfigBannerView setValue:@YES forKey:@"hostSizesContainer"];
+    }
     // The size the slot shows, including the Prebid creative's when GAM served a bid through a
     // creative of another size. GAM's own size callback (adSizeDelegate) reports GAM's size and,
     // forwarded after this one, would undo that correction; this view is deliberately not one.
