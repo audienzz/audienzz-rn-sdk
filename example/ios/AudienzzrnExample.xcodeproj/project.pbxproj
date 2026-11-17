@@ -382,7 +382,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240604.101512;
-				DEVELOPMENT_TEAM = YQ63ZZYZV7;
+				DEVELOPMENT_TEAM = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -416,7 +416,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 240604.101512;
-				DEVELOPMENT_TEAM = YQ63ZZYZV7;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = AudienzzrnExampleTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -445,7 +445,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240604.101512;
-				DEVELOPMENT_TEAM = YQ63ZZYZV7;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = AudienzzrnExample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -459,7 +459,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nixs.AudienzzrnExample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.audienzzrnexample;
 				PRODUCT_NAME = AudienzzrnExample;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -491,7 +491,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.nixs.AudienzzrnExample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.audienzzrnexample;
 				PRODUCT_NAME = AudienzzrnExample;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
