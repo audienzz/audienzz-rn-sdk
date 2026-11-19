@@ -1,5 +1,5 @@
 PODS:
-  - audienzz (0.6.3):
+  - audienzz (0.6.4):
     - AudienzziOSSDK (~> 0.4.8)
     - DoubleConversion
     - glog
@@ -1936,7 +1936,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  audienzz: 9bd955c07e86d0c20626f8b4e66915e542364156
+  audienzz: 7c19047f895fc6fb4f759cf040e4998056debf8a
   AudienzziOSSDK: 14b07aba859f00b18493dc583cc8fd6bdf84fde9
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
