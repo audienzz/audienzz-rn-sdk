@@ -66,20 +66,21 @@
     if (!_requestContext) {
       _requestContext = [AUAdRequestContext forSlot:NSUUID.UUID.UUIDString pageKey:self.pageKey];
     }
-    dispatch_async(self.backgroundQueue, ^{
-      [self createAd];
-    });
+    [self createAd];
   }
   self.propsChanged = NO;
 }
 
 - (void)createAd {
-  dispatch_semaphore_wait(
-      self.semaphore,
-      dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)));
-
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [self internalCreateAd];
+  // A pending prop update must not extend the lifetime of the host and its displayed banner.
+  dispatch_semaphore_t semaphore = self.semaphore;
+  __weak typeof(self) weakSelf = self;
+  dispatch_async(self.backgroundQueue, ^{
+    dispatch_semaphore_wait(semaphore,
+        dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)));
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [weakSelf internalCreateAd];
+    });
   });
 }
 

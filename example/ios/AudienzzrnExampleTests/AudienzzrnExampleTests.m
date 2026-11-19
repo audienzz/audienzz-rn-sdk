@@ -133,6 +133,41 @@ static GADRequest *RewardedRequest;
   return view;
 }
 
+- (void)checkRemoteHostReleaseWithMainHandoffPending:(BOOL)mainHandoffPending {
+  XCTAssertTrue(NSThread.isMainThread);
+  dispatch_queue_t queue = dispatch_queue_create("remote-banner-props-test", DISPATCH_QUEUE_SERIAL);
+  dispatch_suspend(queue);
+  __weak RCTRemoteConfigBannerView *retiredHost;
+  __weak GAMBannerView *retiredGoogle;
+  @autoreleasepool {
+    RCTRemoteConfigBannerView *host = [RCTRemoteConfigBannerView new];
+    host.backgroundQueue = queue;
+    // Model a previously loaded view tree. No network request is needed to test ARC ownership.
+    GAMBannerView *google = [[GAMBannerView alloc] initWithAdSize:GADAdSizeBanner];
+    [host addSubview:google];
+    retiredHost = host;
+    retiredGoogle = google;
+    host.adConfigId = @"replacement";
+    dispatch_semaphore_signal(host.semaphore);
+    [host didSetProps:@[@"adConfigId"]];
+    if (mainHandoffPending) {
+      dispatch_resume(queue);
+      dispatch_sync(queue, ^{}); // Setup is now on main, behind this test.
+    }
+  }
+  XCTAssertNil(retiredHost);
+  XCTAssertNil(retiredGoogle);
+  if (!mainHandoffPending) dispatch_resume(queue);
+}
+
+- (void)testRemoteBannerReleaseWhilePropUpdateWaitsOnBackgroundQueue {
+  [self checkRemoteHostReleaseWithMainHandoffPending:NO];
+}
+
+- (void)testRemoteBannerReleaseWhilePropUpdateWaitsOnMainQueue {
+  [self checkRemoteHostReleaseWithMainHandoffPending:YES];
+}
+
 - (void)testBannerIdentityIsReservedBeforeAsynchronousCreation {
   DeferredBanner *first = [DeferredBanner new];
   DeferredRemoteBanner *second = [DeferredRemoteBanner new];
@@ -265,12 +300,17 @@ static GADRequest *RewardedRequest;
   __block NSUInteger loaded = 0;
   view.onAdSizeChanged = ^(NSDictionary *event) { sizeEvent = event; };
   [view setOnAdLoaded:^(NSDictionary *event) { loaded++; }];
+  view.adConfigId = @"bridge-size-test";
+  [view internalCreateAd];
+  void (^reportSize)(CGSize) = view.auRemoteConfigBannerView.onAdSizeChanged;
+  XCTAssertNotNil(reportSize);
+  if (!reportSize) return;
   [view bannerViewDidReceiveAd:google];
   XCTAssertEqual(loaded, 1u);
   XCTAssertEqual(google.adSize.size.height, 0);
-  [view adView:google willChangeAdSizeTo:GADAdSizeFromCGSize(CGSizeMake(320, 180))];
+  reportSize(CGSizeMake(320, 180));
   XCTAssertEqualObjects(sizeEvent, (@{@"width": @320, @"height": @180}));
-  [view adView:google willChangeAdSizeTo:GADAdSizeFromCGSize(CGSizeMake(320, 280))];
+  reportSize(CGSizeMake(320, 280));
   XCTAssertEqualObjects(sizeEvent, (@{@"width": @320, @"height": @280}));
   XCTAssertEqual(loaded, 1u, @"layout updates are not additional load completions");
 }
