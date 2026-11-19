@@ -11,7 +11,7 @@ Install dependencies from the repository root:
 yarn install
 ```
 
-The example defaults to published **Android 0.3.3 / iOS 0.4.3**; no sibling checkout is needed.
+The example defaults to published **Android 0.3.7 / iOS 0.4.8**; no sibling checkout is needed.
 For iOS, run `pod install` in `example/ios` before building. Optional local native testing is
 documented in [LOCAL_TESTING.md](../LOCAL_TESTING.md). Then start Metro:
 
@@ -34,6 +34,22 @@ The app uses production publisher **35**, remote banners **46 / 48**, and inters
 both platforms. IDs and endpoint live in [remoteConfig.ts](src/remoteConfig.ts). It adds `TEST=1`
 targeting; ad-ops configuration determines which creatives match that targeting. Initialization
 errors are shown on the startup screen with a retry action.
+
+## Run on an iOS device
+
+The project ships without a signing team and with the placeholder bundle id
+`com.example.audienzzrnexample`, so it builds on the simulator as is. For a device:
+
+1. `cd example/ios && pod install`, then open `AudienzzrnExample.xcworkspace` in Xcode.
+2. Select the **AudienzzrnExample** target → **Signing & Capabilities** and choose your team
+   (for both Debug and Release).
+3. If Xcode reports the bundle id as unavailable, change it to one your team owns, e.g.
+   `com.yourcompany.audienzzrnexample`. `Info.plist` reads it from `PRODUCT_BUNDLE_IDENTIFIER`,
+   so the build setting is the only place to change.
+4. Start Metro (`yarn start` in `example`) and run on the device from Xcode, or with
+   `yarn ios --device`.
+
+Keep your team and bundle id out of commits that you send back to this repository.
 
 ## Screens
 

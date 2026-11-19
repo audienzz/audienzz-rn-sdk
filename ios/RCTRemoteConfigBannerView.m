@@ -66,20 +66,21 @@
     if (!_requestContext) {
       _requestContext = [AUAdRequestContext forSlot:NSUUID.UUID.UUIDString pageKey:self.pageKey];
     }
-    dispatch_async(self.backgroundQueue, ^{
-      [self createAd];
-    });
+    [self createAd];
   }
   self.propsChanged = NO;
 }
 
 - (void)createAd {
-  dispatch_semaphore_wait(
-      self.semaphore,
-      dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)));
-
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [self internalCreateAd];
+  // A pending prop update must not extend the lifetime of the host and its displayed banner.
+  dispatch_semaphore_t semaphore = self.semaphore;
+  __weak typeof(self) weakSelf = self;
+  dispatch_async(self.backgroundQueue, ^{
+    dispatch_semaphore_wait(semaphore,
+        dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)));
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [weakSelf internalCreateAd];
+    });
   });
 }
 
@@ -111,6 +112,11 @@
     if (!_requestContext) _requestContext = [AUAdRequestContext new];
     self.auRemoteConfigBannerView.requestContext = _requestContext;
     self.loadedAdConfigId = self.adConfigId;
+    // React Native sizes this view (Yoga, from onAdSizeChanged below), so the SDK must constrain
+    // only the banner inside it. Older SDKs lack the switch and keep their container constraints.
+    if ([self.auRemoteConfigBannerView respondsToSelector:@selector(setHostSizesContainer:)]) {
+      [self.auRemoteConfigBannerView setValue:@YES forKey:@"hostSizesContainer"];
+    }
     // The size the slot shows, including the Prebid creative's when GAM served a bid through a
     // creative of another size. GAM's own size callback (adSizeDelegate) reports GAM's size and,
     // forwarded after this one, would undo that correction; this view is deliberately not one.
