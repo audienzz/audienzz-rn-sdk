@@ -1,6 +1,6 @@
 # Testing the examples and optional local native SDKs
 
-The library and examples default to published Android `0.3.7` and iOS `~> 0.4.7`.
+The library and examples default to published Android `0.3.7` and iOS `~> 0.4.8`.
 No sibling checkout is required. These releases include analytics batching, foreground/interstitial
 page continuity, cold-start attribution, Android bridge page recovery, and one `viewability.start`
 per creative. Local native testing is an explicit opt-in described below.
@@ -48,7 +48,7 @@ Gradle plugin versions. Remove the property to return to the published dependenc
 
 ## iOS — optional local development pod
 
-The example Podfile defaults to the published `AudienzziOSSDK ~> 0.4.7`. To test native edits:
+The example Podfile defaults to the published `AudienzziOSSDK ~> 0.4.8`. To test native edits:
 
 ```bash
 cd example/ios
